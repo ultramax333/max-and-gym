@@ -71,8 +71,7 @@ export const WhatsNew = () => {
             </ul>
             <Typography variant="h5">Dev enhancements</Typography>
             <ul>
-                <li>Sentry is now configurable through environment variables instead of the DSN being hardcoded. It can be disabled, too.</li>
-                <li>Added Supabase client and support. Still working on the backend.</li>
+                <li>Legacy remote diagnostics and cloud experiments were removed in Max &amp; Gym.</li>
             </ul>
             <Typography variant="h5">Bugfixes</Typography>
             <ul>
@@ -84,7 +83,7 @@ export const WhatsNew = () => {
             <Typography variant="subtitle2">Copyright Marc Sances 2025. All rights reserved.</Typography>
             <Typography variant="h5">Other</Typography>
             <ul>
-                <li>Added <a href="https://alceris.com/">Alceris</a> anayltics. These analytics only collect public information for statistic purposes and are GDPR compliant.</li>
+                <li>Legacy analytics were removed in Max &amp; Gym.</li>
             </ul>
             <Typography variant="h4">RepQuest Version 0.3.4</Typography>
             <Typography variant="subtitle1">Released on 03/06/2025</Typography>
@@ -508,7 +507,7 @@ export const WhatsNew = () => {
             <Typography variant="subtitle2">Copyright Marc Sances 2024. All rights reserved.</Typography>
             <Typography variant="h5">Features</Typography>
             <ul>
-                <li>Added telemetry via Sentry. This allows us to gather error reports when the app breaks and have some insights on the app usage. You can disable telemetry through the app preferences.</li>
+                <li>Legacy remote error reporting was removed in Max &amp; Gym.</li>
                 <li>Added contact button.</li>
             </ul>
             <Typography variant="h4">WeightLog Version 0.1.44</Typography>

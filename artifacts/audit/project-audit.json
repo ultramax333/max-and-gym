@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-08-06T17:33:05.279Z",
+  "checks": [
+    {
+      "check": "project identity",
+      "status": "pass",
+      "detail": "max-and-gym@0.4.0"
+    },
+    {
+      "check": "single lockfile",
+      "status": "pass",
+      "detail": "package-lock.json"
+    },
+    {
+      "check": "forbidden packages",
+      "status": "pass",
+      "detail": "none"
+    },
+    {
+      "check": "GitHub Pages base",
+      "status": "pass",
+      "detail": "/max-and-gym/"
+    },
+    {
+      "check": "prompted PWA update",
+      "status": "pass",
+      "detail": "prompt"
+    },
+    {
+      "check": "error code uniqueness",
+      "status": "pass",
+      "detail": "53 registered"
+    },
+    {
+      "check": "legacy direct database access",
+      "status": "warning",
+      "detail": "14 files; replacement staged in later domain tasks"
+    }
+  ],
+  "findings": [],
+  "acceptedExceptions": [
+    "Legacy direct Dexie access remains until domain repositories are introduced."
+  ]
+}

@@ -9,7 +9,6 @@ import MetricsPage from "./pages/profile/metrics";
 import {AppearanceSettingsPage} from "./pages/settings/appearanceSettings";
 import {Backup} from "./pages/settings/backup";
 import {SettingsPage} from "./pages/settings/settings";
-import {Telemetry} from "./pages/settings/telemetry";
 import {WorkoutSettingsPage} from "./pages/settings/workoutSettings";
 import {SystemSettingsPage} from "./pages/settings/system";
 import {WorkoutPage} from "./pages/workout/workout";
@@ -30,13 +29,13 @@ import React from "react";
 import BulkEditor from "./pages/workout-editor/bulkEditor";
 import Wrapped from "./pages/wrapped";
 import EOLPage from "./pages/eol";
-import RepcloudLoginPage from "./pages/login/login";
+import DiagnosticsPage, {IntentionalRouteError} from './pages/diagnostics/DiagnosticsPage';
+import ErrorBoundary from './components/errorBoundary';
 
 const AppRoutes = () => {
-    return <Routes>
+    return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
         <Route path="/onboarding" element={<Onboarding/>}/>
         <Route path="/login" element={<Login/>}/>
-        <Route path="/cloud/login" element={<RepcloudLoginPage/>}/>
         <Route path="/" element={<WorkoutList/>}/>
         <Route path="/apps" element={<AppsMenu/>}/>
         <Route path="/apps/timer" element={<Timer/>}/>
@@ -50,8 +49,8 @@ const AppRoutes = () => {
         <Route path="/onboarding/backup"
                element={<Backup onboarding/>}/>
         <Route path="/settings" element={<SettingsPage/>}/>
-        <Route path="/settings/telemetry"
-               element={<Telemetry/>}/>
+        <Route path="/diagnostics" element={<DiagnosticsPage/>}/>
+        <Route path="/diagnostics/error-test" element={<IntentionalRouteError/>}/>
         <Route path="/settings/workout"
                element={<WorkoutSettingsPage/>}/>
         <Route path="/settings/system"
@@ -81,7 +80,7 @@ const AppRoutes = () => {
         <Route path="/wrapped" element={<Wrapped/>}/>
         <Route path="/eol" element={<EOLPage/>}/>
         <Route path="*" element={<NotImplemented/>}/>
-    </Routes>
+    </Routes></ErrorBoundary>
 }
 
 export default AppRoutes;

@@ -61,13 +61,13 @@ export const SystemSettingsPage = () => {
                 </ListItemAvatar>
                 <ListItemText primary={t("onboarding.menu")} secondary={t("onboarding.menuDescription")} />
             </ListItemButton>
-            <ListItemButton component="a" onClick={() => navigate("/settings/telemetry")}>
+            <ListItemButton component="a" onClick={() => navigate("/diagnostics")}>
                 <ListItemAvatar>
                     <Avatar>
                         <MonitorHeart/>
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={t("telemetry")} secondary={t("telemetryDescription")} />
+                <ListItemText primary="Diagnostics" secondary="Build, base locale, PWA et erreurs redacted" />
             </ListItemButton>
             <ListItemButton component="a" onClick={() => window.location.href = window.location.origin}>
                 <ListItemAvatar>

@@ -338,3 +338,16 @@ Controls:
 - changed-file scope review;
 - checkpoint gate;
 - no unsolicited scope expansion.
+
+## FM-35 — Legacy orientation script crushes desktop layout
+
+Likely cause: JavaScript rotates the entire document from `screen.orientation.angle`, which can disagree with the responsive viewport and accessibility zoom state.
+
+Controls:
+
+- no document-level rotation or zoom mutation;
+- CSS responsive layout only;
+- mobile and desktop screenshots at CP1;
+- route-boundary visual check at 1440 × 900.
+
+CP1 status: reproduced during Diagnostics verification and removed before checkpoint evidence was captured.

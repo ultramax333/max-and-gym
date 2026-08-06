@@ -14,29 +14,49 @@
     You should have received a copy of the GNU General Public License
     along with RepQuest.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { sentryVitePlugin } from "@sentry/vite-plugin";
+import {execFileSync} from 'node:child_process';
 import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import {VitePWA} from "vite-plugin-pwa";
 
+const appVersion = process.env.npm_package_version ?? '0.4.0';
+const gitSha = process.env.GITHUB_SHA ?? (() => {
+    try {
+        return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {encoding: 'utf8'}).trim();
+    } catch {
+        return 'unknown';
+    }
+})();
+const buildTimestamp = process.env.BUILD_TIMESTAMP ?? new Date().toISOString();
+
 export default defineConfig({
-    base: '/',
+    base: '/max-and-gym/',
+    define: {
+        __APP_VERSION__: JSON.stringify(appVersion),
+        __GIT_SHA__: JSON.stringify(gitSha),
+        __BUILD_TIMESTAMP__: JSON.stringify(buildTimestamp),
+        __BUILD_ENVIRONMENT__: JSON.stringify(process.env.GITHUB_ACTIONS ? 'github-pages' : 'local'),
+    },
     build: {
         outDir: "build"
     },
     plugins: [react(), VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
+        injectRegister: false,
         workbox: {
             maximumFileSizeToCacheInBytes: 3000000,
-            globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+            globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+            cleanupOutdatedCaches: true,
+            cacheId: 'max-and-gym-cache-v1',
+            runtimeCaching: []
         },
         manifest: {
-            "id": "net.marcsances.weightlog",
+            "id": "/max-and-gym/",
             "dir": "ltr",
             "orientation": "portrait",
-            "short_name": "RepQuest",
-            "name": "RepQuest",
-            "description": "RepQuest is an online fitness tracking app.",
+            "short_name": "Max & Gym",
+            "name": "Max & Gym",
+            "description": "Local-first workout tracking.",
             "lang": "en",
             "icons": [
                 {
@@ -61,10 +81,6 @@ export default defineConfig({
             "background_color": "#121212",
             "categories": ["fitness", "health", "health & fitness"]
         }
-    }), sentryVitePlugin({
-        org: "marc-sances",
-        project: "javascript-react",
-        authToken: process.env.SENTRY_AUTH_TOKEN
     })],
     server: {
         port: 3000

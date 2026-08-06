@@ -19,12 +19,14 @@ import Layout from "../../components/layout";
 import {WorkoutContext} from "../../context/workoutContext";
 import {useTranslation} from "react-i18next";
 import Typography from "@mui/material/Typography";
+import {safeMediaSource} from '../../utils/safeMedia';
 
 export const PictureViewer = () => {
     const {focusedExercise} = useContext(WorkoutContext);
     const {t} = useTranslation();
+    const picture = safeMediaSource(focusedExercise?.picture);
     return <Layout title={focusedExercise ? focusedExercise.name : t("actions.viewPicture")} hideNav>
-        {focusedExercise && focusedExercise.picture && <img src={focusedExercise.picture} alt={focusedExercise.name}
+        {focusedExercise && picture && <img src={picture} alt={focusedExercise.name}
                                                             style={{
                                                                 objectFit: "contain",
                                                                 width: "100%",
@@ -32,6 +34,6 @@ export const PictureViewer = () => {
                                                                 maxWidth: "100%",
                                                                 maxHeight: "calc(100% - 16px)"
                                                             }}/>}
-        {(!focusedExercise || !focusedExercise.picture) && <Typography>{t("noPicture")}</Typography>}
+        {(!focusedExercise || !picture) && <Typography>{t("noPicture")}</Typography>}
     </Layout>;
 }

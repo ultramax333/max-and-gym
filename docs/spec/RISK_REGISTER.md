@@ -40,3 +40,12 @@ Scores: probability and impact from 1 (low) to 5 (high). Exposure = probability 
 - `R-16` and the privacy side of `R-23` are confirmed: the baseline includes Alceris, optional Sentry offline transport, optional Supabase authentication, remote exercise images, YouTube embeds, and unredacted `console` calls.
 - `R-20` is confirmed: the production artifact is 6,683,843 bytes; the main JavaScript chunk is 1,796,339 bytes and the exercise-data chunk is 846,982 bytes.
 - `R-26` is confirmed: clean installation reports 38 known vulnerabilities (4 low, 10 moderate, 23 high, 1 critical) and multiple deprecated Workbox-era packages. No automatic upgrade is applied during CP0.
+
+## CP1 stabilization evidence — 2026-08-06
+
+- `R-07` is reduced: updates use the prompt state, expose waiting state, and defer when `workoutContext.timeStarted` is present. Cache cleanup remains isolated from IndexedDB.
+- `R-08` is reduced: the production bundle and manifest pass the `/max-and-gym/` subpath smoke test with hash routing.
+- `R-16` is reduced: diagnostic context is allow-listed, events are bounded, production console arguments are suppressed, and induced secret fixtures remain absent from the screen and local event record.
+- `R-23` is reduced: build `version + Git SHA`, stable error code, UUID and schema identity are visible and stored locally.
+- `R-26` remains open: removing unused network packages lowers the clean audit from 38 to 23 known vulnerabilities (1 low, 6 moderate, 15 high, 1 critical), but upgrades are deferred to isolated dependency work because forced automatic remediation is unsafe.
+- `R-20` remains open: the CP1 artifact is 6,456,260 bytes. The main chunk is 1,568,929 bytes and the exercise-data chunk is 846,982 bytes; later route/data splitting is still required.

@@ -15,7 +15,6 @@
     along with RepQuest.  If not, see <https://www.gnu.org/licenses/>.
  */
 import React, {ReactElement, useContext, useEffect, useState, useReducer} from 'react';
-import * as Sentry from "@sentry/react";
 import './App.css';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -29,8 +28,6 @@ import {WorkoutContextProvider} from './context/workoutContext';
 import {AppTheme, SettingsContextProvider} from "./context/settingsContext";
 import {UserContextProvider} from './context/userContext';
 import ErrorBoundary from './components/errorBoundary';
-// @ts-ignore
-import {registerSW} from 'virtual:pwa-register';
 import {TimerContextProvider} from "./context/timerContext";
 import Loader from "./components/Loader";
 import {useTranslation} from "react-i18next";
@@ -38,10 +35,9 @@ import {MasterDB} from "./db/masterDb";
 import CalendarProvider from './context/calendarProvider';
 import {DialogContextProvider} from './context/dialogContext';
 import AppRoutes from "./AppRoutes";
-import {SupabaseContextProvider} from "./context/supabaseContext";
 import defer from "./utils/defer";
-
-registerSW({immediate: true})
+import {PwaProvider} from './pwa/PwaContext';
+import {UpdatePrompt} from './pwa/UpdatePrompt';
 const darkTheme = createTheme({
     palette: {
         mode: 'dark',
@@ -53,24 +49,6 @@ const lightTheme = createTheme({
         mode: 'light'
     }
 })
-
-if (localStorage.getItem("disable_telemetry") !== "true" && import.meta.env.VITE_SENTRY_ENABLED === "true") {
-    Sentry.init({
-        dsn: import.meta.env.VITE_SENTRY_DSN,
-        integrations: [
-            Sentry.browserTracingIntegration()
-        ],
-        // Performance Monitoring
-        tracesSampleRate: 0.1,
-        transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
-        transportOptions: {
-            dbName: 'sentry-offline',
-            storeName: 'queue',
-            maxQueueSize: 10,
-            flushAtStartup: true
-        }
-    });
-}
 
 const DBGuard = ({children}: { children: ReactElement }) => {
     const {db} = useContext(DBContext);
@@ -116,9 +94,10 @@ function App() {
         <ErrorBoundary>
             <ThemeProvider theme={appTheme === "light" ? lightTheme : darkTheme}>
                 <DialogContextProvider>
-                    <SupabaseContextProvider>
-                        <DBContext.Provider value={{db: new DexieDB(), masterDb: new MasterDB()}}>
-                            <HashRouter>
+                    <DBContext.Provider value={{db: new DexieDB(), masterDb: new MasterDB()}}>
+                        <HashRouter>
+                            <PwaProvider>
+                                <>
                                 <DBGuard>
                                     <TimerContextProvider>
                                         <UserContextProvider>
@@ -127,6 +106,7 @@ function App() {
                                                     <WorkoutContextProvider>
                                                         <Paper>
                                                             <AppRoutes />
+                                                            <UpdatePrompt/>
                                                         </Paper>
                                                     </WorkoutContextProvider>
                                                 </CalendarProvider>
@@ -134,9 +114,10 @@ function App() {
                                         </UserContextProvider>
                                     </TimerContextProvider>
                                 </DBGuard>
-                            </HashRouter>
-                        </DBContext.Provider>
-                    </SupabaseContextProvider>
+                                </>
+                            </PwaProvider>
+                        </HashRouter>
+                    </DBContext.Provider>
                 </DialogContextProvider>
             </ThemeProvider>
         </ErrorBoundary>

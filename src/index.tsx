@@ -24,6 +24,11 @@ import enJson from "./i18n/en.json";
 import caJson from "./i18n/ca.json";
 import esJson from "./i18n/es.json";
 import LanguageDetector from 'i18next-browser-languagedetector';
+import {installGlobalDiagnosticCapture} from './diagnostics/globalCapture';
+import {installProductionConsoleGuard} from './diagnostics/consoleGuard';
+
+if (import.meta.env.PROD) installProductionConsoleGuard();
+installGlobalDiagnosticCapture();
 
 i18n
     .use(LanguageDetector)
@@ -59,25 +64,4 @@ root.render(
 declare let window: any;
 window.addEventListener('beforeinstallprompt', (e: any) => {
     window.deferredPrompt = e;
-});
-
-document.addEventListener('gesturestart', function(e) {
-    e.preventDefault();
-    // special hack to prevent zoom-to-tabs gesture in safari
-    // @ts-ignore
-    document.body.style.zoom = 0.99;
-});
-
-document.addEventListener('gesturechange', function(e) {
-    e.preventDefault();
-    // special hack to prevent zoom-to-tabs gesture in safari
-    // @ts-ignore
-    document.body.style.zoom = 0.99;
-});
-
-document.addEventListener('gestureend', function(e) {
-    e.preventDefault();
-    // special hack to prevent zoom-to-tabs gesture in safari
-    // @ts-ignore
-    document.body.style.zoom = 0.99;
 });

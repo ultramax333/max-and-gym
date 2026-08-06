@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-08-06T17:33:05.392Z",
+  "allowedRuntimeOrigins": [
+    "self"
+  ],
+  "discoveredLiteralOrigins": [
+    "https://client.repquest.app",
+    "https://docs.google.com",
+    "https://fsf.org",
+    "https://github.com",
+    "https://www.gnu.org",
+    "https://www.i18next.com",
+    "https://www.youtube.com"
+  ],
+  "forbiddenRuntimeReferences": []
+}

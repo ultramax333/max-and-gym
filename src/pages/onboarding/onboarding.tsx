@@ -83,7 +83,6 @@ const Onboarding = () => {
                         db.exercise.bulkPut(exercises.default.map((exercise) => ({
                             id: getId(),
                             name: exercise.name,
-                            picture: "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/" + exercise.images[0],
                             tags: getTags(exercise)
                         })))
                     })

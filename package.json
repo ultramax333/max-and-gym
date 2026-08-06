@@ -1,6 +1,7 @@
 {
-  "name": "repquest",
-  "version": "0.3.8.5",
+  "name": "max-and-gym",
+  "version": "0.4.0",
+  "type": "module",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -10,9 +11,6 @@
     "@mui/material": "^5.16.7",
     "@mui/x-charts": "^6.19.8",
     "@mui/x-date-pickers": "^6.20.2",
-    "@sentry/react": "^7.119.0",
-    "@sentry/vite-plugin": "^2.22.4",
-    "@supabase/supabase-js": "^2.49.10",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -28,8 +26,6 @@
     "emoji-picker-react": "^4.12.0",
     "i18next": "^23.15.1",
     "i18next-browser-languagedetector": "^7.2.1",
-    "install": "^0.13.0",
-    "npm": "^11.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^13.5.0",
@@ -47,7 +43,6 @@
     "workbox-cacheable-response": "^6.5.4",
     "workbox-core": "^6.6.0",
     "workbox-expiration": "^6.6.0",
-    "workbox-google-analytics": "^6.6.1",
     "workbox-navigation-preload": "^6.6.0",
     "workbox-precaching": "^6.6.0",
     "workbox-range-requests": "^6.6.0",
@@ -56,22 +51,32 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
+    "dev": "vite",
     "start": "vite",
-    "build": "tsc && vite build",
-    "serve": "vite preview"
+    "preview": "node scripts/preview.mjs",
+    "serve": "node scripts/preview.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint vite.config.ts src/diagnostics src/pwa src/pages/diagnostics src/components/errorBoundary.tsx --ext .ts,.tsx --max-warnings 0",
+    "test": "node scripts/run-tests.mjs",
+    "test:unit": "node scripts/run-tests.mjs src/diagnostics",
+    "test:components": "node scripts/run-tests.mjs src/components",
+    "test:migrations": "node scripts/run-tests.mjs src/db",
+    "test:e2e": "node scripts/phase-check.mjs e2e",
+    "test:offline": "node scripts/phase-check.mjs offline",
+    "test:visual": "node scripts/phase-check.mjs visual",
+    "test:a11y": "node scripts/phase-check.mjs a11y",
+    "build": "tsc --noEmit && node scripts/build.mjs && node scripts/bundle-report.mjs && node scripts/smoke-pages.mjs",
+    "build:pages": "npm run build",
+    "doctor": "node scripts/doctor.mjs",
+    "audit:project": "node scripts/audit-project.mjs",
+    "audit:network": "node scripts/audit-network.mjs",
+    "audit:licenses": "node scripts/audit-licenses.mjs",
+    "audit:assets": "node scripts/audit-assets.mjs",
+    "quality": "npm run typecheck && npm run lint && npm run test && npm run audit:project && npm run audit:network && npm run audit:licenses && npm run build"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "plugins": [
-      "react-hooks"
-    ],
-    "rules": {
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn"
-    }
+  "engines": {
+    "node": ">=24.0.0 <25",
+    "npm": ">=11.0.0 <12"
   },
   "browserslist": {
     "production": [
@@ -88,8 +93,15 @@
   "devDependencies": {
     "@types/dom-to-image": "^2.6.7",
     "@types/node": "^17.0.45",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
+    "eslint": "8.57.1",
+    "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
+    "fake-indexeddb": "6.0.0",
+    "jsdom": "22.1.0",
     "react-geiger": "^1.2.0",
-    "vite-plugin-pwa": "^0.20.5"
+    "vite-plugin-pwa": "^0.20.5",
+    "vitest": "0.34.6"
   }
 }

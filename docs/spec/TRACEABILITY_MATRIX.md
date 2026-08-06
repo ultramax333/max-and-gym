@@ -15,20 +15,20 @@ This matrix links every implementation requirement in `BACKLOG.md` to its owning
 | DIA-001 | Create baseline audit and risk reports | 00 | CP0 | AT-J03 |
 | FND-004 | Produce preserve/refactor/replace map | 00 | CP0 | AT-J03 |
 | FND-005 | Produce migration plan | 00 | CP0 | AT-L01, AT-L02 |
-| FND-010 | Pin supported Node/npm and lockfile | 01 | CP1 | AT-A01 |
-| FND-011 | Establish strict type/lint/test/build scripts | 01 | CP1 | AT-A01, AT-J03 |
-| FND-012 | Establish pull-request continuous integration | 01 | CP1 | AT-A01, AT-J03 |
-| SEC-010 | Remove telemetry, Sentry, Alceris, remote scripts/fonts | 01 | CP1 | AT-B01 |
-| SEC-011 | Add runtime-origin policy test | 01 | CP1 | AT-B01 |
-| PWA-010 | Configure static subpath build and route smoke test | 01 | CP1 | AT-A02 |
-| PWA-011 | Configure prompt-based service-worker updates | 01 | CP1 | AT-C03, AT-C04 |
-| DIA-010 | Add build identity | 01 | CP1 | AT-A03 |
-| DIA-011 | Add stable error-code framework and redaction | 01 | CP1 | AT-B03, AT-J04 |
-| DIA-012 | Add diagnostic event storage/retention | 01 | CP1 | AT-J05 |
-| DIA-013 | Add root/route boundaries | 01 | CP1 | AT-J04 |
-| DIA-014 | Add `doctor` and `audit:project` | 01 | CP1 | AT-J03 |
-| DIA-015 | Add initial Diagnostics screen | 01 | CP1 | AT-A03, AT-J01 |
-| DIA-016 | Add migration/operation journal foundation | 01 | CP1 | AT-J02, AT-L01, AT-L02 |
+| FND-010 | Pin supported Node/npm and lockfile | 01 | CP1 | AT-A01; `01-stabilization-audit.md` |
+| FND-011 | Establish strict type/lint/test/build scripts | 01 | CP1 | AT-A01, AT-J03; `01-stabilization-audit.md` |
+| FND-012 | Establish pull-request continuous integration | 01 | CP1 | AT-A01, AT-J03; `.github/workflows/quality.yml` |
+| SEC-010 | Remove telemetry, Sentry, Alceris, remote scripts/fonts | 01 | CP1 | AT-B01; `artifacts/audit/network-audit.md` |
+| SEC-011 | Add runtime-origin policy test | 01 | CP1 | AT-B01; `networkAudit.test.ts` |
+| PWA-010 | Configure static subpath build and route smoke test | 01 | CP1 | AT-A02; `smoke-pages.mjs` |
+| PWA-011 | Configure prompt-based service-worker updates | 01 | CP1 | AT-C03, AT-C04; `pwaConfig.test.ts` |
+| DIA-010 | Add build identity | 01 | CP1 | AT-A03; Diagnostics screenshots |
+| DIA-011 | Add stable error-code framework and redaction | 01 | CP1 | AT-B03, AT-J04; redaction/console tests |
+| DIA-012 | Add diagnostic event storage/retention | 01 | CP1 | AT-J05; `retention.test.ts` |
+| DIA-013 | Add root/route boundaries | 01 | CP1 | AT-J04; route-boundary screenshot |
+| DIA-014 | Add `doctor` and `audit:project` | 01 | CP1 | AT-J03; `artifacts/audit/` |
+| DIA-015 | Add initial Diagnostics screen | 01 | CP1 | AT-A03, AT-J01; Diagnostics screenshots |
+| DIA-016 | Add migration/operation journal foundation | 01 | CP1 | AT-J02, AT-L01, AT-L02; diagnostics database v1 |
 | UI-010 | Implement max&gym Material UI tokens/theme | 02 | CP2 | AT-K04 |
 | UI-011 | Implement responsive AppShell | 02 | CP2 | AT-K01 |
 | UI-012 | Implement five-item mobile navigation | 02 | CP2 | AT-K01, AT-K03 |

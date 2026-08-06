@@ -34,9 +34,9 @@ const EOLPage = () => {
     }
 
     return <Layout title={t("eol.title")} scroll hideBack hideNav sx={{padding: "8px", height: "calc(100% - 18px)", width: "calc(100% - 16px)"}}>
-        <Box sx={{display: "flex", flexDirection: "row", width: "100%", alignItems: "center", justifyContent: "center", marginBottom: "12px"}}><img src="https://raw.githubusercontent.com/marcsances/repquest/395957a7a947318e860a4146e2f607ab13a7e4c8/public/logo192.png" style={{flexGrow: 1, maxWidth: "30%", objectFit: "contain"}} />
+        <Box sx={{display: "flex", flexDirection: "row", width: "100%", alignItems: "center", justifyContent: "center", marginBottom: "12px"}}><img src={`${import.meta.env.BASE_URL}logo192.png`} alt="RepQuest" style={{flexGrow: 1, maxWidth: "30%", objectFit: "contain"}} />
             <ArrowForward sx={{placeSelf: "center", fontSize: "72px"}}/>
-            <img src="/logo192.png" style={{flexGrow: 1, maxWidth: "30%", objectFit: "contain"}} /></Box>
+            <img src={`${import.meta.env.BASE_URL}logo192.png`} alt="Max & Gym" style={{flexGrow: 1, maxWidth: "30%", objectFit: "contain"}} /></Box>
         <Typography sx={{fontSize: "12px", marginBottom: "8px"}}>{t("eol.message")}</Typography>
         <Typography sx={{fontSize: "12px", marginBottom: "8px"}}>{t("eol.message2")}</Typography>
         <Typography sx={{fontSize: "12px", marginBottom: "8px"}}>{t("eol.message3")}</Typography>

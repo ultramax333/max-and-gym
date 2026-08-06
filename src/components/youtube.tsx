@@ -16,18 +16,12 @@
  */
 import React from "react";
 import PropTypes from "prop-types";
+import {Button, Stack, Typography} from '@mui/material';
 
-const YoutubeEmbed = (props: { embedId: string }) => (
-    <div className="video-responsive">
-        <iframe
-            src={`https://www.youtube.com/embed/${props.embedId}`}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="Embedded youtube"
-        />
-    </div>
-);
+const YoutubeEmbed = (props: { embedId: string }) => <Stack spacing={2} sx={{p: 3, alignItems: 'center'}}>
+    <Typography>La vidéo externe n’est pas chargée automatiquement afin de préserver votre confidentialité.</Typography>
+    <Button component="a" href={`https://www.youtube.com/watch?v=${encodeURIComponent(props.embedId)}`} target="_blank" rel="noreferrer" variant="contained">Ouvrir sur YouTube</Button>
+</Stack>;
 
 YoutubeEmbed.propTypes = {
     embedId: PropTypes.string.isRequired
