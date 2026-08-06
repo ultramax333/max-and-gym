@@ -6,14 +6,14 @@ import {PrimaryButton, ScreenContainer, SectionHeader, StatePanel} from '../../c
 import {db} from '../../db/db';
 import {ProgressionProposalRepository} from '../../progression/ProgressionProposalRepository';
 import {useNavigate} from 'react-router-dom';
-import {ProgressShellPage} from '../shell/ShellPages';
+import {ProgressDashboardPage} from '../progress/ProgressPages';
 
 const proposals = new ProgressionProposalRepository(db);
 
 export function ProgressWithProposalsPage() {
     const navigate = useNavigate();
     const pending = useLiveQuery(() => db.progressionProposal.where('status').equals('pending').count(), []) ?? 0;
-    return <><Box sx={{position: 'fixed', zIndex: 1200, top: {xs: 70, md: 20}, right: {xs: 16, md: 32}}}><Button variant="outlined" onClick={() => navigate('/progress/proposals')}>Propositions ({pending})</Button></Box><ProgressShellPage/></>;
+    return <><Box sx={{position: 'fixed', zIndex: 1300, bottom: {xs: 88, md: 24}, right: {xs: 16, md: 32}}}><Button variant="contained" onClick={() => navigate('/progress/proposals')}>Propositions ({pending})</Button></Box><ProgressDashboardPage/></>;
 }
 
 function ProposalCard({id}: {id: string}) {

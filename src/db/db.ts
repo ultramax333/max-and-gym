@@ -22,6 +22,7 @@ import {PerformedSetRecord, RestTimerRecord, SessionExerciseRecord, WorkoutOpera
 import {CustomExerciseRecord, ExercisePreference, ReviewedExercise} from '../exerciseCatalog/types';
 import {ExercisePrescriptionRecord, ProgramDayRecord, ProgramExerciseRecord, ProgressionRuleRecord, TrainingProgramRecord} from '../programs/types';
 import {ProgressionProposalRecord} from '../progression/types';
+import {AppMetaRecord, BodyMeasurementRecord, MediaBlobRecord, OperationJournalRecord, ProgressPhotoRecord, SafetySnapshotRecord} from '../progress/types';
 
 export class DexieDB extends Dexie {
     exercise!: Table<Exercise>;
@@ -44,6 +45,12 @@ export class DexieDB extends Dexie {
     exercisePrescription!: Table<ExercisePrescriptionRecord, string>;
     progressionRule!: Table<ProgressionRuleRecord, string>;
     progressionProposal!: Table<ProgressionProposalRecord, string>;
+    bodyMeasurement!: Table<BodyMeasurementRecord, string>;
+    mediaBlob!: Table<MediaBlobRecord, string>;
+    progressPhoto!: Table<ProgressPhotoRecord, string>;
+    appMeta!: Table<AppMetaRecord, string>;
+    operationJournal!: Table<OperationJournalRecord, string>;
+    safetySnapshot!: Table<SafetySnapshotRecord, string>;
     constructor() {
         const maybeUser = localStorage.getItem("userName");
         super(maybeUser && maybeUser !== "Default User" ? `weightlog-${maybeUser}` : 'weightlog');
@@ -109,6 +116,14 @@ export class DexieDB extends Dexie {
         });
         this.version(7).stores({
             progressionProposal: "&id, status, sessionId, programId, programExerciseId, createdAt"
+        });
+        this.version(8).stores({
+            bodyMeasurement: "&id, type, recordedAt, [type+recordedAt]",
+            mediaBlob: "&id, purpose, checksum, createdAt",
+            progressPhoto: "&id, pose, recordedAt, imageBlobId, thumbnailBlobId",
+            appMeta: "&key",
+            operationJournal: "&operationId, type, status, startedAt",
+            safetySnapshot: "&id, createdAt"
         });
     }
 }

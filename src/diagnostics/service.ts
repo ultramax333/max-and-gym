@@ -1,6 +1,6 @@
 import {buildIdentity} from '../config/buildIdentity';
 import {diagnosticsDb} from './database';
-import {redactContext, safeErrorClass} from './redaction';
+import {redactContext, redactText, safeErrorClass} from './redaction';
 import {MAX_DIAGNOSTIC_AGE_MS, MAX_DIAGNOSTIC_EVENTS} from './retention';
 import {DiagnosticEvent, DiagnosticLevel, DiagnosticSubsystem, ErrorCode, MigrationJournalEntry, OperationJournalEntry} from './types';
 
@@ -26,7 +26,7 @@ export function createDiagnosticEvent(input: RecordDiagnosticInput): DiagnosticE
         level: input.level,
         subsystem: input.subsystem,
         code: input.code,
-        safeMessage: input.safeMessage.slice(0, 160),
+        safeMessage: redactText(input.safeMessage),
         buildId: buildIdentity.buildId,
         databaseSchemaVersion: buildIdentity.databaseSchemaVersion,
         route: input.route ?? globalThis.location?.hash?.replace(/^#/, '') ?? '/',

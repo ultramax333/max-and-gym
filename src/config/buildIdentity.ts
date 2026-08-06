@@ -1,5 +1,5 @@
-export const DATABASE_SCHEMA_VERSION = 7;
-export const EXPORT_FORMAT_VERSION = 1;
+export const DATABASE_SCHEMA_VERSION = 8;
+export const EXPORT_FORMAT_VERSION = 2;
 export const EXERCISE_SEED_VERSION = 'fedb-b0eed061e1c8-reviewed-1';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 export const GENERATOR_VERSION = 'deterministic-v1';

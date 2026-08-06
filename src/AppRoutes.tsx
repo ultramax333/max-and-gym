@@ -37,6 +37,8 @@ import {WorkoutSummaryPage} from './pages/workout-active/WorkoutSummaryPage';
 import {ExerciseDetailPage, LibraryPage} from './pages/library/LibraryPages';
 import {GeneratorPage, ProgramDetailWithGeneratorActions, ProgramsWithGeneratorPage} from './pages/programs/GeneratorPage';
 import {ProgressionProposalsPage, ProgressWithProposalsPage} from './pages/progression/ProgressionProposalsPage';
+import {ExerciseProgressPage, MeasurementsPage, PhotosPage} from './pages/progress/ProgressPages';
+import BackupPage from './pages/backup/BackupPage';
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
@@ -49,6 +51,10 @@ const AppRoutes = () => {
         <Route path="/programs/:programId" element={<ProgramDetailWithGeneratorActions/>}/>
         <Route path="/progress" element={<ProgressWithProposalsPage/>}/>
         <Route path="/progress/proposals" element={<ProgressionProposalsPage/>}/>
+        <Route path="/progress/exercise/:exerciseId" element={<ExerciseProgressPage/>}/>
+        <Route path="/progress/measurements" element={<MeasurementsPage/>}/>
+        <Route path="/progress/photos" element={<PhotosPage/>}/>
+        <Route path="/backup" element={<BackupPage/>}/>
         <Route path="/workouts" element={<WorkoutList/>}/>
         <Route path="/apps" element={<AppsMenu/>}/>
         <Route path="/apps/timer" element={<Timer/>}/>
