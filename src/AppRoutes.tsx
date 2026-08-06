@@ -34,6 +34,7 @@ import ErrorBoundary from './components/errorBoundary';
 import {HomeShellPage, ProgramsShellPage, ProgressShellPage, TrainShellPage} from './pages/shell/ShellPages';
 import {ActiveWorkoutPage} from './pages/workout-active/ActiveWorkoutPage';
 import {WorkoutSummaryPage} from './pages/workout-active/WorkoutSummaryPage';
+import {ExerciseDetailPage, LibraryPage} from './pages/library/LibraryPages';
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
@@ -73,8 +74,9 @@ const AppRoutes = () => {
                element={<BulkEditor/>}/>
         <Route path="/workoutExercise/:workoutExerciseId"
                element={<WorkoutExerciseEditor />}/>
-        <Route path="/library" element={<ExerciseList/>}/>
-        <Route path="/exercises" element={<Navigate to="/library" replace/>}/>
+        <Route path="/library" element={<LibraryPage/>}/>
+        <Route path="/library/:exerciseId" element={<ExerciseDetailPage/>}/>
+        <Route path="/exercises" element={<ExerciseList/>}/>
         <Route path="/exercises/:exerciseId"
                element={<ExerciseEditor/>}/>
         <Route path="/youtube"

@@ -146,3 +146,11 @@ Every data-bearing component defines:
   Diagnostics and onboarding use the same Material UI shell.
 - Later tasks own the data-aware variants of cards, inputs, loading states and
   workout/program primitives.
+
+## CP4 implementation status
+
+- Implemented: ExerciseCard, ExerciseThumbnail, ExerciseTagList,
+  ExerciseInstructions, ExerciseAlternatives, ExerciseFilterSheet,
+  NeverSuggestControl and local custom-image input.
+- The library uses a repository boundary; seed records, user preferences and custom
+  exercises remain separate.

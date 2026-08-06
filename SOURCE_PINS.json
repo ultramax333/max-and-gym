@@ -1,5 +1,5 @@
 {
-  "status": "CP0_REPQUEST_AND_WORKOUT_COOL_PINNED",
+  "status": "CP4_REPQUEST_WORKOUT_COOL_AND_FREE_EXERCISE_DB_PINNED",
   "repquest": {
     "repository": "https://github.com/marcsances/repquest",
     "commit": "bc488fa76c5f37247831a9a86b955d35d87ca61c",
@@ -12,8 +12,8 @@
   },
   "freeExerciseDb": {
     "repository": "https://github.com/yuhonas/free-exercise-db",
-    "commit": null,
+    "commit": "b0eed061e1c8",
     "license": "Unlicense",
-    "status": "DEFERRED_TO_TASK_04"
+    "status": "PINNED_FOR_CP4_LOCAL_CURATED_SEED"
   }
 }

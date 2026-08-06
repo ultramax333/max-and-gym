@@ -56,20 +56,20 @@ This matrix links every implementation requirement in `BACKLOG.md` to its owning
 | WKT-014 | Add workout error boundary and recovery diagnostics | 03 | CP3 | AT-E03, AT-J04; diagnostic service tests |
 | PWA-020 | Defer update while workout active | 03 | CP3 | AT-C03; active marker test |
 | PWA-021 | Offline workout end-to-end test | 03 | CP3 | AT-C02, AT-E06; offline service journey |
-| EXR-001 | Pin upstream dataset revision | 04 | CP4 | AT-F05 |
-| EXR-002 | Define exercise/metadata/media schema | 04 | CP4 | AT-F01, AT-F05 |
-| EXR-003 | Build allowlist/override curation pipeline | 04 | CP4 | AT-F01, AT-F05 |
-| EXR-004 | Validate/dedupe/tag content | 04 | CP4 | AT-F01, AT-F03, AT-F05 |
-| EXR-005 | Process thumbnails/detail images | 04 | CP4 | AT-F02 |
-| EXR-006 | Build reviewed seed subset for seed programs | 04 | CP4 | AT-F01, AT-F02, AT-F05 |
-| EXR-007 | Expand to 150–220 reviewed exercises | 04 | CP4 | AT-F01, AT-F02, AT-F05 |
-| EXR-008 | Search and filters | 04 | CP4 | AT-F01 |
-| EXR-009 | Exercise detail | 04 | CP4 | AT-F02, AT-K01 |
-| EXR-010 | Favourite and Never Suggest | 04 | CP4 | AT-F03 |
-| EXR-011 | Alternatives | 04 | CP4 | AT-E09, AT-G08 |
-| EXR-012 | Custom exercise and one local image | 04 | CP4 | AT-F04, AT-I01 |
-| EXR-013 | Offline media/cache rules | 04 | CP4 | AT-C02, AT-F02 |
-| EXR-014 | Curation, source, licence, and asset audit | 04 | CP4 | AT-F05, AT-K05 |
+| EXR-001 | Pin upstream dataset revision | 04 | CP4 | AT-F05; SOURCE_PINS.json |
+| EXR-002 | Define exercise/metadata/media schema | 04 | CP4 | AT-F01, AT-F05; schema 5 |
+| EXR-003 | Build allowlist/override curation pipeline | 04 | CP4 | AT-F01, AT-F05; build-exercise-catalog |
+| EXR-004 | Validate/dedupe/tag content | 04 | CP4 | AT-F01, AT-F03, AT-F05; curation test |
+| EXR-005 | Process thumbnails/detail images | 04 | CP4 | AT-F02; exercise-assets audit |
+| EXR-006 | Build reviewed seed subset for seed programs | 04 | CP4 | AT-F01, AT-F02, AT-F05; reviewed seed |
+| EXR-007 | Expand to 150–220 reviewed exercises | 04 | CP4 | AT-F01, AT-F02, AT-F05; 180 records |
+| EXR-008 | Search and filters | 04 | CP4 | AT-F01; library browser evidence |
+| EXR-009 | Exercise detail | 04 | CP4 | AT-F02, AT-K01; detail screenshot |
+| EXR-010 | Favourite and Never Suggest | 04 | CP4 | AT-F03; repository test |
+| EXR-011 | Alternatives | 04 | CP4 | AT-E09, AT-G08; detail route |
+| EXR-012 | Custom exercise and one local image | 04 | CP4 | AT-F04, AT-I01; persistence test |
+| EXR-013 | Offline media/cache rules | 04 | CP4 | AT-C02, AT-F02; bounded PWA cache |
+| EXR-014 | Curation, source, licence, and asset audit | 04 | CP4 | AT-F05, AT-K05; CP4 reports |
 | PRG-001 | Program repository/entities | 05 | CP5 | AT-G01 |
 | PRG-002 | List/detail/status | 05 | CP5 | AT-G01 |
 | PRG-003 | Manual create/edit | 05 | CP5 | AT-G01 |

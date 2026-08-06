@@ -1,0 +1,2167 @@
+{
+  "revision": "b0eed061e1c8",
+  "assetCount": 360,
+  "totalBytes": 24475449,
+  "assets": [
+    {
+      "path": "media/exercises/90-90-hamstring-0.jpg",
+      "byteSize": 35374,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/90-90-hamstring-1.jpg",
+      "byteSize": 33364,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/ab-crunch-machine-0.jpg",
+      "byteSize": 84612,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/ab-crunch-machine-1.jpg",
+      "byteSize": 82997,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternate-hammer-curl-0.jpg",
+      "byteSize": 58965,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternate-hammer-curl-1.jpg",
+      "byteSize": 58120,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternate-incline-dumbbell-curl-0.jpg",
+      "byteSize": 55564,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternate-incline-dumbbell-curl-1.jpg",
+      "byteSize": 56425,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-cable-shoulder-press-0.jpg",
+      "byteSize": 44800,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/alternating-cable-shoulder-press-1.jpg",
+      "byteSize": 45486,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/alternating-deltoid-raise-0.jpg",
+      "byteSize": 61843,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-deltoid-raise-1.jpg",
+      "byteSize": 62681,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-floor-press-0.jpg",
+      "byteSize": 36188,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-floor-press-1.jpg",
+      "byteSize": 35685,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-press-0.jpg",
+      "byteSize": 34033,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-press-1.jpg",
+      "byteSize": 33750,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-row-0.jpg",
+      "byteSize": 34659,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-row-1.jpg",
+      "byteSize": 35050,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-renegade-row-0.jpg",
+      "byteSize": 33835,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/alternating-renegade-row-1.jpg",
+      "byteSize": 32913,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/anti-gravity-press-0.jpg",
+      "byteSize": 47218,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/anti-gravity-press-1.jpg",
+      "byteSize": 47052,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/arnold-dumbbell-press-0.jpg",
+      "byteSize": 54330,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/arnold-dumbbell-press-1.jpg",
+      "byteSize": 55084,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/back-flyes-with-bands-0.jpg",
+      "byteSize": 51085,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/back-flyes-with-bands-1.jpg",
+      "byteSize": 53114,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/band-assisted-pull-up-0.jpg",
+      "byteSize": 95314,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/band-assisted-pull-up-1.jpg",
+      "byteSize": 100304,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/band-hip-adductions-0.jpg",
+      "byteSize": 49204,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/band-hip-adductions-1.jpg",
+      "byteSize": 48929,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/band-pull-apart-0.jpg",
+      "byteSize": 67230,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/band-pull-apart-1.jpg",
+      "byteSize": 67007,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-bench-press-medium-grip-0.jpg",
+      "byteSize": 72816,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-bench-press-medium-grip-1.jpg",
+      "byteSize": 72202,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-curl-0.jpg",
+      "byteSize": 60608,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-curl-1.jpg",
+      "byteSize": 62920,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-curls-lying-against-an-incline-0.jpg",
+      "byteSize": 57059,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-curls-lying-against-an-incline-1.jpg",
+      "byteSize": 57457,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-deadlift-0.jpg",
+      "byteSize": 69854,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-deadlift-1.jpg",
+      "byteSize": 67563,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-full-squat-0.jpg",
+      "byteSize": 71421,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-full-squat-1.jpg",
+      "byteSize": 70167,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-guillotine-bench-press-0.jpg",
+      "byteSize": 73798,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-guillotine-bench-press-1.jpg",
+      "byteSize": 75145,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-hack-squat-0.jpg",
+      "byteSize": 71900,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-hack-squat-1.jpg",
+      "byteSize": 69805,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-incline-bench-press-medium-grip-0.jpg",
+      "byteSize": 72311,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-incline-bench-press-medium-grip-1.jpg",
+      "byteSize": 71198,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-incline-shoulder-raise-0.jpg",
+      "byteSize": 75972,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-incline-shoulder-raise-1.jpg",
+      "byteSize": 78082,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-lunge-0.jpg",
+      "byteSize": 65140,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-lunge-1.jpg",
+      "byteSize": 70466,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-rear-delt-row-0.jpg",
+      "byteSize": 68940,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-rear-delt-row-1.jpg",
+      "byteSize": 67903,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-seated-calf-raise-0.jpg",
+      "byteSize": 66650,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-seated-calf-raise-1.jpg",
+      "byteSize": 67712,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-shoulder-press-0.jpg",
+      "byteSize": 70631,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-shoulder-press-1.jpg",
+      "byteSize": 69354,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-shrug-behind-the-back-0.jpg",
+      "byteSize": 65860,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-shrug-behind-the-back-1.jpg",
+      "byteSize": 66579,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-side-split-squat-0.jpg",
+      "byteSize": 68924,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-side-split-squat-1.jpg",
+      "byteSize": 66565,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-squat-0.jpg",
+      "byteSize": 72823,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-squat-1.jpg",
+      "byteSize": 71334,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-squat-to-a-bench-0.jpg",
+      "byteSize": 72342,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-squat-to-a-bench-1.jpg",
+      "byteSize": 71895,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-walking-lunge-0.jpg",
+      "byteSize": 77083,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/barbell-walking-lunge-1.jpg",
+      "byteSize": 74351,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bench-press-with-bands-0.jpg",
+      "byteSize": 72390,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bench-press-with-bands-1.jpg",
+      "byteSize": 72007,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-barbell-row-0.jpg",
+      "byteSize": 64589,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-barbell-row-1.jpg",
+      "byteSize": 66556,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-dumbbell-rear-delt-raise-with-head-on-bench-0.jpg",
+      "byteSize": 57978,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-dumbbell-rear-delt-raise-with-head-on-bench-1.jpg",
+      "byteSize": 59408,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-low-pulley-side-lateral-0.jpg",
+      "byteSize": 68043,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-low-pulley-side-lateral-1.jpg",
+      "byteSize": 68828,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-one-arm-long-bar-row-0.jpg",
+      "byteSize": 65406,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-one-arm-long-bar-row-1.jpg",
+      "byteSize": 70380,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-two-arm-long-bar-row-0.jpg",
+      "byteSize": 67373,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-two-arm-long-bar-row-1.jpg",
+      "byteSize": 66395,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-0.jpg",
+      "byteSize": 68272,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-1.jpg",
+      "byteSize": 66341,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-with-palms-in-0.jpg",
+      "byteSize": 56467,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-with-palms-in-1.jpg",
+      "byteSize": 55788,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-press-0.jpg",
+      "byteSize": 34311,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-press-1.jpg",
+      "byteSize": 36761,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-arm-barbell-pullover-0.jpg",
+      "byteSize": 62520,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-arm-barbell-pullover-1.jpg",
+      "byteSize": 64205,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-arm-dumbbell-pullover-0.jpg",
+      "byteSize": 63149,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-arm-dumbbell-pullover-1.jpg",
+      "byteSize": 61708,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-knee-hip-raise-0.jpg",
+      "byteSize": 67782,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bent-knee-hip-raise-1.jpg",
+      "byteSize": 64378,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/body-tricep-press-0.jpg",
+      "byteSize": 93031,
+      "height": 969,
+      "width": 646
+    },
+    {
+      "path": "media/exercises/body-tricep-press-1.jpg",
+      "byteSize": 91302,
+      "height": 969,
+      "width": 646
+    },
+    {
+      "path": "media/exercises/bodyweight-mid-row-0.jpg",
+      "byteSize": 37732,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/bodyweight-mid-row-1.jpg",
+      "byteSize": 37346,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/bodyweight-squat-0.jpg",
+      "byteSize": 37986,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bodyweight-squat-1.jpg",
+      "byteSize": 41546,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bosu-ball-cable-crunch-with-side-bends-0.jpg",
+      "byteSize": 115450,
+      "height": 1202,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bosu-ball-cable-crunch-with-side-bends-1.jpg",
+      "byteSize": 114957,
+      "height": 1202,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/box-squat-with-chains-0.jpg",
+      "byteSize": 58618,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/box-squat-with-chains-1.jpg",
+      "byteSize": 59461,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bradford-rocky-presses-0.jpg",
+      "byteSize": 53739,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/bradford-rocky-presses-1.jpg",
+      "byteSize": 55962,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/butterfly-0.jpg",
+      "byteSize": 85665,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/butterfly-1.jpg",
+      "byteSize": 82097,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-chest-press-0.jpg",
+      "byteSize": 70215,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-chest-press-1.jpg",
+      "byteSize": 71498,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-crossover-0.jpg",
+      "byteSize": 74524,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-crossover-1.jpg",
+      "byteSize": 76451,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-crunch-0.jpg",
+      "byteSize": 67271,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-crunch-1.jpg",
+      "byteSize": 65445,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-deadlifts-0.jpg",
+      "byteSize": 74265,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-deadlifts-1.jpg",
+      "byteSize": 72484,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-hammer-curls-rope-attachment-0.jpg",
+      "byteSize": 75807,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-hammer-curls-rope-attachment-1.jpg",
+      "byteSize": 76711,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-hip-adduction-0.jpg",
+      "byteSize": 72125,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-hip-adduction-1.jpg",
+      "byteSize": 72259,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-incline-pushdown-0.jpg",
+      "byteSize": 62891,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-incline-pushdown-1.jpg",
+      "byteSize": 63009,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-incline-triceps-extension-0.jpg",
+      "byteSize": 85990,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-incline-triceps-extension-1.jpg",
+      "byteSize": 86736,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-internal-rotation-0.jpg",
+      "byteSize": 65436,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-internal-rotation-1.jpg",
+      "byteSize": 63692,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-iron-cross-0.jpg",
+      "byteSize": 43142,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/cable-iron-cross-1.jpg",
+      "byteSize": 44148,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/cable-judo-flip-0.jpg",
+      "byteSize": 912417,
+      "height": 3456,
+      "width": 5184
+    },
+    {
+      "path": "media/exercises/cable-judo-flip-1.jpg",
+      "byteSize": 919342,
+      "height": 3456,
+      "width": 5184
+    },
+    {
+      "path": "media/exercises/cable-lying-triceps-extension-0.jpg",
+      "byteSize": 74167,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-lying-triceps-extension-1.jpg",
+      "byteSize": 72225,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-one-arm-tricep-extension-0.jpg",
+      "byteSize": 64356,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-one-arm-tricep-extension-1.jpg",
+      "byteSize": 61969,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-preacher-curl-0.jpg",
+      "byteSize": 88090,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-preacher-curl-1.jpg",
+      "byteSize": 87322,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-rear-delt-fly-0.jpg",
+      "byteSize": 53497,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-rear-delt-fly-1.jpg",
+      "byteSize": 56065,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-reverse-crunch-0.jpg",
+      "byteSize": 88705,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-reverse-crunch-1.jpg",
+      "byteSize": 88806,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-rope-overhead-triceps-extension-0.jpg",
+      "byteSize": 88076,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-rope-overhead-triceps-extension-1.jpg",
+      "byteSize": 87578,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-rope-rear-delt-rows-0.jpg",
+      "byteSize": 92530,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-rope-rear-delt-rows-1.jpg",
+      "byteSize": 93094,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-russian-twists-0.jpg",
+      "byteSize": 138200,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-russian-twists-1.jpg",
+      "byteSize": 141014,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-seated-crunch-0.jpg",
+      "byteSize": 69234,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-seated-crunch-1.jpg",
+      "byteSize": 69679,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-seated-lateral-raise-0.jpg",
+      "byteSize": 64199,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-seated-lateral-raise-1.jpg",
+      "byteSize": 65938,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-shoulder-press-0.jpg",
+      "byteSize": 72616,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-shoulder-press-1.jpg",
+      "byteSize": 71463,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-shrugs-0.jpg",
+      "byteSize": 97808,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-shrugs-1.jpg",
+      "byteSize": 98278,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-wrist-curl-0.jpg",
+      "byteSize": 63432,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cable-wrist-curl-1.jpg",
+      "byteSize": 63812,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-press-0.jpg",
+      "byteSize": 124744,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-press-1.jpg",
+      "byteSize": 126333,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-press-on-the-leg-press-machine-0.jpg",
+      "byteSize": 80324,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-press-on-the-leg-press-machine-1.jpg",
+      "byteSize": 80578,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-raise-on-a-dumbbell-0.jpg",
+      "byteSize": 49640,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-raise-on-a-dumbbell-1.jpg",
+      "byteSize": 49784,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-raises-with-bands-0.jpg",
+      "byteSize": 56330,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-raises-with-bands-1.jpg",
+      "byteSize": 58359,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-machine-shoulder-shrug-0.jpg",
+      "byteSize": 53938,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/calf-machine-shoulder-shrug-1.jpg",
+      "byteSize": 54111,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/chair-leg-extended-stretch-0.jpg",
+      "byteSize": 31287,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/chair-leg-extended-stretch-1.jpg",
+      "byteSize": 32213,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/chair-squat-0.jpg",
+      "byteSize": 45369,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/chair-squat-1.jpg",
+      "byteSize": 43369,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/chest-and-front-of-shoulder-stretch-0.jpg",
+      "byteSize": 24353,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/chest-and-front-of-shoulder-stretch-1.jpg",
+      "byteSize": 24308,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/clean-and-press-0.jpg",
+      "byteSize": 72708,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/clean-and-press-1.jpg",
+      "byteSize": 77675,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-barbell-bench-press-0.jpg",
+      "byteSize": 74240,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-barbell-bench-press-1.jpg",
+      "byteSize": 76127,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-dumbbell-press-0.jpg",
+      "byteSize": 39551,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/close-grip-dumbbell-press-1.jpg",
+      "byteSize": 38624,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/close-grip-ez-bar-curl-0.jpg",
+      "byteSize": 67195,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-ez-bar-curl-1.jpg",
+      "byteSize": 68359,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-front-lat-pulldown-0.jpg",
+      "byteSize": 66406,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-front-lat-pulldown-1.jpg",
+      "byteSize": 66198,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-standing-barbell-curl-0.jpg",
+      "byteSize": 52732,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/close-grip-standing-barbell-curl-1.jpg",
+      "byteSize": 52137,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/concentration-curls-0.jpg",
+      "byteSize": 65228,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/concentration-curls-1.jpg",
+      "byteSize": 64253,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cross-body-hammer-curl-0.jpg",
+      "byteSize": 56254,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cross-body-hammer-curl-1.jpg",
+      "byteSize": 56265,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cross-body-crunch-0.jpg",
+      "byteSize": 61069,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cross-body-crunch-1.jpg",
+      "byteSize": 62634,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/crunch-hands-overhead-0.jpg",
+      "byteSize": 72741,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/crunch-hands-overhead-1.jpg",
+      "byteSize": 72422,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/crunch-legs-on-exercise-ball-0.jpg",
+      "byteSize": 56464,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/crunch-legs-on-exercise-ball-1.jpg",
+      "byteSize": 57154,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/crunches-0.jpg",
+      "byteSize": 69289,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/crunches-1.jpg",
+      "byteSize": 69225,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cuban-press-0.jpg",
+      "byteSize": 57995,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/cuban-press-1.jpg",
+      "byteSize": 56488,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-barbell-bench-press-0.jpg",
+      "byteSize": 84500,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-barbell-bench-press-1.jpg",
+      "byteSize": 90450,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-crunch-0.jpg",
+      "byteSize": 62845,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-crunch-1.jpg",
+      "byteSize": 60558,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-bench-press-0.jpg",
+      "byteSize": 54163,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-bench-press-1.jpg",
+      "byteSize": 54302,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-flyes-0.jpg",
+      "byteSize": 55297,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-flyes-1.jpg",
+      "byteSize": 54362,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-triceps-extension-0.jpg",
+      "byteSize": 46226,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-triceps-extension-1.jpg",
+      "byteSize": 42795,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-ez-bar-triceps-extension-0.jpg",
+      "byteSize": 50894,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-ez-bar-triceps-extension-1.jpg",
+      "byteSize": 48645,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-oblique-crunch-0.jpg",
+      "byteSize": 51669,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-oblique-crunch-1.jpg",
+      "byteSize": 53447,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-reverse-crunch-0.jpg",
+      "byteSize": 52268,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-reverse-crunch-1.jpg",
+      "byteSize": 65593,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/decline-smith-press-0.jpg",
+      "byteSize": 51565,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/decline-smith-press-1.jpg",
+      "byteSize": 50239,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/dip-machine-0.jpg",
+      "byteSize": 79361,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dip-machine-1.jpg",
+      "byteSize": 81821,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dips-triceps-version-0.jpg",
+      "byteSize": 71969,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dips-triceps-version-1.jpg",
+      "byteSize": 73290,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/donkey-calf-raises-0.jpg",
+      "byteSize": 87923,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/donkey-calf-raises-1.jpg",
+      "byteSize": 88967,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/double-kettlebell-push-press-0.jpg",
+      "byteSize": 36000,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/double-kettlebell-push-press-1.jpg",
+      "byteSize": 36011,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/drag-curl-0.jpg",
+      "byteSize": 58113,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/drag-curl-1.jpg",
+      "byteSize": 57651,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-alternate-bicep-curl-0.jpg",
+      "byteSize": 57561,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-alternate-bicep-curl-1.jpg",
+      "byteSize": 57418,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-0.jpg",
+      "byteSize": 63319,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-1.jpg",
+      "byteSize": 64120,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-with-neutral-grip-0.jpg",
+      "byteSize": 96451,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-with-neutral-grip-1.jpg",
+      "byteSize": 95731,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-bicep-curl-0.jpg",
+      "byteSize": 57223,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-bicep-curl-1.jpg",
+      "byteSize": 58066,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-flyes-0.jpg",
+      "byteSize": 63679,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-flyes-1.jpg",
+      "byteSize": 63977,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-row-0.jpg",
+      "byteSize": 98338,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-row-1.jpg",
+      "byteSize": 99049,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-shoulder-raise-0.jpg",
+      "byteSize": 53252,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-shoulder-raise-1.jpg",
+      "byteSize": 53073,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-lunges-0.jpg",
+      "byteSize": 55460,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-lunges-1.jpg",
+      "byteSize": 61678,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-one-arm-rear-lateral-raise-0.jpg",
+      "byteSize": 58119,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-one-arm-rear-lateral-raise-1.jpg",
+      "byteSize": 57839,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-rear-lateral-raise-0.jpg",
+      "byteSize": 58354,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-rear-lateral-raise-1.jpg",
+      "byteSize": 59217,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-shoulder-press-0.jpg",
+      "byteSize": 59478,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-shoulder-press-1.jpg",
+      "byteSize": 59520,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-triceps-extension-0.jpg",
+      "byteSize": 51224,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-triceps-extension-1.jpg",
+      "byteSize": 45009,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-upright-row-0.jpg",
+      "byteSize": 53859,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-upright-row-1.jpg",
+      "byteSize": 54063,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-prone-incline-curl-0.jpg",
+      "byteSize": 61802,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-prone-incline-curl-1.jpg",
+      "byteSize": 64762,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-raise-0.jpg",
+      "byteSize": 55131,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-raise-1.jpg",
+      "byteSize": 54062,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-rear-lunge-0.jpg",
+      "byteSize": 51169,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-rear-lunge-1.jpg",
+      "byteSize": 49129,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-seated-one-leg-calf-raise-0.jpg",
+      "byteSize": 51887,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-seated-one-leg-calf-raise-1.jpg",
+      "byteSize": 52720,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-shoulder-press-0.jpg",
+      "byteSize": 62474,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-shoulder-press-1.jpg",
+      "byteSize": 63882,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-0.jpg",
+      "byteSize": 51929,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-1.jpg",
+      "byteSize": 52938,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-to-a-bench-0.jpg",
+      "byteSize": 50195,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-to-a-bench-1.jpg",
+      "byteSize": 53212,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-tricep-extension-pronated-grip-0.jpg",
+      "byteSize": 100256,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/dumbbell-tricep-extension-pronated-grip-1.jpg",
+      "byteSize": 99983,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/elevated-back-lunge-0.jpg",
+      "byteSize": 103578,
+      "height": 969,
+      "width": 646
+    },
+    {
+      "path": "media/exercises/elevated-back-lunge-1.jpg",
+      "byteSize": 103475,
+      "height": 969,
+      "width": 646
+    },
+    {
+      "path": "media/exercises/elevated-cable-rows-0.jpg",
+      "byteSize": 61066,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/elevated-cable-rows-1.jpg",
+      "byteSize": 62650,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/extended-range-one-arm-kettlebell-floor-press-0.jpg",
+      "byteSize": 35309,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/extended-range-one-arm-kettlebell-floor-press-1.jpg",
+      "byteSize": 35879,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/external-rotation-with-cable-0.jpg",
+      "byteSize": 89073,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/external-rotation-with-cable-1.jpg",
+      "byteSize": 88025,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/face-pull-0.jpg",
+      "byteSize": 40188,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/face-pull-1.jpg",
+      "byteSize": 46451,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/finger-curls-0.jpg",
+      "byteSize": 49759,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/finger-curls-1.jpg",
+      "byteSize": 48832,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/flat-bench-cable-flyes-0.jpg",
+      "byteSize": 71850,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flat-bench-cable-flyes-1.jpg",
+      "byteSize": 70322,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flat-bench-leg-pull-in-0.jpg",
+      "byteSize": 62984,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flat-bench-leg-pull-in-1.jpg",
+      "byteSize": 62920,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flat-bench-lying-leg-raise-0.jpg",
+      "byteSize": 63658,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flat-bench-lying-leg-raise-1.jpg",
+      "byteSize": 63835,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flexor-incline-dumbbell-curls-0.jpg",
+      "byteSize": 55091,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/flexor-incline-dumbbell-curls-1.jpg",
+      "byteSize": 54611,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/freehand-jump-squat-0.jpg",
+      "byteSize": 69522,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/freehand-jump-squat-1.jpg",
+      "byteSize": 66114,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-0.jpg",
+      "byteSize": 71564,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-1.jpg",
+      "byteSize": 69555,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-to-a-bench-0.jpg",
+      "byteSize": 73452,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-to-a-bench-1.jpg",
+      "byteSize": 72345,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-cable-raise-0.jpg",
+      "byteSize": 72036,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-cable-raise-1.jpg",
+      "byteSize": 71867,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-dumbbell-raise-0.jpg",
+      "byteSize": 51985,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-dumbbell-raise-1.jpg",
+      "byteSize": 51321,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-incline-dumbbell-raise-0.jpg",
+      "byteSize": 58234,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-incline-dumbbell-raise-1.jpg",
+      "byteSize": 58549,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-leg-raises-0.jpg",
+      "byteSize": 28819,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-leg-raises-1.jpg",
+      "byteSize": 27405,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-plate-raise-0.jpg",
+      "byteSize": 58323,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-plate-raise-1.jpg",
+      "byteSize": 58549,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-raise-and-pullover-0.jpg",
+      "byteSize": 64787,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-raise-and-pullover-1.jpg",
+      "byteSize": 65809,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-squat-clean-grip-0.jpg",
+      "byteSize": 36571,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-squat-clean-grip-1.jpg",
+      "byteSize": 35308,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-squats-with-two-kettlebells-0.jpg",
+      "byteSize": 35792,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-squats-with-two-kettlebells-1.jpg",
+      "byteSize": 35511,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-two-dumbbell-raise-0.jpg",
+      "byteSize": 53546,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/front-two-dumbbell-raise-1.jpg",
+      "byteSize": 53689,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/full-range-of-motion-lat-pulldown-0.jpg",
+      "byteSize": 85464,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/full-range-of-motion-lat-pulldown-1.jpg",
+      "byteSize": 84731,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/glute-kickback-0.jpg",
+      "byteSize": 67875,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/glute-kickback-1.jpg",
+      "byteSize": 68709,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/goblet-squat-0.jpg",
+      "byteSize": 34299,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/goblet-squat-1.jpg",
+      "byteSize": 34362,
+      "height": 569,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/gorilla-chin-crunch-0.jpg",
+      "byteSize": 42736,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/gorilla-chin-crunch-1.jpg",
+      "byteSize": 37343,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hack-squat-0.jpg",
+      "byteSize": 114305,
+      "height": 760,
+      "width": 760
+    },
+    {
+      "path": "media/exercises/hack-squat-1.jpg",
+      "byteSize": 106734,
+      "height": 760,
+      "width": 760
+    },
+    {
+      "path": "media/exercises/hammer-curls-0.jpg",
+      "byteSize": 51669,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hammer-curls-1.jpg",
+      "byteSize": 52323,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hammer-grip-incline-db-bench-press-0.jpg",
+      "byteSize": 59477,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hammer-grip-incline-db-bench-press-1.jpg",
+      "byteSize": 60493,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hanging-leg-raise-0.jpg",
+      "byteSize": 51687,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hanging-leg-raise-1.jpg",
+      "byteSize": 56061,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/high-cable-curls-0.jpg",
+      "byteSize": 86338,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/high-cable-curls-1.jpg",
+      "byteSize": 86344,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hip-circles-prone-0.jpg",
+      "byteSize": 49851,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hip-circles-prone-1.jpg",
+      "byteSize": 50613,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hip-extension-with-bands-0.jpg",
+      "byteSize": 35502,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hip-extension-with-bands-1.jpg",
+      "byteSize": 36771,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hip-flexion-with-band-0.jpg",
+      "byteSize": 47209,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hip-flexion-with-band-1.jpg",
+      "byteSize": 49122,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hyperextensions-back-extensions-0.jpg",
+      "byteSize": 72031,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hyperextensions-back-extensions-1.jpg",
+      "byteSize": 71234,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hyperextensions-with-no-hyperextension-bench-0.jpg",
+      "byteSize": 55618,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/hyperextensions-with-no-hyperextension-bench-1.jpg",
+      "byteSize": 55310,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-barbell-triceps-extension-0.jpg",
+      "byteSize": 54686,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-barbell-triceps-extension-1.jpg",
+      "byteSize": 58768,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-bench-pull-0.jpg",
+      "byteSize": 53821,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-bench-pull-1.jpg",
+      "byteSize": 56826,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-cable-chest-press-0.jpg",
+      "byteSize": 45401,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/incline-cable-chest-press-1.jpg",
+      "byteSize": 45822,
+      "height": 750,
+      "width": 500
+    },
+    {
+      "path": "media/exercises/incline-cable-flye-0.jpg",
+      "byteSize": 60351,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-cable-flye-1.jpg",
+      "byteSize": 59411,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-curl-0.jpg",
+      "byteSize": 53708,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-curl-1.jpg",
+      "byteSize": 54063,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-0.jpg",
+      "byteSize": 60080,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-1.jpg",
+      "byteSize": 59395,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-with-a-twist-0.jpg",
+      "byteSize": 60343,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-with-a-twist-1.jpg",
+      "byteSize": 62627,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-press-0.jpg",
+      "byteSize": 61978,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-press-1.jpg",
+      "byteSize": 61629,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-hammer-curls-0.jpg",
+      "byteSize": 93240,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-hammer-curls-1.jpg",
+      "byteSize": 95355,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-inner-biceps-curl-0.jpg",
+      "byteSize": 55982,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/incline-inner-biceps-curl-1.jpg",
+      "byteSize": 55775,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/intermediate-hip-flexor-and-quad-stretch-0.jpg",
+      "byteSize": 30001,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/intermediate-hip-flexor-and-quad-stretch-1.jpg",
+      "byteSize": 34779,
+      "height": 567,
+      "width": 850
+    }
+  ]
+}

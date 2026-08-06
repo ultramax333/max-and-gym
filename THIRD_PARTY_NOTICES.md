@@ -30,7 +30,8 @@ This file must be maintained as implementation proceeds.
 - Role: source for reviewed exercise metadata and two-position images
 - Required action: preserve source traceability and the licence notice even though attribution is not generally required.
 
-The exact dataset commit and generated seed version must be recorded.
+- Immutable CP4 dataset commit: b0eed061e1c8.
+- Generated local seed: fedb-b0eed061e1c8-reviewed-1.
 
 ## Media caution
 

@@ -48,7 +48,15 @@ export default defineConfig({
             globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
             cleanupOutdatedCaches: true,
             cacheId: 'max-and-gym-cache-v1',
-            runtimeCaching: []
+            runtimeCaching: [{
+                urlPattern: /\/media\/exercises\/.*\.jpg$/,
+                handler: 'CacheFirst',
+                options: {
+                    cacheName: 'max-gym-exercise-media-v1',
+                    expiration: {maxEntries: 48, maxAgeSeconds: 60 * 60 * 24 * 30},
+                    cacheableResponse: {statuses: [0, 200]},
+                },
+            }]
         },
         manifest: {
             "id": "/max-and-gym/",

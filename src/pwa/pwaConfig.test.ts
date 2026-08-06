@@ -12,7 +12,9 @@ describe('PWA update policy', () => {
         expect(provider).not.toContain('onNeedRefresh() {\n                void updateServiceWorker');
     });
 
-    it('does not define runtime media caches', () => {
-        expect(viteConfig).toContain('runtimeCaching: []');
+    it('uses only a bounded cache for local reviewed exercise media', () => {
+        expect(viteConfig).toContain('max-gym-exercise-media-v1');
+        expect(viteConfig).toContain('maxEntries: 48');
+        expect(viteConfig).not.toContain('progress-photo');
     });
 });

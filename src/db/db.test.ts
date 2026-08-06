@@ -9,7 +9,7 @@ describe('legacy database compatibility', () => {
         localStorage.clear();
     });
 
-    it('migrates an existing version 3 database additively to workout schema version 4', async () => {
+    it('migrates an existing version 3 database additively to exercise schema version 5', async () => {
         localStorage.setItem('userName', 'Default User');
         const baseline = new Dexie('weightlog');
         baseline.version(3).stores({
@@ -22,11 +22,12 @@ describe('legacy database compatibility', () => {
 
         const db = new DexieDB();
         await db.open();
-        expect(db.verno).toBe(4);
+        expect(db.verno).toBe(5);
         expect(db.tables.map((table) => table.name).sort()).toEqual([
             'exercise', 'exerciseSet', 'plan', 'user', 'userMetric', 'workout',
             'workoutExercise', 'workoutHistory', 'workoutSession', 'sessionExercise',
-            'performedSet', 'restTimer', 'workoutOperation',
+            'performedSet', 'restTimer', 'workoutOperation', 'exerciseCatalog',
+            'exercisePreference', 'customExercise',
         ].sort());
         db.close();
     });

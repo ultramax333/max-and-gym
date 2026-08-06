@@ -362,3 +362,12 @@ CP1 status: reproduced during Diagnostics verification and removed before checkp
   background-kill evidence remains deferred.
 - FM-12 and FM-13: schema-backed recovery and the one-active invariant are tested.
 - FM-32: the CP3 session stores exercise name and prescription snapshots.
+
+## CP4 control status
+
+- FM-14: reviewed images are embedded locally, source-pinned and checked for missing
+  paths; the PWA cache is bounded and only serves local exercise media.
+- FM-24 and FM-25: the library continues to use Material UI only; the media cache is
+  bounded to avoid precaching the full 24 MB source image set.
+- FM-31: source seed, user preference and custom exercise records are separated, so a
+  seed refresh does not overwrite user choices.

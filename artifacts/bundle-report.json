@@ -1,14 +1,30 @@
 {
-  "generatedAt": "2026-08-06T18:30:28.742Z",
-  "totalBytes": 5954939,
+  "generatedAt": "2026-08-06T18:52:37.884Z",
+  "totalBytes": 30827479,
   "files": [
     {
-      "path": "assets/index-c4183467.js",
-      "bytes": 1613580
+      "path": "assets/index-62031567.js",
+      "bytes": 2003651
+    },
+    {
+      "path": "media/exercises/cable-judo-flip-1.jpg",
+      "bytes": 919342
+    },
+    {
+      "path": "media/exercises/cable-judo-flip-0.jpg",
+      "bytes": 912417
     },
     {
       "path": "assets/exercises-accd122b.js",
       "bytes": 846982
+    },
+    {
+      "path": "media/exercises/cable-russian-twists-1.jpg",
+      "bytes": 141014
+    },
+    {
+      "path": "media/exercises/cable-russian-twists-0.jpg",
+      "bytes": 138200
     },
     {
       "path": "splashscreens/13__iPad_Pro_M4_portrait.png",
@@ -19,16 +35,92 @@
       "bytes": 127043
     },
     {
+      "path": "media/exercises/calf-press-1.jpg",
+      "bytes": 126333
+    },
+    {
       "path": "splashscreens/13__iPad_Pro_M4_landscape.png",
       "bytes": 126289
+    },
+    {
+      "path": "media/exercises/calf-press-0.jpg",
+      "bytes": 124744
     },
     {
       "path": "splashscreens/12.9__iPad_Pro_landscape.png",
       "bytes": 124304
     },
     {
+      "path": "media/exercises/bosu-ball-cable-crunch-with-side-bends-0.jpg",
+      "bytes": 115450
+    },
+    {
+      "path": "media/exercises/bosu-ball-cable-crunch-with-side-bends-1.jpg",
+      "bytes": 114957
+    },
+    {
+      "path": "media/exercises/hack-squat-0.jpg",
+      "bytes": 114305
+    },
+    {
+      "path": "media/exercises/hack-squat-1.jpg",
+      "bytes": 106734
+    },
+    {
+      "path": "media/exercises/elevated-back-lunge-0.jpg",
+      "bytes": 103578
+    },
+    {
+      "path": "media/exercises/elevated-back-lunge-1.jpg",
+      "bytes": 103475
+    },
+    {
+      "path": "media/exercises/band-assisted-pull-up-1.jpg",
+      "bytes": 100304
+    },
+    {
+      "path": "media/exercises/dumbbell-tricep-extension-pronated-grip-0.jpg",
+      "bytes": 100256
+    },
+    {
+      "path": "media/exercises/dumbbell-tricep-extension-pronated-grip-1.jpg",
+      "bytes": 99983
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-row-1.jpg",
+      "bytes": 99049
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-row-0.jpg",
+      "bytes": 98338
+    },
+    {
+      "path": "media/exercises/cable-shrugs-1.jpg",
+      "bytes": 98278
+    },
+    {
+      "path": "media/exercises/cable-shrugs-0.jpg",
+      "bytes": 97808
+    },
+    {
       "path": "splashscreens/iPhone_16_Pro_Max_portrait.png",
       "bytes": 96497
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-with-neutral-grip-0.jpg",
+      "bytes": 96451
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-with-neutral-grip-1.jpg",
+      "bytes": 95731
+    },
+    {
+      "path": "media/exercises/incline-hammer-curls-1.jpg",
+      "bytes": 95355
+    },
+    {
+      "path": "media/exercises/band-assisted-pull-up-0.jpg",
+      "bytes": 95314
     },
     {
       "path": "splashscreens/11__iPad_Pro_M4_portrait.png",
@@ -39,12 +131,28 @@
       "bytes": 94227
     },
     {
+      "path": "media/exercises/incline-hammer-curls-0.jpg",
+      "bytes": 93240
+    },
+    {
+      "path": "media/exercises/cable-rope-rear-delt-rows-1.jpg",
+      "bytes": 93094
+    },
+    {
+      "path": "media/exercises/body-tricep-press-0.jpg",
+      "bytes": 93031
+    },
+    {
       "path": "splashscreens/11__iPad_Pro_M4_landscape.png",
       "bytes": 92767
     },
     {
       "path": "splashscreens/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_portrait.png",
       "bytes": 92560
+    },
+    {
+      "path": "media/exercises/cable-rope-rear-delt-rows-0.jpg",
+      "bytes": 92530
     },
     {
       "path": "splashscreens/11__iPad_Pro__10.5__iPad_Pro_landscape.png",
@@ -59,20 +167,72 @@
       "bytes": 91572
     },
     {
+      "path": "media/exercises/body-tricep-press-1.jpg",
+      "bytes": 91302
+    },
+    {
       "path": "splashscreens/iPhone_16_Pro_Max_landscape.png",
       "bytes": 91271
+    },
+    {
+      "path": "media/exercises/decline-barbell-bench-press-1.jpg",
+      "bytes": 90450
     },
     {
       "path": "splashscreens/10.9__iPad_Air_landscape.png",
       "bytes": 89352
     },
     {
+      "path": "media/exercises/external-rotation-with-cable-0.jpg",
+      "bytes": 89073
+    },
+    {
+      "path": "media/exercises/donkey-calf-raises-1.jpg",
+      "bytes": 88967
+    },
+    {
+      "path": "media/exercises/cable-reverse-crunch-1.jpg",
+      "bytes": 88806
+    },
+    {
+      "path": "media/exercises/cable-reverse-crunch-0.jpg",
+      "bytes": 88705
+    },
+    {
+      "path": "media/exercises/cable-preacher-curl-0.jpg",
+      "bytes": 88090
+    },
+    {
+      "path": "media/exercises/cable-rope-overhead-triceps-extension-0.jpg",
+      "bytes": 88076
+    },
+    {
+      "path": "media/exercises/external-rotation-with-cable-1.jpg",
+      "bytes": 88025
+    },
+    {
+      "path": "media/exercises/donkey-calf-raises-0.jpg",
+      "bytes": 87923
+    },
+    {
       "path": "splashscreens/10.5__iPad_Air_portrait.png",
       "bytes": 87597
     },
     {
+      "path": "media/exercises/cable-rope-overhead-triceps-extension-1.jpg",
+      "bytes": 87578
+    },
+    {
+      "path": "media/exercises/cable-preacher-curl-1.jpg",
+      "bytes": 87322
+    },
+    {
       "path": "splashscreens/iPhone_16_Plus__iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_landscape.png",
       "bytes": 87297
+    },
+    {
+      "path": "media/exercises/cable-incline-triceps-extension-1.jpg",
+      "bytes": 86736
     },
     {
       "path": "splashscreens/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png",
@@ -83,12 +243,48 @@
       "bytes": 86639
     },
     {
+      "path": "media/exercises/high-cable-curls-1.jpg",
+      "bytes": 86344
+    },
+    {
+      "path": "media/exercises/high-cable-curls-0.jpg",
+      "bytes": 86338
+    },
+    {
+      "path": "media/exercises/cable-incline-triceps-extension-0.jpg",
+      "bytes": 85990
+    },
+    {
+      "path": "media/exercises/butterfly-0.jpg",
+      "bytes": 85665
+    },
+    {
       "path": "splashscreens/10.5__iPad_Air_landscape.png",
       "bytes": 85493
     },
     {
+      "path": "media/exercises/full-range-of-motion-lat-pulldown-0.jpg",
+      "bytes": 85464
+    },
+    {
+      "path": "media/exercises/full-range-of-motion-lat-pulldown-1.jpg",
+      "bytes": 84731
+    },
+    {
+      "path": "media/exercises/ab-crunch-machine-0.jpg",
+      "bytes": 84612
+    },
+    {
+      "path": "media/exercises/decline-barbell-bench-press-0.jpg",
+      "bytes": 84500
+    },
+    {
       "path": "splashscreens/10.2__iPad_portrait.png",
       "bytes": 83399
+    },
+    {
+      "path": "media/exercises/ab-crunch-machine-1.jpg",
+      "bytes": 82997
     },
     {
       "path": "splashscreens/iPhone_16_Pro_portrait.png",
@@ -99,12 +295,28 @@
       "bytes": 82456
     },
     {
+      "path": "media/exercises/butterfly-1.jpg",
+      "bytes": 82097
+    },
+    {
+      "path": "media/exercises/dip-machine-1.jpg",
+      "bytes": 81821
+    },
+    {
       "path": "splashscreens/iPhone_11_Pro_Max__iPhone_XS_Max_landscape.png",
       "bytes": 81430
     },
     {
       "path": "splashscreens/10.2__iPad_landscape.png",
       "bytes": 81300
+    },
+    {
+      "path": "media/exercises/calf-press-on-the-leg-press-machine-1.jpg",
+      "bytes": 80578
+    },
+    {
+      "path": "media/exercises/calf-press-on-the-leg-press-machine-0.jpg",
+      "bytes": 80324
     },
     {
       "path": "splashscreens/8.3__iPad_Mini_landscape.png",
@@ -115,16 +327,76 @@
       "bytes": 79412
     },
     {
+      "path": "media/exercises/dip-machine-0.jpg",
+      "bytes": 79361
+    },
+    {
+      "path": "media/exercises/barbell-incline-shoulder-raise-1.jpg",
+      "bytes": 78082
+    },
+    {
+      "path": "media/exercises/clean-and-press-1.jpg",
+      "bytes": 77675
+    },
+    {
       "path": "splashscreens/iPhone_16_Pro_landscape.png",
       "bytes": 77138
+    },
+    {
+      "path": "media/exercises/barbell-walking-lunge-0.jpg",
+      "bytes": 77083
     },
     {
       "path": "splashscreens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png",
       "bytes": 77073
     },
     {
+      "path": "media/exercises/cable-hammer-curls-rope-attachment-1.jpg",
+      "bytes": 76711
+    },
+    {
+      "path": "media/exercises/cable-crossover-1.jpg",
+      "bytes": 76451
+    },
+    {
+      "path": "media/exercises/close-grip-barbell-bench-press-1.jpg",
+      "bytes": 76127
+    },
+    {
+      "path": "media/exercises/barbell-incline-shoulder-raise-0.jpg",
+      "bytes": 75972
+    },
+    {
       "path": "splashscreens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_portrait.png",
       "bytes": 75816
+    },
+    {
+      "path": "media/exercises/cable-hammer-curls-rope-attachment-0.jpg",
+      "bytes": 75807
+    },
+    {
+      "path": "media/exercises/barbell-guillotine-bench-press-1.jpg",
+      "bytes": 75145
+    },
+    {
+      "path": "media/exercises/cable-crossover-0.jpg",
+      "bytes": 74524
+    },
+    {
+      "path": "media/exercises/barbell-walking-lunge-1.jpg",
+      "bytes": 74351
+    },
+    {
+      "path": "media/exercises/cable-deadlifts-0.jpg",
+      "bytes": 74265
+    },
+    {
+      "path": "media/exercises/close-grip-barbell-bench-press-0.jpg",
+      "bytes": 74240
+    },
+    {
+      "path": "media/exercises/cable-lying-triceps-extension-0.jpg",
+      "bytes": 74167
     },
     {
       "path": "splashscreens/iPhone_16__iPhone_15_Pro__iPhone_15__iPhone_14_Pro_landscape.png",
@@ -135,44 +407,1216 @@
       "bytes": 74081
     },
     {
+      "path": "media/exercises/barbell-guillotine-bench-press-0.jpg",
+      "bytes": 73798
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-to-a-bench-0.jpg",
+      "bytes": 73452
+    },
+    {
+      "path": "media/exercises/dips-triceps-version-1.jpg",
+      "bytes": 73290
+    },
+    {
+      "path": "media/exercises/barbell-squat-0.jpg",
+      "bytes": 72823
+    },
+    {
+      "path": "media/exercises/barbell-bench-press-medium-grip-0.jpg",
+      "bytes": 72816
+    },
+    {
+      "path": "media/exercises/crunch-hands-overhead-0.jpg",
+      "bytes": 72741
+    },
+    {
+      "path": "media/exercises/clean-and-press-0.jpg",
+      "bytes": 72708
+    },
+    {
+      "path": "media/exercises/cable-shoulder-press-0.jpg",
+      "bytes": 72616
+    },
+    {
+      "path": "media/exercises/cable-deadlifts-1.jpg",
+      "bytes": 72484
+    },
+    {
+      "path": "media/exercises/crunch-hands-overhead-1.jpg",
+      "bytes": 72422
+    },
+    {
+      "path": "media/exercises/bench-press-with-bands-0.jpg",
+      "bytes": 72390
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-to-a-bench-1.jpg",
+      "bytes": 72345
+    },
+    {
+      "path": "media/exercises/barbell-squat-to-a-bench-0.jpg",
+      "bytes": 72342
+    },
+    {
+      "path": "media/exercises/barbell-incline-bench-press-medium-grip-0.jpg",
+      "bytes": 72311
+    },
+    {
       "path": "splashscreens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_portrait.png",
       "bytes": 72291
+    },
+    {
+      "path": "media/exercises/cable-hip-adduction-1.jpg",
+      "bytes": 72259
+    },
+    {
+      "path": "media/exercises/cable-lying-triceps-extension-1.jpg",
+      "bytes": 72225
+    },
+    {
+      "path": "media/exercises/barbell-bench-press-medium-grip-1.jpg",
+      "bytes": 72202
+    },
+    {
+      "path": "media/exercises/cable-hip-adduction-0.jpg",
+      "bytes": 72125
+    },
+    {
+      "path": "media/exercises/front-cable-raise-0.jpg",
+      "bytes": 72036
+    },
+    {
+      "path": "media/exercises/hyperextensions-back-extensions-0.jpg",
+      "bytes": 72031
+    },
+    {
+      "path": "media/exercises/bench-press-with-bands-1.jpg",
+      "bytes": 72007
+    },
+    {
+      "path": "media/exercises/dips-triceps-version-0.jpg",
+      "bytes": 71969
+    },
+    {
+      "path": "media/exercises/barbell-hack-squat-0.jpg",
+      "bytes": 71900
+    },
+    {
+      "path": "media/exercises/barbell-squat-to-a-bench-1.jpg",
+      "bytes": 71895
+    },
+    {
+      "path": "media/exercises/front-cable-raise-1.jpg",
+      "bytes": 71867
+    },
+    {
+      "path": "media/exercises/flat-bench-cable-flyes-0.jpg",
+      "bytes": 71850
     },
     {
       "path": "splashscreens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png",
       "bytes": 71744
     },
     {
+      "path": "media/exercises/front-barbell-squat-0.jpg",
+      "bytes": 71564
+    },
+    {
+      "path": "media/exercises/cable-chest-press-1.jpg",
+      "bytes": 71498
+    },
+    {
+      "path": "media/exercises/cable-shoulder-press-1.jpg",
+      "bytes": 71463
+    },
+    {
+      "path": "media/exercises/barbell-full-squat-0.jpg",
+      "bytes": 71421
+    },
+    {
+      "path": "media/exercises/barbell-squat-1.jpg",
+      "bytes": 71334
+    },
+    {
+      "path": "media/exercises/hyperextensions-back-extensions-1.jpg",
+      "bytes": 71234
+    },
+    {
+      "path": "media/exercises/barbell-incline-bench-press-medium-grip-1.jpg",
+      "bytes": 71198
+    },
+    {
+      "path": "media/exercises/barbell-shoulder-press-0.jpg",
+      "bytes": 70631
+    },
+    {
+      "path": "media/exercises/barbell-lunge-1.jpg",
+      "bytes": 70466
+    },
+    {
+      "path": "media/exercises/bent-over-one-arm-long-bar-row-1.jpg",
+      "bytes": 70380
+    },
+    {
+      "path": "media/exercises/flat-bench-cable-flyes-1.jpg",
+      "bytes": 70322
+    },
+    {
+      "path": "media/exercises/cable-chest-press-0.jpg",
+      "bytes": 70215
+    },
+    {
+      "path": "media/exercises/barbell-full-squat-1.jpg",
+      "bytes": 70167
+    },
+    {
       "path": "splashscreens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_portrait.png",
       "bytes": 69885
+    },
+    {
+      "path": "media/exercises/barbell-deadlift-0.jpg",
+      "bytes": 69854
+    },
+    {
+      "path": "media/exercises/barbell-hack-squat-1.jpg",
+      "bytes": 69805
+    },
+    {
+      "path": "media/exercises/cable-seated-crunch-1.jpg",
+      "bytes": 69679
+    },
+    {
+      "path": "media/exercises/front-barbell-squat-1.jpg",
+      "bytes": 69555
+    },
+    {
+      "path": "media/exercises/freehand-jump-squat-0.jpg",
+      "bytes": 69522
+    },
+    {
+      "path": "media/exercises/barbell-shoulder-press-1.jpg",
+      "bytes": 69354
+    },
+    {
+      "path": "media/exercises/crunches-0.jpg",
+      "bytes": 69289
+    },
+    {
+      "path": "media/exercises/cable-seated-crunch-0.jpg",
+      "bytes": 69234
+    },
+    {
+      "path": "media/exercises/crunches-1.jpg",
+      "bytes": 69225
+    },
+    {
+      "path": "media/exercises/barbell-rear-delt-row-0.jpg",
+      "bytes": 68940
+    },
+    {
+      "path": "media/exercises/barbell-side-split-squat-0.jpg",
+      "bytes": 68924
+    },
+    {
+      "path": "media/exercises/bent-over-low-pulley-side-lateral-1.jpg",
+      "bytes": 68828
+    },
+    {
+      "path": "media/exercises/glute-kickback-1.jpg",
+      "bytes": 68709
+    },
+    {
+      "path": "media/exercises/close-grip-ez-bar-curl-1.jpg",
+      "bytes": 68359
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-0.jpg",
+      "bytes": 68272
     },
     {
       "path": "splashscreens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_landscape.png",
       "bytes": 68055
     },
     {
+      "path": "media/exercises/bent-over-low-pulley-side-lateral-0.jpg",
+      "bytes": 68043
+    },
+    {
+      "path": "media/exercises/barbell-rear-delt-row-1.jpg",
+      "bytes": 67903
+    },
+    {
+      "path": "media/exercises/glute-kickback-0.jpg",
+      "bytes": 67875
+    },
+    {
+      "path": "media/exercises/bent-knee-hip-raise-0.jpg",
+      "bytes": 67782
+    },
+    {
+      "path": "media/exercises/barbell-seated-calf-raise-1.jpg",
+      "bytes": 67712
+    },
+    {
+      "path": "media/exercises/barbell-deadlift-1.jpg",
+      "bytes": 67563
+    },
+    {
+      "path": "media/exercises/bent-over-two-arm-long-bar-row-0.jpg",
+      "bytes": 67373
+    },
+    {
+      "path": "media/exercises/cable-crunch-0.jpg",
+      "bytes": 67271
+    },
+    {
+      "path": "media/exercises/band-pull-apart-0.jpg",
+      "bytes": 67230
+    },
+    {
+      "path": "media/exercises/close-grip-ez-bar-curl-0.jpg",
+      "bytes": 67195
+    },
+    {
+      "path": "media/exercises/band-pull-apart-1.jpg",
+      "bytes": 67007
+    },
+    {
       "path": "splashscreens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_landscape.png",
       "bytes": 66668
+    },
+    {
+      "path": "media/exercises/barbell-seated-calf-raise-0.jpg",
+      "bytes": 66650
+    },
+    {
+      "path": "media/exercises/barbell-shrug-behind-the-back-1.jpg",
+      "bytes": 66579
+    },
+    {
+      "path": "media/exercises/barbell-side-split-squat-1.jpg",
+      "bytes": 66565
+    },
+    {
+      "path": "media/exercises/bent-over-barbell-row-1.jpg",
+      "bytes": 66556
+    },
+    {
+      "path": "media/exercises/close-grip-front-lat-pulldown-0.jpg",
+      "bytes": 66406
+    },
+    {
+      "path": "media/exercises/bent-over-two-arm-long-bar-row-1.jpg",
+      "bytes": 66395
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-1.jpg",
+      "bytes": 66341
+    },
+    {
+      "path": "media/exercises/close-grip-front-lat-pulldown-1.jpg",
+      "bytes": 66198
+    },
+    {
+      "path": "media/exercises/freehand-jump-squat-1.jpg",
+      "bytes": 66114
+    },
+    {
+      "path": "media/exercises/cable-seated-lateral-raise-1.jpg",
+      "bytes": 65938
+    },
+    {
+      "path": "media/exercises/barbell-shrug-behind-the-back-0.jpg",
+      "bytes": 65860
+    },
+    {
+      "path": "media/exercises/front-raise-and-pullover-1.jpg",
+      "bytes": 65809
+    },
+    {
+      "path": "media/exercises/decline-reverse-crunch-1.jpg",
+      "bytes": 65593
+    },
+    {
+      "path": "media/exercises/cable-crunch-1.jpg",
+      "bytes": 65445
+    },
+    {
+      "path": "media/exercises/cable-internal-rotation-0.jpg",
+      "bytes": 65436
+    },
+    {
+      "path": "media/exercises/bent-over-one-arm-long-bar-row-0.jpg",
+      "bytes": 65406
+    },
+    {
+      "path": "media/exercises/concentration-curls-0.jpg",
+      "bytes": 65228
+    },
+    {
+      "path": "media/exercises/barbell-lunge-0.jpg",
+      "bytes": 65140
+    },
+    {
+      "path": "media/exercises/front-raise-and-pullover-0.jpg",
+      "bytes": 64787
+    },
+    {
+      "path": "media/exercises/dumbbell-prone-incline-curl-1.jpg",
+      "bytes": 64762
+    },
+    {
+      "path": "media/exercises/bent-over-barbell-row-0.jpg",
+      "bytes": 64589
+    },
+    {
+      "path": "media/exercises/bent-knee-hip-raise-1.jpg",
+      "bytes": 64378
+    },
+    {
+      "path": "media/exercises/cable-one-arm-tricep-extension-0.jpg",
+      "bytes": 64356
+    },
+    {
+      "path": "media/exercises/concentration-curls-1.jpg",
+      "bytes": 64253
+    },
+    {
+      "path": "media/exercises/bent-arm-barbell-pullover-1.jpg",
+      "bytes": 64205
+    },
+    {
+      "path": "media/exercises/cable-seated-lateral-raise-0.jpg",
+      "bytes": 64199
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-1.jpg",
+      "bytes": 64120
+    },
+    {
+      "path": "media/exercises/dumbbell-flyes-1.jpg",
+      "bytes": 63977
+    },
+    {
+      "path": "media/exercises/dumbbell-shoulder-press-1.jpg",
+      "bytes": 63882
+    },
+    {
+      "path": "media/exercises/flat-bench-lying-leg-raise-1.jpg",
+      "bytes": 63835
+    },
+    {
+      "path": "media/exercises/cable-wrist-curl-1.jpg",
+      "bytes": 63812
+    },
+    {
+      "path": "media/exercises/cable-internal-rotation-1.jpg",
+      "bytes": 63692
+    },
+    {
+      "path": "media/exercises/dumbbell-flyes-0.jpg",
+      "bytes": 63679
+    },
+    {
+      "path": "media/exercises/flat-bench-lying-leg-raise-0.jpg",
+      "bytes": 63658
+    },
+    {
+      "path": "media/exercises/cable-wrist-curl-0.jpg",
+      "bytes": 63432
+    },
+    {
+      "path": "media/exercises/dumbbell-bench-press-0.jpg",
+      "bytes": 63319
+    },
+    {
+      "path": "media/exercises/bent-arm-dumbbell-pullover-0.jpg",
+      "bytes": 63149
+    },
+    {
+      "path": "media/exercises/cable-incline-pushdown-1.jpg",
+      "bytes": 63009
+    },
+    {
+      "path": "media/exercises/flat-bench-leg-pull-in-0.jpg",
+      "bytes": 62984
+    },
+    {
+      "path": "media/exercises/barbell-curl-1.jpg",
+      "bytes": 62920
+    },
+    {
+      "path": "media/exercises/flat-bench-leg-pull-in-1.jpg",
+      "bytes": 62920
+    },
+    {
+      "path": "media/exercises/cable-incline-pushdown-0.jpg",
+      "bytes": 62891
+    },
+    {
+      "path": "media/exercises/decline-crunch-0.jpg",
+      "bytes": 62845
+    },
+    {
+      "path": "media/exercises/alternating-deltoid-raise-1.jpg",
+      "bytes": 62681
+    },
+    {
+      "path": "media/exercises/elevated-cable-rows-1.jpg",
+      "bytes": 62650
+    },
+    {
+      "path": "media/exercises/cross-body-crunch-1.jpg",
+      "bytes": 62634
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-with-a-twist-1.jpg",
+      "bytes": 62627
+    },
+    {
+      "path": "media/exercises/bent-arm-barbell-pullover-0.jpg",
+      "bytes": 62520
+    },
+    {
+      "path": "media/exercises/dumbbell-shoulder-press-0.jpg",
+      "bytes": 62474
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-press-0.jpg",
+      "bytes": 61978
+    },
+    {
+      "path": "media/exercises/cable-one-arm-tricep-extension-1.jpg",
+      "bytes": 61969
+    },
+    {
+      "path": "media/exercises/alternating-deltoid-raise-0.jpg",
+      "bytes": 61843
+    },
+    {
+      "path": "media/exercises/dumbbell-prone-incline-curl-0.jpg",
+      "bytes": 61802
+    },
+    {
+      "path": "media/exercises/bent-arm-dumbbell-pullover-1.jpg",
+      "bytes": 61708
+    },
+    {
+      "path": "media/exercises/dumbbell-lunges-1.jpg",
+      "bytes": 61678
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-press-1.jpg",
+      "bytes": 61629
+    },
+    {
+      "path": "media/exercises/cross-body-crunch-0.jpg",
+      "bytes": 61069
+    },
+    {
+      "path": "media/exercises/elevated-cable-rows-0.jpg",
+      "bytes": 61066
+    },
+    {
+      "path": "media/exercises/barbell-curl-0.jpg",
+      "bytes": 60608
+    },
+    {
+      "path": "media/exercises/decline-crunch-1.jpg",
+      "bytes": 60558
+    },
+    {
+      "path": "media/exercises/hammer-grip-incline-db-bench-press-1.jpg",
+      "bytes": 60493
+    },
+    {
+      "path": "media/exercises/incline-cable-flye-0.jpg",
+      "bytes": 60351
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-with-a-twist-0.jpg",
+      "bytes": 60343
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-0.jpg",
+      "bytes": 60080
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-shoulder-press-1.jpg",
+      "bytes": 59520
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-shoulder-press-0.jpg",
+      "bytes": 59478
+    },
+    {
+      "path": "media/exercises/hammer-grip-incline-db-bench-press-0.jpg",
+      "bytes": 59477
+    },
+    {
+      "path": "media/exercises/box-squat-with-chains-1.jpg",
+      "bytes": 59461
+    },
+    {
+      "path": "media/exercises/incline-cable-flye-1.jpg",
+      "bytes": 59411
+    },
+    {
+      "path": "media/exercises/bent-over-dumbbell-rear-delt-raise-with-head-on-bench-1.jpg",
+      "bytes": 59408
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-flyes-1.jpg",
+      "bytes": 59395
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-rear-lateral-raise-1.jpg",
+      "bytes": 59217
+    },
+    {
+      "path": "media/exercises/alternate-hammer-curl-0.jpg",
+      "bytes": 58965
+    },
+    {
+      "path": "media/exercises/incline-barbell-triceps-extension-1.jpg",
+      "bytes": 58768
+    },
+    {
+      "path": "media/exercises/box-squat-with-chains-0.jpg",
+      "bytes": 58618
+    },
+    {
+      "path": "media/exercises/front-incline-dumbbell-raise-1.jpg",
+      "bytes": 58549
+    },
+    {
+      "path": "media/exercises/front-plate-raise-1.jpg",
+      "bytes": 58549
+    },
+    {
+      "path": "media/exercises/calf-raises-with-bands-1.jpg",
+      "bytes": 58359
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-rear-lateral-raise-0.jpg",
+      "bytes": 58354
+    },
+    {
+      "path": "media/exercises/front-plate-raise-0.jpg",
+      "bytes": 58323
+    },
+    {
+      "path": "media/exercises/front-incline-dumbbell-raise-0.jpg",
+      "bytes": 58234
+    },
+    {
+      "path": "media/exercises/alternate-hammer-curl-1.jpg",
+      "bytes": 58120
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-one-arm-rear-lateral-raise-0.jpg",
+      "bytes": 58119
+    },
+    {
+      "path": "media/exercises/drag-curl-0.jpg",
+      "bytes": 58113
+    },
+    {
+      "path": "media/exercises/dumbbell-bicep-curl-1.jpg",
+      "bytes": 58066
+    },
+    {
+      "path": "media/exercises/cuban-press-0.jpg",
+      "bytes": 57995
+    },
+    {
+      "path": "media/exercises/bent-over-dumbbell-rear-delt-raise-with-head-on-bench-0.jpg",
+      "bytes": 57978
+    },
+    {
+      "path": "media/exercises/dumbbell-lying-one-arm-rear-lateral-raise-1.jpg",
+      "bytes": 57839
+    },
+    {
+      "path": "media/exercises/drag-curl-1.jpg",
+      "bytes": 57651
+    },
+    {
+      "path": "media/exercises/dumbbell-alternate-bicep-curl-0.jpg",
+      "bytes": 57561
+    },
+    {
+      "path": "media/exercises/barbell-curls-lying-against-an-incline-1.jpg",
+      "bytes": 57457
+    },
+    {
+      "path": "media/exercises/dumbbell-alternate-bicep-curl-1.jpg",
+      "bytes": 57418
+    },
+    {
+      "path": "media/exercises/dumbbell-bicep-curl-0.jpg",
+      "bytes": 57223
+    },
+    {
+      "path": "media/exercises/crunch-legs-on-exercise-ball-1.jpg",
+      "bytes": 57154
+    },
+    {
+      "path": "media/exercises/barbell-curls-lying-against-an-incline-0.jpg",
+      "bytes": 57059
+    },
+    {
+      "path": "media/exercises/incline-bench-pull-1.jpg",
+      "bytes": 56826
+    },
+    {
+      "path": "media/exercises/cuban-press-1.jpg",
+      "bytes": 56488
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-with-palms-in-0.jpg",
+      "bytes": 56467
+    },
+    {
+      "path": "media/exercises/crunch-legs-on-exercise-ball-0.jpg",
+      "bytes": 56464
+    },
+    {
+      "path": "media/exercises/alternate-incline-dumbbell-curl-1.jpg",
+      "bytes": 56425
+    },
+    {
+      "path": "media/exercises/calf-raises-with-bands-0.jpg",
+      "bytes": 56330
+    },
+    {
+      "path": "media/exercises/cross-body-hammer-curl-1.jpg",
+      "bytes": 56265
+    },
+    {
+      "path": "media/exercises/cross-body-hammer-curl-0.jpg",
+      "bytes": 56254
+    },
+    {
+      "path": "media/exercises/cable-rear-delt-fly-1.jpg",
+      "bytes": 56065
+    },
+    {
+      "path": "media/exercises/hanging-leg-raise-1.jpg",
+      "bytes": 56061
+    },
+    {
+      "path": "media/exercises/incline-inner-biceps-curl-0.jpg",
+      "bytes": 55982
+    },
+    {
+      "path": "media/exercises/bradford-rocky-presses-1.jpg",
+      "bytes": 55962
+    },
+    {
+      "path": "media/exercises/bent-over-two-dumbbell-row-with-palms-in-1.jpg",
+      "bytes": 55788
+    },
+    {
+      "path": "media/exercises/incline-inner-biceps-curl-1.jpg",
+      "bytes": 55775
+    },
+    {
+      "path": "media/exercises/hyperextensions-with-no-hyperextension-bench-0.jpg",
+      "bytes": 55618
+    },
+    {
+      "path": "media/exercises/alternate-incline-dumbbell-curl-0.jpg",
+      "bytes": 55564
+    },
+    {
+      "path": "media/exercises/dumbbell-lunges-0.jpg",
+      "bytes": 55460
+    },
+    {
+      "path": "media/exercises/hyperextensions-with-no-hyperextension-bench-1.jpg",
+      "bytes": 55310
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-flyes-0.jpg",
+      "bytes": 55297
+    },
+    {
+      "path": "media/exercises/dumbbell-raise-0.jpg",
+      "bytes": 55131
+    },
+    {
+      "path": "media/exercises/flexor-incline-dumbbell-curls-0.jpg",
+      "bytes": 55091
+    },
+    {
+      "path": "media/exercises/arnold-dumbbell-press-1.jpg",
+      "bytes": 55084
+    },
+    {
+      "path": "media/exercises/incline-barbell-triceps-extension-0.jpg",
+      "bytes": 54686
+    },
+    {
+      "path": "media/exercises/flexor-incline-dumbbell-curls-1.jpg",
+      "bytes": 54611
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-flyes-1.jpg",
+      "bytes": 54362
+    },
+    {
+      "path": "media/exercises/arnold-dumbbell-press-0.jpg",
+      "bytes": 54330
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-bench-press-1.jpg",
+      "bytes": 54302
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-bench-press-0.jpg",
+      "bytes": 54163
+    },
+    {
+      "path": "media/exercises/calf-machine-shoulder-shrug-1.jpg",
+      "bytes": 54111
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-upright-row-1.jpg",
+      "bytes": 54063
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-curl-1.jpg",
+      "bytes": 54063
+    },
+    {
+      "path": "media/exercises/dumbbell-raise-1.jpg",
+      "bytes": 54062
+    },
+    {
+      "path": "media/exercises/calf-machine-shoulder-shrug-0.jpg",
+      "bytes": 53938
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-upright-row-0.jpg",
+      "bytes": 53859
+    },
+    {
+      "path": "media/exercises/incline-bench-pull-0.jpg",
+      "bytes": 53821
+    },
+    {
+      "path": "media/exercises/bradford-rocky-presses-0.jpg",
+      "bytes": 53739
+    },
+    {
+      "path": "media/exercises/incline-dumbbell-curl-0.jpg",
+      "bytes": 53708
+    },
+    {
+      "path": "media/exercises/front-two-dumbbell-raise-1.jpg",
+      "bytes": 53689
+    },
+    {
+      "path": "media/exercises/front-two-dumbbell-raise-0.jpg",
+      "bytes": 53546
+    },
+    {
+      "path": "media/exercises/cable-rear-delt-fly-0.jpg",
+      "bytes": 53497
+    },
+    {
+      "path": "media/exercises/decline-oblique-crunch-1.jpg",
+      "bytes": 53447
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-shoulder-raise-0.jpg",
+      "bytes": 53252
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-to-a-bench-1.jpg",
+      "bytes": 53212
+    },
+    {
+      "path": "media/exercises/back-flyes-with-bands-1.jpg",
+      "bytes": 53114
+    },
+    {
+      "path": "media/exercises/dumbbell-incline-shoulder-raise-1.jpg",
+      "bytes": 53073
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-1.jpg",
+      "bytes": 52938
+    },
+    {
+      "path": "media/exercises/close-grip-standing-barbell-curl-0.jpg",
+      "bytes": 52732
+    },
+    {
+      "path": "media/exercises/dumbbell-seated-one-leg-calf-raise-1.jpg",
+      "bytes": 52720
+    },
+    {
+      "path": "media/exercises/hammer-curls-1.jpg",
+      "bytes": 52323
+    },
+    {
+      "path": "media/exercises/decline-reverse-crunch-0.jpg",
+      "bytes": 52268
+    },
+    {
+      "path": "media/exercises/close-grip-standing-barbell-curl-1.jpg",
+      "bytes": 52137
+    },
+    {
+      "path": "media/exercises/front-dumbbell-raise-0.jpg",
+      "bytes": 51985
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-0.jpg",
+      "bytes": 51929
+    },
+    {
+      "path": "media/exercises/dumbbell-seated-one-leg-calf-raise-0.jpg",
+      "bytes": 51887
+    },
+    {
+      "path": "media/exercises/hanging-leg-raise-0.jpg",
+      "bytes": 51687
+    },
+    {
+      "path": "media/exercises/decline-oblique-crunch-0.jpg",
+      "bytes": 51669
+    },
+    {
+      "path": "media/exercises/hammer-curls-0.jpg",
+      "bytes": 51669
+    },
+    {
+      "path": "media/exercises/decline-smith-press-0.jpg",
+      "bytes": 51565
+    },
+    {
+      "path": "media/exercises/front-dumbbell-raise-1.jpg",
+      "bytes": 51321
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-triceps-extension-0.jpg",
+      "bytes": 51224
+    },
+    {
+      "path": "media/exercises/dumbbell-rear-lunge-0.jpg",
+      "bytes": 51169
+    },
+    {
+      "path": "media/exercises/back-flyes-with-bands-0.jpg",
+      "bytes": 51085
+    },
+    {
+      "path": "media/exercises/decline-ez-bar-triceps-extension-0.jpg",
+      "bytes": 50894
+    },
+    {
+      "path": "media/exercises/hip-circles-prone-1.jpg",
+      "bytes": 50613
+    },
+    {
+      "path": "media/exercises/decline-smith-press-1.jpg",
+      "bytes": 50239
+    },
+    {
+      "path": "media/exercises/dumbbell-squat-to-a-bench-0.jpg",
+      "bytes": 50195
+    },
+    {
+      "path": "media/exercises/hip-circles-prone-0.jpg",
+      "bytes": 49851
+    },
+    {
+      "path": "media/exercises/calf-raise-on-a-dumbbell-1.jpg",
+      "bytes": 49784
+    },
+    {
+      "path": "media/exercises/finger-curls-0.jpg",
+      "bytes": 49759
+    },
+    {
+      "path": "media/exercises/calf-raise-on-a-dumbbell-0.jpg",
+      "bytes": 49640
+    },
+    {
+      "path": "media/exercises/band-hip-adductions-0.jpg",
+      "bytes": 49204
+    },
+    {
+      "path": "media/exercises/dumbbell-rear-lunge-1.jpg",
+      "bytes": 49129
+    },
+    {
+      "path": "media/exercises/hip-flexion-with-band-1.jpg",
+      "bytes": 49122
+    },
+    {
+      "path": "media/exercises/band-hip-adductions-1.jpg",
+      "bytes": 48929
+    },
+    {
+      "path": "media/exercises/finger-curls-1.jpg",
+      "bytes": 48832
+    },
+    {
+      "path": "media/exercises/decline-ez-bar-triceps-extension-1.jpg",
+      "bytes": 48645
+    },
+    {
+      "path": "media/exercises/anti-gravity-press-0.jpg",
+      "bytes": 47218
+    },
+    {
+      "path": "media/exercises/hip-flexion-with-band-0.jpg",
+      "bytes": 47209
+    },
+    {
+      "path": "media/exercises/anti-gravity-press-1.jpg",
+      "bytes": 47052
+    },
+    {
+      "path": "media/exercises/face-pull-1.jpg",
+      "bytes": 46451
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-triceps-extension-0.jpg",
+      "bytes": 46226
+    },
+    {
+      "path": "media/exercises/incline-cable-chest-press-1.jpg",
+      "bytes": 45822
+    },
+    {
+      "path": "media/exercises/alternating-cable-shoulder-press-1.jpg",
+      "bytes": 45486
+    },
+    {
+      "path": "media/exercises/incline-cable-chest-press-0.jpg",
+      "bytes": 45401
+    },
+    {
+      "path": "media/exercises/chair-squat-0.jpg",
+      "bytes": 45369
+    },
+    {
+      "path": "media/exercises/dumbbell-one-arm-triceps-extension-1.jpg",
+      "bytes": 45009
+    },
+    {
+      "path": "media/exercises/alternating-cable-shoulder-press-0.jpg",
+      "bytes": 44800
+    },
+    {
+      "path": "media/exercises/cable-iron-cross-1.jpg",
+      "bytes": 44148
     },
     {
       "path": "splashscreens/iPhone_11__iPhone_XR_portrait.png",
       "bytes": 43399
     },
     {
+      "path": "media/exercises/chair-squat-1.jpg",
+      "bytes": 43369
+    },
+    {
+      "path": "media/exercises/cable-iron-cross-0.jpg",
+      "bytes": 43142
+    },
+    {
+      "path": "media/exercises/decline-dumbbell-triceps-extension-1.jpg",
+      "bytes": 42795
+    },
+    {
+      "path": "media/exercises/gorilla-chin-crunch-0.jpg",
+      "bytes": 42736
+    },
+    {
+      "path": "media/exercises/bodyweight-squat-1.jpg",
+      "bytes": 41546
+    },
+    {
+      "path": "media/exercises/face-pull-0.jpg",
+      "bytes": 40188
+    },
+    {
       "path": "splashscreens/iPhone_11__iPhone_XR_landscape.png",
       "bytes": 39631
+    },
+    {
+      "path": "media/exercises/close-grip-dumbbell-press-0.jpg",
+      "bytes": 39551
+    },
+    {
+      "path": "media/exercises/close-grip-dumbbell-press-1.jpg",
+      "bytes": 38624
+    },
+    {
+      "path": "media/exercises/bodyweight-squat-0.jpg",
+      "bytes": 37986
+    },
+    {
+      "path": "media/exercises/bodyweight-mid-row-0.jpg",
+      "bytes": 37732
+    },
+    {
+      "path": "media/exercises/bodyweight-mid-row-1.jpg",
+      "bytes": 37346
+    },
+    {
+      "path": "media/exercises/gorilla-chin-crunch-1.jpg",
+      "bytes": 37343
+    },
+    {
+      "path": "media/exercises/hip-extension-with-bands-1.jpg",
+      "bytes": 36771
+    },
+    {
+      "path": "media/exercises/bent-press-1.jpg",
+      "bytes": 36761
+    },
+    {
+      "path": "media/exercises/front-squat-clean-grip-0.jpg",
+      "bytes": 36571
+    },
+    {
+      "path": "media/exercises/alternating-floor-press-0.jpg",
+      "bytes": 36188
+    },
+    {
+      "path": "media/exercises/double-kettlebell-push-press-1.jpg",
+      "bytes": 36011
+    },
+    {
+      "path": "media/exercises/double-kettlebell-push-press-0.jpg",
+      "bytes": 36000
+    },
+    {
+      "path": "media/exercises/extended-range-one-arm-kettlebell-floor-press-1.jpg",
+      "bytes": 35879
+    },
+    {
+      "path": "media/exercises/front-squats-with-two-kettlebells-0.jpg",
+      "bytes": 35792
+    },
+    {
+      "path": "media/exercises/alternating-floor-press-1.jpg",
+      "bytes": 35685
+    },
+    {
+      "path": "media/exercises/front-squats-with-two-kettlebells-1.jpg",
+      "bytes": 35511
+    },
+    {
+      "path": "media/exercises/hip-extension-with-bands-0.jpg",
+      "bytes": 35502
+    },
+    {
+      "path": "media/exercises/90-90-hamstring-0.jpg",
+      "bytes": 35374
+    },
+    {
+      "path": "media/exercises/extended-range-one-arm-kettlebell-floor-press-0.jpg",
+      "bytes": 35309
+    },
+    {
+      "path": "media/exercises/front-squat-clean-grip-1.jpg",
+      "bytes": 35308
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-row-1.jpg",
+      "bytes": 35050
+    },
+    {
+      "path": "media/exercises/intermediate-hip-flexor-and-quad-stretch-1.jpg",
+      "bytes": 34779
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-row-0.jpg",
+      "bytes": 34659
+    },
+    {
+      "path": "media/exercises/goblet-squat-1.jpg",
+      "bytes": 34362
+    },
+    {
+      "path": "media/exercises/bent-press-0.jpg",
+      "bytes": 34311
+    },
+    {
+      "path": "media/exercises/goblet-squat-0.jpg",
+      "bytes": 34299
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-press-0.jpg",
+      "bytes": 34033
+    },
+    {
+      "path": "media/exercises/alternating-renegade-row-0.jpg",
+      "bytes": 33835
+    },
+    {
+      "path": "media/exercises/alternating-kettlebell-press-1.jpg",
+      "bytes": 33750
+    },
+    {
+      "path": "media/exercises/90-90-hamstring-1.jpg",
+      "bytes": 33364
+    },
+    {
+      "path": "media/exercises/alternating-renegade-row-1.jpg",
+      "bytes": 32913
+    },
+    {
+      "path": "media/exercises/chair-leg-extended-stretch-1.jpg",
+      "bytes": 32213
+    },
+    {
+      "path": "media/exercises/chair-leg-extended-stretch-0.jpg",
+      "bytes": 31287
+    },
+    {
+      "path": "media/exercises/intermediate-hip-flexor-and-quad-stretch-0.jpg",
+      "bytes": 30001
     },
     {
       "path": "splashscreens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_portrait.png",
       "bytes": 29692
     },
     {
+      "path": "media/exercises/front-leg-raises-0.jpg",
+      "bytes": 28819
+    },
+    {
       "path": "splashscreens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_landscape.png",
       "bytes": 27510
     },
     {
+      "path": "media/exercises/front-leg-raises-1.jpg",
+      "bytes": 27405
+    },
+    {
+      "path": "media/exercises/chest-and-front-of-shoulder-stretch-0.jpg",
+      "bytes": 24353
+    },
+    {
+      "path": "media/exercises/chest-and-front-of-shoulder-stretch-1.jpg",
+      "bytes": 24308
+    },
+    {
       "path": "splashscreens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png",
       "bytes": 22187
+    },
+    {
+      "path": "workbox-f354d6a5.js",
+      "bytes": 21905
     },
     {
       "path": "splashscreens/4__iPhone_SE__iPod_touch_5th_generation_and_later_landscape.png",
@@ -189,10 +1633,6 @@
     {
       "path": "favicon.ico",
       "bytes": 15406
-    },
-    {
-      "path": "workbox-31fbe436.js",
-      "bytes": 15118
     },
     {
       "path": "logo512.png",
@@ -216,7 +1656,7 @@
     },
     {
       "path": "sw.js",
-      "bytes": 6953
+      "bytes": 7186
     },
     {
       "path": "assets/workbox-window.prod.es5-c46a1faa.js",
