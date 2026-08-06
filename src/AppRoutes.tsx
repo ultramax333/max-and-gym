@@ -1,4 +1,4 @@
-import {Route, Routes} from "react-router-dom";
+import {Navigate, Route, Routes} from "react-router-dom";
 import {Login} from "./pages/profile/login";
 import {WorkoutList} from "./pages/workout-list/workout_list";
 import {AppsMenu} from "./pages/apps/appsMenu";
@@ -31,12 +31,17 @@ import Wrapped from "./pages/wrapped";
 import EOLPage from "./pages/eol";
 import DiagnosticsPage, {IntentionalRouteError} from './pages/diagnostics/DiagnosticsPage';
 import ErrorBoundary from './components/errorBoundary';
+import {HomeShellPage, ProgramsShellPage, ProgressShellPage, TrainShellPage} from './pages/shell/ShellPages';
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
         <Route path="/onboarding" element={<Onboarding/>}/>
         <Route path="/login" element={<Login/>}/>
-        <Route path="/" element={<WorkoutList/>}/>
+        <Route path="/" element={<HomeShellPage/>}/>
+        <Route path="/train" element={<TrainShellPage/>}/>
+        <Route path="/programs" element={<ProgramsShellPage/>}/>
+        <Route path="/progress" element={<ProgressShellPage/>}/>
+        <Route path="/workouts" element={<WorkoutList/>}/>
         <Route path="/apps" element={<AppsMenu/>}/>
         <Route path="/apps/timer" element={<Timer/>}/>
         <Route path="/history" element={<HistoryPage/>}/>
@@ -64,7 +69,8 @@ const AppRoutes = () => {
                element={<BulkEditor/>}/>
         <Route path="/workoutExercise/:workoutExerciseId"
                element={<WorkoutExerciseEditor />}/>
-        <Route path="/exercises" element={<ExerciseList/>}/>
+        <Route path="/library" element={<ExerciseList/>}/>
+        <Route path="/exercises" element={<Navigate to="/library" replace/>}/>
         <Route path="/exercises/:exerciseId"
                element={<ExerciseEditor/>}/>
         <Route path="/youtube"

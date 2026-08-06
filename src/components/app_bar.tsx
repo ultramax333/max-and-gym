@@ -20,11 +20,11 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import BackIcon from '@mui/icons-material/ArrowBack';
 import {useLocation, useNavigate} from "react-router-dom";
 import {UserContext} from "../context/userContext";
-import {Avatar, Popover} from "@mui/material";
+import {Avatar, IconButton, Popover, Tooltip} from "@mui/material";
+import SettingsIcon from '@mui/icons-material/Settings';
 import {AccountMenuList} from '../pages/profile/accountMenu';
 
 export interface WLAppBarProps {
@@ -43,14 +43,14 @@ export const WLAppBar = (props: WLAppBarProps) => {
     const {user} = useContext(UserContext);
     const [accountMenuAnchor, setAccountMenuAnchor] = useState<HTMLElement | undefined>(undefined);
     return <Box>
-        <AppBar position="fixed" style={{zIndex:1}}>
-            <Toolbar sx={{paddingRight: showAccountMenu ? "4px" : "8px"}}>
+        <AppBar position="fixed" elevation={0} sx={{zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: 'background.default', borderBottom: '1px solid', borderColor: 'divider'}}>
+            <Toolbar sx={{minHeight: '72px !important', px: {xs: 1, sm: 2}}}>
                 {leftToolItems}
-                {!["/", "/apps", "/settings", "/exercises"].includes(location.pathname) && !hideBack && <IconButton
+                {!["/", "/train", "/programs", "/progress", "/library", "/workouts", "/apps", "/settings", "/exercises"].includes(location.pathname) && !hideBack && <IconButton
                     size="large"
                     edge="start"
                     color="inherit"
-                    aria-label="menu"
+                    aria-label="Retour"
                     sx={{mr: 2}}
                     onClick={() => {
                         if (!onBack) navigate(-1);
@@ -62,7 +62,7 @@ export const WLAppBar = (props: WLAppBarProps) => {
                 <Typography variant="h6" component="div" sx={{flexGrow: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>
                     {title}
                 </Typography>
-                <Box sx={{flexShrink: 1, whiteSpace: "nowrap"}}>{toolItems}{showAccountMenu && <IconButton onClick={(ev) => setAccountMenuAnchor(accountMenuAnchor ? undefined : ev.currentTarget)}><Avatar sx={{width: 32, height: 32}} src={user?.picture} /></IconButton>}</Box>
+                <Box sx={{flexShrink: 1, whiteSpace: "nowrap"}}>{toolItems}<Tooltip title="Réglages"><IconButton aria-label="Ouvrir les réglages" onClick={() => navigate('/settings')}><SettingsIcon/></IconButton></Tooltip>{showAccountMenu && <IconButton aria-label="Ouvrir le compte" onClick={(ev) => setAccountMenuAnchor(accountMenuAnchor ? undefined : ev.currentTarget)}><Avatar sx={{width: 32, height: 32}} src={user?.picture} /></IconButton>}</Box>
             </Toolbar>
             <Popover
                 open={accountMenuAnchor !== undefined}

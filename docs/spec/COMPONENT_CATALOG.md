@@ -135,3 +135,14 @@ Every data-bearing component defines:
 - mobile target size is at least 48 × 48 pixels where practical;
 - no component depends on hover for essential information;
 - no component imports Workout.cool server or UI-framework infrastructure.
+
+## CP2 implementation status
+
+- Implemented: AppShell (via Layout), MobileBottomNavigation, DesktopNavigationRail,
+  TopBar, ScreenContainer, SectionHeader, PrimaryButton, SecondaryButton,
+  OfflineBanner, StorageWarningBanner, UpdateBanner, RouteErrorState and
+  accessible ReorderControls.
+- Route shells implemented: Home, Train, Programs and Progress; Library, Settings,
+  Diagnostics and onboarding use the same Material UI shell.
+- Later tasks own the data-aware variants of cards, inputs, loading states and
+  workout/program primitives.

@@ -17,7 +17,8 @@
 import React, {CSSProperties, ReactNode} from "react";
 import WLAppBar from "./app_bar";
 import WLNav from "./nav";
-import {Box, Paper, useMediaQuery} from "@mui/material";
+import {Box} from "@mui/material";
+import {ConnectivityBanner} from './ui/StatusBanners';
 
 const Layout = (props: {
     children: ReactNode,
@@ -33,15 +34,16 @@ const Layout = (props: {
     leftToolItems?: ReactNode,
     nogrow?: boolean
 }) => {
-    const portrait = (window.screen.orientation.angle % 180 === 0);
-    const isMini = portrait ?  useMediaQuery('(max-height:600px)') : useMediaQuery('(max-width:600px)');
-
     const {children, title, nogrow, showAccountMenu, hideAppBar, hideNav, toolItems, leftToolItems, hideBack, onBack, sx, scroll} = props;
-    return <Paper sx={{display: "flex", flexDirection: "column", position: "absolute", width: "100%", ...(scroll ? { overflow: "auto", height: "auto" } : { overflow: "hidden", height: "100%"}), ...sx}}>
+    return <Box sx={{display: 'flex', minHeight: '100dvh', bgcolor: 'background.default'}}>
+        <ConnectivityBanner/>
+        {!hideNav && <WLNav desktop/>}
+        <Box sx={{display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, ...(hideNav ? {} : {ml: {md: '88px'}})}}>
         {!hideAppBar && <WLAppBar title={title} showAccountMenu={showAccountMenu} leftToolItems={leftToolItems} toolItems={toolItems} hideBack={hideBack} onBack={onBack}/>}
-        <Box sx={{flexGrow: nogrow ? undefined : 1, marginTop: "56px", maxHeight: isMini && !hideNav ? "calc(100% - 36px)" : "calc(100% - 52px)"}}>{children}</Box>
+        <Box sx={{flexGrow: nogrow ? undefined : 1, mt: hideAppBar ? 0 : '72px', ...(scroll ? {overflowY: 'auto'} : {minHeight: 0}), ...sx}}>{children}</Box>
         {!hideNav && <WLNav/>}
-    </Paper>;
+        </Box>
+    </Box>;
 }
 
 export default Layout;

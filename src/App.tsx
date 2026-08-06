@@ -14,14 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with RepQuest.  If not, see <https://www.gnu.org/licenses/>.
  */
-import React, {ReactElement, useContext, useEffect, useState, useReducer} from 'react';
+import React, {ReactElement, useContext, useEffect, useReducer, useState} from 'react';
 import './App.css';
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
 import {HashRouter, useNavigate} from "react-router-dom";
-import {createTheme, Paper, ThemeProvider} from '@mui/material';
+import {Box, CssBaseline, ThemeProvider} from '@mui/material';
 import {DBContext} from "./context/dbContext";
 import {DexieDB} from "./db/db";
 import {WorkoutContextProvider} from './context/workoutContext';
@@ -38,17 +34,7 @@ import AppRoutes from "./AppRoutes";
 import defer from "./utils/defer";
 import {PwaProvider} from './pwa/PwaContext';
 import {UpdatePrompt} from './pwa/UpdatePrompt';
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
-});
-
-const lightTheme = createTheme({
-    palette: {
-        mode: 'light'
-    }
-})
+import {maxGymTheme} from './theme/maxGymTheme';
 
 const DBGuard = ({children}: { children: ReactElement }) => {
     const {db} = useContext(DBContext);
@@ -89,10 +75,11 @@ const DBGuard = ({children}: { children: ReactElement }) => {
 }
 
 function App() {
-    const [appTheme, setAppTheme] = useState<AppTheme>((window.matchMedia && window.matchMedia('(prefers-color-scheme: light)')?.matches) || localStorage.getItem("theme") === "light" ? "light" : "dark");
+    const appTheme: AppTheme = 'dark';
     return (
         <ErrorBoundary>
-            <ThemeProvider theme={appTheme === "light" ? lightTheme : darkTheme}>
+            <ThemeProvider theme={maxGymTheme}>
+                <CssBaseline/>
                 <DialogContextProvider>
                     <DBContext.Provider value={{db: new DexieDB(), masterDb: new MasterDB()}}>
                         <HashRouter>
@@ -101,13 +88,13 @@ function App() {
                                 <DBGuard>
                                     <TimerContextProvider>
                                         <UserContextProvider>
-                                            <SettingsContextProvider theme={appTheme} setTheme={setAppTheme}>
+                                            <SettingsContextProvider theme={appTheme} setTheme={() => undefined}>
                                                 <CalendarProvider>
                                                     <WorkoutContextProvider>
-                                                        <Paper>
+                                                        <Box sx={{minHeight: '100dvh', bgcolor: 'background.default'}}>
                                                             <AppRoutes />
                                                             <UpdatePrompt/>
-                                                        </Paper>
+                                                        </Box>
                                                     </WorkoutContextProvider>
                                                 </CalendarProvider>
                                             </SettingsContextProvider>

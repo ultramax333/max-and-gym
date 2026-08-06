@@ -22,7 +22,7 @@ import TranslateIcon from '@mui/icons-material/Translate';
 import pjson from "../../../package.json";
 import i18n from "i18next";
 import Selector from "../../components/selector";
-import {Build, Cake, Campaign, FormatPaint} from "@mui/icons-material";
+import {Build, Cake, Campaign, FormatPaint, MonitorHeart} from "@mui/icons-material";
 import {useNavigate} from "react-router-dom";
 import BackupIcon from "@mui/icons-material/Backup";
 import {DBContext} from "../../context/dbContext";
@@ -98,6 +98,14 @@ export const SettingsPage = () => {
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={t("system")} secondary={t("systemDescription")} />
+            </ListItemButton>
+            <ListItemButton component="a" onClick={() => navigate("/diagnostics")}>
+                <ListItemAvatar>
+                    <Avatar sx={{bgcolor: (theme) => theme.palette.secondary.main}}>
+                        <MonitorHeart sx={{color: (theme) => theme.palette.secondary.contrastText}}/>
+                    </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary="Diagnostics" secondary="Vérifier le stockage, les migrations et l’état local." />
             </ListItemButton>
             <ListItemButton component="a" href="https://docs.google.com/forms/d/e/1FAIpQLSdrG44hZZ8MoGzFx2DjIVKSnFylDDbCHtaQL3vhEGM4yuOb8g/viewform?usp=sf_link" target="_blank">
                 <ListItemAvatar>

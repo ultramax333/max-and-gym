@@ -29,17 +29,17 @@ This matrix links every implementation requirement in `BACKLOG.md` to its owning
 | DIA-014 | Add `doctor` and `audit:project` | 01 | CP1 | AT-J03; `artifacts/audit/` |
 | DIA-015 | Add initial Diagnostics screen | 01 | CP1 | AT-A03, AT-J01; Diagnostics screenshots |
 | DIA-016 | Add migration/operation journal foundation | 01 | CP1 | AT-J02, AT-L01, AT-L02; diagnostics database v1 |
-| UI-010 | Implement max&gym Material UI tokens/theme | 02 | CP2 | AT-K04 |
-| UI-011 | Implement responsive AppShell | 02 | CP2 | AT-K01 |
-| UI-012 | Implement five-item mobile navigation | 02 | CP2 | AT-K01, AT-K03 |
-| UI-013 | Implement desktop navigation | 02 | CP2 | AT-K03 |
-| UI-014 | Implement core action/input/state components | 02 | CP2 | AT-K02, AT-K03, AT-K04 |
-| UI-015 | Implement route shells | 02 | CP2 | AT-A02, AT-K01 |
-| UI-016 | Implement onboarding and Settings shells | 02 | CP2 | AT-D01, AT-D02 |
-| UI-017 | Add loading/empty/error/offline states | 02 | CP2 | AT-K01, AT-K03, AT-J04 |
-| UI-018 | Establish visual-regression baseline | 02 | CP2 | AT-K01, AT-K04 |
-| UI-019 | Establish accessibility baseline | 02 | CP2 | AT-K02, AT-K03, AT-K04 |
-| UI-020 | Record any donor-code adaptation | 02 | CP2 | AT-K05 |
+| UI-010 | Implement max&gym Material UI tokens/theme | 02 | CP2 | AT-K04; theme test; visual audit |
+| UI-011 | Implement responsive AppShell | 02 | CP2 | AT-K01; CP2 viewport screenshots |
+| UI-012 | Implement five-item mobile navigation | 02 | CP2 | AT-K01, AT-K03; CP2 viewport screenshots |
+| UI-013 | Implement desktop navigation | 02 | CP2 | AT-K03; desktop baseline |
+| UI-014 | Implement core action/input/state components | 02 | CP2 | AT-K02, AT-K03, AT-K04; UI primitive test |
+| UI-015 | Implement route shells | 02 | CP2 | AT-A02, AT-K01; route smoke/build |
+| UI-016 | Implement onboarding and Settings shells | 02 | CP2 | AT-D01, AT-D02; browser verification |
+| UI-017 | Add loading/empty/error/offline states | 02 | CP2 | AT-K01, AT-K03, AT-J04; state components and route boundary |
+| UI-018 | Establish visual-regression baseline | 02 | CP2 | AT-K01, AT-K04; CP2 screenshots |
+| UI-019 | Establish accessibility baseline | 02 | CP2 | AT-K02, AT-K03, AT-K04; component tests and audit |
+| UI-020 | Record any donor-code adaptation | 02 | CP2 | AT-K05; donor application report |
 | WKT-001 | Define workout repository/application-service boundary | 03 | CP3 | AT-E01–AT-E10 |
 | WKT-002 | Create/resume active session transactionally | 03 | CP3 | AT-E01, AT-E06 |
 | WKT-003 | Render current exercise and sets | 03 | CP3 | AT-E01, AT-K01 |

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T17:33:26.996Z",
-  "totalBytes": 6456260,
+  "generatedAt": "2026-08-06T17:51:20.384Z",
+  "totalBytes": 5927348,
   "files": [
     {
-      "path": "assets/index-8a681e7e.js",
-      "bytes": 1568929
+      "path": "assets/index-dae9ed6a.js",
+      "bytes": 1585989
     },
     {
       "path": "assets/exercises-accd122b.js",
@@ -171,10 +171,6 @@
       "bytes": 27510
     },
     {
-      "path": "assets/index-517851e6.css",
-      "bytes": 25239
-    },
-    {
       "path": "splashscreens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png",
       "bytes": 22187
     },
@@ -187,38 +183,6 @@
       "bytes": 19081
     },
     {
-      "path": "assets/roboto-latin-700-normal-d9bada3a.woff2",
-      "bytes": 18596
-    },
-    {
-      "path": "assets/roboto-latin-500-normal-ae0e4428.woff2",
-      "bytes": 18588
-    },
-    {
-      "path": "assets/roboto-latin-400-normal-89978e65.woff2",
-      "bytes": 18536
-    },
-    {
-      "path": "assets/roboto-latin-300-normal-4dbd328e.woff2",
-      "bytes": 18492
-    },
-    {
-      "path": "assets/roboto-latin-300-normal-ae3f38c2.woff",
-      "bytes": 17564
-    },
-    {
-      "path": "assets/roboto-latin-700-normal-7b6d939d.woff",
-      "bytes": 17372
-    },
-    {
-      "path": "assets/roboto-latin-500-normal-0906a6f5.woff",
-      "bytes": 17320
-    },
-    {
-      "path": "assets/roboto-latin-400-normal-f9a900b2.woff",
-      "bytes": 17304
-    },
-    {
       "path": "logofade.png",
       "bytes": 15466
     },
@@ -227,200 +191,40 @@
       "bytes": 15406
     },
     {
-      "path": "assets/roboto-cyrillic-ext-400-normal-aa221a84.woff2",
-      "bytes": 15336
-    },
-    {
       "path": "workbox-31fbe436.js",
       "bytes": 15118
-    },
-    {
-      "path": "assets/roboto-cyrillic-ext-300-normal-e0992501.woff2",
-      "bytes": 15028
-    },
-    {
-      "path": "assets/roboto-cyrillic-ext-500-normal-8b2d64f6.woff2",
-      "bytes": 14988
     },
     {
       "path": "logo512.png",
       "bytes": 14813
     },
     {
-      "path": "assets/roboto-cyrillic-ext-700-normal-341f33a3.woff2",
-      "bytes": 14740
-    },
-    {
-      "path": "assets/roboto-cyrillic-ext-300-normal-8230c07a.woff",
-      "bytes": 13572
-    },
-    {
-      "path": "assets/roboto-cyrillic-ext-400-normal-566f08a5.woff",
-      "bytes": 13488
-    },
-    {
-      "path": "assets/roboto-cyrillic-ext-500-normal-ea1ecad3.woff",
-      "bytes": 13464
-    },
-    {
-      "path": "assets/roboto-cyrillic-ext-700-normal-91931a84.woff",
-      "bytes": 13456
-    },
-    {
       "path": "logomaskable.png",
       "bytes": 13092
-    },
-    {
-      "path": "assets/roboto-latin-ext-400-normal-685dd0a4.woff2",
-      "bytes": 12456
-    },
-    {
-      "path": "assets/roboto-latin-ext-300-normal-61e97a84.woff2",
-      "bytes": 12324
-    },
-    {
-      "path": "assets/roboto-latin-ext-700-normal-9462ffde.woff2",
-      "bytes": 12304
-    },
-    {
-      "path": "assets/roboto-latin-ext-500-normal-3e8f8a1d.woff2",
-      "bytes": 12280
     },
     {
       "path": "index.html",
       "bytes": 12195
     },
     {
-      "path": "assets/roboto-latin-ext-300-normal-1234145d.woff",
-      "bytes": 10888
-    },
-    {
-      "path": "assets/roboto-latin-ext-400-normal-fc912ea6.woff",
-      "bytes": 10724
-    },
-    {
-      "path": "assets/roboto-latin-ext-500-normal-4b57e38c.woff",
-      "bytes": 10696
-    },
-    {
-      "path": "assets/roboto-latin-ext-700-normal-b4395eb6.woff",
-      "bytes": 10688
-    },
-    {
       "path": "logofadenoback.png",
       "bytes": 10026
-    },
-    {
-      "path": "assets/roboto-cyrillic-500-normal-ec999ab7.woff2",
-      "bytes": 9964
     },
     {
       "path": "logofadelight.png",
       "bytes": 9870
     },
     {
-      "path": "assets/roboto-cyrillic-400-normal-4d539033.woff2",
-      "bytes": 9852
-    },
-    {
-      "path": "assets/roboto-cyrillic-700-normal-9f226239.woff2",
-      "bytes": 9780
-    },
-    {
-      "path": "assets/roboto-cyrillic-300-normal-573686b2.woff2",
-      "bytes": 9684
-    },
-    {
-      "path": "assets/roboto-cyrillic-500-normal-c82104d7.woff",
-      "bytes": 8864
-    },
-    {
-      "path": "assets/roboto-cyrillic-700-normal-c2ddbd20.woff",
-      "bytes": 8844
-    },
-    {
-      "path": "assets/roboto-cyrillic-300-normal-c8ac847b.woff",
-      "bytes": 8620
-    },
-    {
-      "path": "assets/roboto-cyrillic-400-normal-d210e5ba.woff",
-      "bytes": 8572
-    },
-    {
-      "path": "assets/roboto-greek-300-normal-889051bf.woff2",
-      "bytes": 7180
-    },
-    {
-      "path": "assets/roboto-greek-400-normal-b73c1098.woff2",
-      "bytes": 7096
-    },
-    {
-      "path": "assets/roboto-greek-500-normal-13a6a592.woff2",
-      "bytes": 7028
-    },
-    {
       "path": "sw.js",
       "bytes": 6953
-    },
-    {
-      "path": "assets/roboto-greek-700-normal-38ccf714.woff2",
-      "bytes": 6904
-    },
-    {
-      "path": "assets/roboto-greek-300-normal-c7fe3f66.woff",
-      "bytes": 6444
-    },
-    {
-      "path": "assets/roboto-greek-400-normal-5a9baec0.woff",
-      "bytes": 6344
-    },
-    {
-      "path": "assets/roboto-greek-500-normal-f60c4ece.woff",
-      "bytes": 6320
-    },
-    {
-      "path": "assets/roboto-greek-700-normal-ddd7b00a.woff",
-      "bytes": 6308
-    },
-    {
-      "path": "assets/roboto-vietnamese-500-normal-9b2da7c3.woff2",
-      "bytes": 5864
-    },
-    {
-      "path": "assets/roboto-vietnamese-400-normal-666d5c2b.woff2",
-      "bytes": 5796
     },
     {
       "path": "assets/workbox-window.prod.es5-c46a1faa.js",
       "bytes": 5788
     },
     {
-      "path": "assets/roboto-vietnamese-700-normal-da86283c.woff2",
-      "bytes": 5708
-    },
-    {
-      "path": "assets/roboto-vietnamese-300-normal-ec072a9a.woff2",
-      "bytes": 5688
-    },
-    {
       "path": "logo192.png",
       "bytes": 5050
-    },
-    {
-      "path": "assets/roboto-vietnamese-300-normal-50132793.woff",
-      "bytes": 5024
-    },
-    {
-      "path": "assets/roboto-vietnamese-400-normal-491d7c4f.woff",
-      "bytes": 5000
-    },
-    {
-      "path": "assets/roboto-vietnamese-500-normal-a1f7f264.woff",
-      "bytes": 4980
-    },
-    {
-      "path": "assets/roboto-vietnamese-700-normal-c89b707e.woff",
-      "bytes": 4972
     },
     {
       "path": "favicon-32x32.png",
@@ -441,6 +245,10 @@
     {
       "path": ".well-known/assetlinks.json",
       "bytes": 432
+    },
+    {
+      "path": "assets/index-ad548a1c.css",
+      "bytes": 307
     },
     {
       "path": "robots.txt",
