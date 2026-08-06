@@ -1,0 +1,19 @@
+{
+  "status": "CP0_REPQUEST_AND_WORKOUT_COOL_PINNED",
+  "repquest": {
+    "repository": "https://github.com/marcsances/repquest",
+    "commit": "bc488fa76c5f37247831a9a86b955d35d87ca61c",
+    "license": "GPL-3.0-or-later"
+  },
+  "workoutCool": {
+    "repository": "https://github.com/Snouzy/workout-cool",
+    "commit": "e3dcd23b4ebdfb6254010b9a7c350cfef9e236c8",
+    "license": "MIT"
+  },
+  "freeExerciseDb": {
+    "repository": "https://github.com/yuhonas/free-exercise-db",
+    "commit": null,
+    "license": "Unlicense",
+    "status": "DEFERRED_TO_TASK_04"
+  }
+}

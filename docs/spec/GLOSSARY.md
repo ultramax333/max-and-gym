@@ -1,0 +1,26 @@
+# Glossary
+
+- **ADR — Architecture Decision Record:** short document recording a significant technical decision and its consequences.
+- **API — Application Programming Interface:** defined way for software parts to communicate.
+- **Blob — Binary Large Object:** browser object used to store image bytes.
+- **CI — Continuous Integration:** automated checks run for code changes.
+- **CSS — Cascading Style Sheets:** language used to style web interfaces.
+- **Dexie:** TypeScript/JavaScript wrapper around IndexedDB.
+- **E2E — End-to-End:** test of a complete user journey.
+- **e1RM — estimated one-repetition maximum:** calculated estimate from a performed set, not a measured maximum.
+- **FSD — Feature-Sliced Design:** frontend organization model used by Workout.cool; only selected ideas are relevant.
+- **Git SHA:** immutable identifier of a Git commit.
+- **IndexedDB:** structured browser database.
+- **MIME type — Multipurpose Internet Mail Extensions type:** identifier for a file format such as `image/webp`.
+- **MIT licence:** permissive software licence requiring preservation of its notice.
+- **MUI — Material UI:** React component system used by max&gym.
+- **PWA — Progressive Web App:** website that can be installed and work offline.
+- **PR — Pull Request:** proposed set of code changes for review.
+- **RIR — Repetitions in Reserve:** estimated repetitions remaining before failure.
+- **RPE — Rating of Perceived Exertion:** subjective effort rating.
+- **Service worker:** browser worker used for offline caching and update control.
+- **Telemetry:** automatic transmission of usage or error data.
+- **Transaction:** group of database operations committed together or rolled back together.
+- **UUID — Universally Unique Identifier:** identifier used for local records and critical operations.
+- **WCAG — Web Content Accessibility Guidelines:** accessibility standard.
+- **Workbox:** service-worker tooling.

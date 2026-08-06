@@ -1,0 +1,7 @@
+Execute `CODEX_TASKS/00_AUDIT_BASE_AND_DONOR.md`.
+
+Read `EXECUTION_CORE.md`, `PROJECT_CONTRACT.json`, `README_FIRST.md`, `AGENTS.md`, `CODEX_MASTER_PROMPT.md`, `TASK_CONTEXT_MAP.md`, and then every file under `docs/spec/` because Task 00 is the one complete design audit.
+
+This first task is audit-only except for minimal changes needed to obtain an honest reproducible baseline. Do not redesign the UI, change the database schema, import exercises, or implement product features.
+
+Produce the required audit documents, pin immutable RepQuest and Workout.cool commit references, run the existing project, identify telemetry and runtime network calls, inventory the database and PWA behavior, create the donor UI matrix, propose the migration sequence, write the checkpoint report, open one pull request, and stop.

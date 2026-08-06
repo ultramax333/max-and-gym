@@ -1,0 +1,92 @@
+name: Bug report
+description: Report a reproducible max&gym defect
+title: "[Bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not clear browser data. Export diagnostics first when possible.
+  - type: input
+    id: error_id
+    attributes:
+      label: Error ID
+      description: Copy the ID shown by max&gym.
+      placeholder: WORKOUT-...
+  - type: input
+    id: version
+    attributes:
+      label: App version and Git SHA
+      placeholder: 1.0.0 / abc123...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Boot or routing
+        - Database or migration
+        - Active workout
+        - Timer
+        - Program generator
+        - Exercise library
+        - Photos or storage
+        - Backup or import
+        - Progressive Web App or cache
+        - User interface
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device, operating system, browser
+      placeholder: Android / Chrome ...
+    validations:
+      required: true
+  - type: dropdown
+    id: offline
+    attributes:
+      label: Network state
+      options:
+        - Online
+        - Offline
+        - Both
+        - Unknown
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic package or self-test summary
+      description: Do not upload a personal `.maxgym` backup.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Data safety
+      options:
+        - label: I did not clear browser data.
+          required: true
+        - label: I did not attach progress photos or a personal backup.
+          required: true

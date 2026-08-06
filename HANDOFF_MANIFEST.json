@@ -1,0 +1,455 @@
+{
+  "project": "max&gym",
+  "package": "Codex implementation handoff",
+  "packageVersion": "2.0.0",
+  "preparedAt": "2026-08-05",
+  "generatedAt": "2026-08-05T13:15:12.543506+00:00",
+  "foundation": "https://github.com/marcsances/repquest",
+  "uiDonor": "https://github.com/Snouzy/workout-cool",
+  "fileCountIncludingManifest": 89,
+  "fileCountHashed": 88,
+  "hashAlgorithm": "SHA-256",
+  "manifestSelfHashExcluded": true,
+  "files": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "bytes": 2150,
+      "sha256": "6ac11c8ded2b5bbd94e9833d4af7eb93331492a87ac2944d401c87085dde25f0"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "bytes": 46,
+      "sha256": "8b09e7df09fc7534371988062769ee427af2954a02c04c763e8a8005be0f2be4"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "bytes": 1301,
+      "sha256": "d91f11d617eb3bac1dff8cac3de981753523ad3cab42744aca44511056b79064"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 6246,
+      "sha256": "9f2108a83728a87aef7b2bf65df45517b126ad4a543efc7e7627c65cbc1a42dd"
+    },
+    {
+      "path": "CODEX.md",
+      "bytes": 511,
+      "sha256": "2403887539bfd31d68007aaa90872993b82b1f01960d2abb927677d52e6d6516"
+    },
+    {
+      "path": "CODEX_MASTER_PROMPT.md",
+      "bytes": 2877,
+      "sha256": "46283b1882bbe57a7fff696024f2ad70b6e0c239d6cb83abc2c5404c38e3b81b"
+    },
+    {
+      "path": "CODEX_TASKS/00_AUDIT_BASE_AND_DONOR.md",
+      "bytes": 4813,
+      "sha256": "57cbd230b847dfe381df4ae3e2183d17a28249f716d5cac5c585ee46a7478e49"
+    },
+    {
+      "path": "CODEX_TASKS/01_STABILIZE_AND_DIAGNOSTICS.md",
+      "bytes": 3209,
+      "sha256": "5fb5f860b6d339826b777eea099d11800da034955951d65b956e0eba60b4ae61"
+    },
+    {
+      "path": "CODEX_TASKS/02_DESIGN_SYSTEM_AND_SHELL.md",
+      "bytes": 2521,
+      "sha256": "fb7b36f6283ad973cbb731cbc26c335228c85140314336b4a61f446a6925576f"
+    },
+    {
+      "path": "CODEX_TASKS/03_CORE_WORKOUT_VERTICAL_SLICE.md",
+      "bytes": 3497,
+      "sha256": "123d2a38a9568c105a0e35cf4dfb7a0f8ba68882460c03de9955a1fd589b5e27"
+    },
+    {
+      "path": "CODEX_TASKS/04_EXERCISE_LIBRARY.md",
+      "bytes": 2708,
+      "sha256": "65d9f282f7fcf000bb0d0d877080948089007ad6b946a0743ab4160642183e92"
+    },
+    {
+      "path": "CODEX_TASKS/05_PROGRAM_BUILDER.md",
+      "bytes": 2212,
+      "sha256": "029af38357e2b8571a96e32911472660d81a572fc2b59593cc42faebbd1c8512"
+    },
+    {
+      "path": "CODEX_TASKS/06_GENERATOR_AND_SEED_PROGRAMS.md",
+      "bytes": 3128,
+      "sha256": "fde429d802810928f573de4711995d5b2240f8b2627bfcadf5c8004f35668ed4"
+    },
+    {
+      "path": "CODEX_TASKS/07_PROGRESS_PHOTOS_BACKUP.md",
+      "bytes": 2980,
+      "sha256": "0b97f041747ac8dbd5f67b79826a0c9319add8a96b7043a677889a62c20755af"
+    },
+    {
+      "path": "CODEX_TASKS/08_OFFLINE_HARDENING_RELEASE.md",
+      "bytes": 2713,
+      "sha256": "f1f429ce135705b24e0997813e0454a0e412524d5cbba4fc0391f2a699870a01"
+    },
+    {
+      "path": "CODEX_TASKS/90_DIAGNOSTIC_AUDIT.md",
+      "bytes": 5417,
+      "sha256": "bb4dc41b38281694efe7b05be51d12a4e20039b7af5389131716dc3509807596"
+    },
+    {
+      "path": "CODEX_TASKS/README.md",
+      "bytes": 642,
+      "sha256": "5cf7790171652096930b3a1cf4eb846879c288f1e128abf3001ad0265dc4d972"
+    },
+    {
+      "path": "EXECUTION_CORE.md",
+      "bytes": 2764,
+      "sha256": "ae1871e3e23c9f9904d9846a114ebc7f1f4caf645eb12c1b4fc16e36cf4f1d45"
+    },
+    {
+      "path": "FILE_INDEX.md",
+      "bytes": 4409,
+      "sha256": "e7ba70a590acc2d1921fd537a138cd4fe19250494750720099b5e73241f7cc96"
+    },
+    {
+      "path": "PROJECT_CONTRACT.json",
+      "bytes": 2335,
+      "sha256": "68a52854c62d7e5cc17108835b507b1e84a62a6107130f28ee9d80646c85a205"
+    },
+    {
+      "path": "PROJECT_STATUS.md",
+      "bytes": 434,
+      "sha256": "87bfcec29ed1bb6680af2b336d670871c583f7aa7f9c56f0fc2a91ad3201f0c4"
+    },
+    {
+      "path": "README_FIRST.md",
+      "bytes": 5564,
+      "sha256": "ab02d0c94620f9f2ba2d94a229212a2c9f15d73e3fe318fe1af5e7e1ea205816"
+    },
+    {
+      "path": "RUN_PROJECT_AUDIT.txt",
+      "bytes": 923,
+      "sha256": "da6f65fdbbd7344bbfad4445d3f16d18e122839e012bb9e9f2e5154d74b7b665"
+    },
+    {
+      "path": "SOURCE_PINS.json",
+      "bytes": 441,
+      "sha256": "1a95eab087ae3083aa756ddf32aa5d3882bb780e09992573306aa193f0a900be"
+    },
+    {
+      "path": "START_CODEX_TASK.txt",
+      "bytes": 814,
+      "sha256": "1b30e5e1650c7f92845e7a3501e680a0eb84d3c1afcd1cd65f135c81fb6ff854"
+    },
+    {
+      "path": "TASK_CONTEXT_MAP.md",
+      "bytes": 2559,
+      "sha256": "a31c80085f64c1dd94185143fc67cd7b4e18e545988e69687e02e5098d979594"
+    },
+    {
+      "path": "THIRD_PARTY_CODE_MAP.md",
+      "bytes": 866,
+      "sha256": "9bb27cb778a428fa8f0b210fc790bd48641b29515c534a294a20fbd3b5cd7488"
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "bytes": 1530,
+      "sha256": "e099963a02592f60a537d3975ac2a5e701a37b44cbcc37fc7394d01b1f40ba73"
+    },
+    {
+      "path": "docs/adr/0001-repquest-as-foundation.md",
+      "bytes": 846,
+      "sha256": "20d2621b8a433543fb7f89a251cab17526172f77bb93561658433a715ca87ba3"
+    },
+    {
+      "path": "docs/adr/0002-workoutcool-as-ui-donor.md",
+      "bytes": 561,
+      "sha256": "930fb363a30eddde85d45f5fa0c23178c99be4c122205ad83e160cff0ba1e688"
+    },
+    {
+      "path": "docs/adr/0003-material-ui-only.md",
+      "bytes": 514,
+      "sha256": "4bf3380d10f8eb5c2da2f38692895bc20ab99a966f61d591010684fcad205a8d"
+    },
+    {
+      "path": "docs/adr/0004-local-indexeddb-no-backend.md",
+      "bytes": 442,
+      "sha256": "eb34816c32c6ca5f50b7df9c42fde83dc99bb6c54a4b5f8eb1c91767f98b51e6"
+    },
+    {
+      "path": "docs/adr/0005-hash-routing-github-pages.md",
+      "bytes": 379,
+      "sha256": "bb6065e1d473c9d7d9f6ca6a274bf3a51441a54a817bf6b718f2993965b79580"
+    },
+    {
+      "path": "docs/adr/0006-prompted-pwa-updates.md",
+      "bytes": 359,
+      "sha256": "b5c2150b9694342e2d14f5ace2e29fdb07e63abdc723dcbd6d63d26ef4651dc0"
+    },
+    {
+      "path": "docs/adr/0007-diagnostics-first.md",
+      "bytes": 415,
+      "sha256": "bec67518a91612cc93ca51937702d7086ec4927ad936e426f737d17c278766d4"
+    },
+    {
+      "path": "docs/adr/0008-workout-vertical-slice-first.md",
+      "bytes": 422,
+      "sha256": "fec95732d4b67547abf8b75cbfba73214680b5ea0e9f9e8c908fdba542dc4aa8"
+    },
+    {
+      "path": "docs/adr/0009-v1-media-images-not-video.md",
+      "bytes": 404,
+      "sha256": "ef88c591a1bc14dc1a3db3eb6b7fbb6056c5c804059154619e7381fab624233b"
+    },
+    {
+      "path": "docs/adr/0010-separate-personal-and-diagnostic-exports.md",
+      "bytes": 368,
+      "sha256": "130ca251ee059d2f7880f63ef8c6e3f29a65f078f9dc74e35a6c760787dc1b64"
+    },
+    {
+      "path": "docs/reports/README.md",
+      "bytes": 350,
+      "sha256": "2399a3ac6aaa17ef7895a3705da23a53d8f4f0798393f575116b2b9d51941128"
+    },
+    {
+      "path": "docs/reports/incidents/README.md",
+      "bytes": 434,
+      "sha256": "f631536977591a544bbea9a5f1694f8580f7e52d5bda1e37bed075f5db1be202"
+    },
+    {
+      "path": "docs/spec/ACCEPTANCE_TESTS.md",
+      "bytes": 10483,
+      "sha256": "5406a25c7b303165d09cbef73671686ef0171e6a2d72440602b16893c85cabb0"
+    },
+    {
+      "path": "docs/spec/ARCHITECTURE.md",
+      "bytes": 10601,
+      "sha256": "035aca595ff47ed4747a86fd015869d67d579584e354d9dbf52fe2ef45b7d5ef"
+    },
+    {
+      "path": "docs/spec/AUDIT_AUTOMATION_CONTRACT.md",
+      "bytes": 3778,
+      "sha256": "2fdd587dac4155b3816ae3594a4c50593fc7e975ae1c9e471cd7b6a100d0981c"
+    },
+    {
+      "path": "docs/spec/BACKLOG.md",
+      "bytes": 6756,
+      "sha256": "282761e6a62d33916e79b0b8952f85699ea11d52485a2a8d96584761b51aa456"
+    },
+    {
+      "path": "docs/spec/BACKUP_IMPORT_STATE_MACHINE.md",
+      "bytes": 1664,
+      "sha256": "2aafa3d792356903bc8a7fdad722ad2346a166ce06d7f39a700d1fc503b79f10"
+    },
+    {
+      "path": "docs/spec/CHECKPOINTS.md",
+      "bytes": 7256,
+      "sha256": "c9a298c27db6d1b0518ee9d947448621f409f4ff8f8c521c3df25d227cda4f2c"
+    },
+    {
+      "path": "docs/spec/COMPONENT_CATALOG.md",
+      "bytes": 2551,
+      "sha256": "ca869b2ddf9ebb8e81cf0bb6de601df641539103c571383374ab0c1a01188580"
+    },
+    {
+      "path": "docs/spec/COPY_DECK.md",
+      "bytes": 2799,
+      "sha256": "37554b0e3e42f298e5835decd7f69feaf0273e2b331c04a7023ec44650c7dcc7"
+    },
+    {
+      "path": "docs/spec/DATABASE_MIGRATION_PROTOCOL.md",
+      "bytes": 2082,
+      "sha256": "20b8050b1222cd5916b67af04e1e0c7f277c7dc11fa39d47c9a367d132c5a9ad"
+    },
+    {
+      "path": "docs/spec/DATA_MODEL.md",
+      "bytes": 12449,
+      "sha256": "253ce0d060405a5bff8a8ca2d5d12cccc8a6aef2de9091cb43d6c405e6c30aa7"
+    },
+    {
+      "path": "docs/spec/DEBUG_PLAYBOOK.md",
+      "bytes": 3199,
+      "sha256": "9ce5c48b3dffd24bee2f174608f0bd122908c006fd2b5cd7ef5bdba206fa2474"
+    },
+    {
+      "path": "docs/spec/DECISIONS.md",
+      "bytes": 3481,
+      "sha256": "d176ef8261c85a4f265b8d23945b31685a5b8eb2a6ab7b0472e74f6f97a45c68"
+    },
+    {
+      "path": "docs/spec/DEPLOYMENT.md",
+      "bytes": 3782,
+      "sha256": "71dd1291d5fc21cba5fbc4035aba8c004ec2d51330f11615395b43784f962c35"
+    },
+    {
+      "path": "docs/spec/DESIGN_SYSTEM.md",
+      "bytes": 3896,
+      "sha256": "d4c8d869f1b020d41c52b0e1f347fef5bda44b310a21f164f12a3a82e261dcf0"
+    },
+    {
+      "path": "docs/spec/DIAGNOSTICS_AND_AUDIT.md",
+      "bytes": 10611,
+      "sha256": "bfefc1e2cf3a62bd5be8f0f627174d03891d5a2df49bb271986ef19cdf69b5a6"
+    },
+    {
+      "path": "docs/spec/EXERCISE_DATA.md",
+      "bytes": 3777,
+      "sha256": "621c89053993dd1a85fe8df4aabe41ae33a862414cf6e6b26b626a8281a319d9"
+    },
+    {
+      "path": "docs/spec/GENERATOR_ALGORITHM.md",
+      "bytes": 3754,
+      "sha256": "720145517daa204afc092c04d55071db455c8b1b5bd4bdb056973683d39a8c84"
+    },
+    {
+      "path": "docs/spec/GLOSSARY.md",
+      "bytes": 1951,
+      "sha256": "c3d634fca95d943e891b83ed215a51b89795a1c19662a0f22286d079d986f27d"
+    },
+    {
+      "path": "docs/spec/HOW_TO_AUDIT_WITH_CHATGPT_FR.md",
+      "bytes": 2958,
+      "sha256": "e69cd6a0272830651b26bf28d14f5038827494e6e1b72075b4dbca2f66ccdde4"
+    },
+    {
+      "path": "docs/spec/HOW_TO_START_WITH_CODEX_FR.md",
+      "bytes": 2884,
+      "sha256": "2a216f321c005a014b1d89fbdc377a59bbc60e6ea79920f931ab16f188ab24d0"
+    },
+    {
+      "path": "docs/spec/KNOWN_FAILURE_MODES.md",
+      "bytes": 6707,
+      "sha256": "41d04dac3c79069820b52274733218acb592d7301617d2b51547082ffef012cd"
+    },
+    {
+      "path": "docs/spec/LICENSE_AND_SOURCES.md",
+      "bytes": 2665,
+      "sha256": "5989b32734d7d1f7cac7add8bd2f7d2c67f40d324b14e9226f50f74d467eebff"
+    },
+    {
+      "path": "docs/spec/MIGRATION_STRATEGY.md",
+      "bytes": 3643,
+      "sha256": "6fe912acdaaedce8958f932d07ec2a1c6f6bdfaea6444f5869d4e0b41544805f"
+    },
+    {
+      "path": "docs/spec/PRELIMINARY_UI_DONOR_MAP.md",
+      "bytes": 2857,
+      "sha256": "7f85927fec46b31be2d61c10bbc476b8b6d4e3c371f6731ed97a2e7bcebb1cbd"
+    },
+    {
+      "path": "docs/spec/PRODUCT_SPEC.md",
+      "bytes": 9471,
+      "sha256": "fc4109089370056b7e4e1868c4b001513e1feb2be35b3c0868d30582b4ab11d3"
+    },
+    {
+      "path": "docs/spec/PWA_UPDATE_STATE_MACHINE.md",
+      "bytes": 1105,
+      "sha256": "d9844838e9f75eb183ae96c7199303211e648ba8a16f49a3699c8ce038fa8660"
+    },
+    {
+      "path": "docs/spec/QUALITY_STRATEGY.md",
+      "bytes": 4533,
+      "sha256": "e5665d99a4b517c05f396d3802e64eac0ccef06ad2ce3f05ef0cf7045cca4907"
+    },
+    {
+      "path": "docs/spec/REFERENCES.md",
+      "bytes": 2134,
+      "sha256": "8d3c1ba8c8cfb20ed9b6b7456822da56769846f8bc15afb5eb07f9111a9a2e0f"
+    },
+    {
+      "path": "docs/spec/RELEASE_PROCESS.md",
+      "bytes": 2443,
+      "sha256": "8d31668ce23f788377884bd0d4eef973e91b2608e788338120921c56c9789950"
+    },
+    {
+      "path": "docs/spec/RISK_REGISTER.md",
+      "bytes": 4246,
+      "sha256": "4e619456b374e54200f099f3d868a6f267a73da1cb6fb00bb28be28c8d0f7934"
+    },
+    {
+      "path": "docs/spec/SAFETY_AND_PRIVACY.md",
+      "bytes": 4052,
+      "sha256": "989fcfb17912d6ef3e44d237e6f4d045847c04a05f166196e1d8ca6bd3e999ec"
+    },
+    {
+      "path": "docs/spec/SCOPE_CUTS_AND_DEFERRED.md",
+      "bytes": 2206,
+      "sha256": "48c2a557defc2fad3eb20ea15620eeaec65081c20809fa3e172311a65164c637"
+    },
+    {
+      "path": "docs/spec/SCREEN_BLUEPRINTS.md",
+      "bytes": 3841,
+      "sha256": "c278dac0246413873846e83161f2c1d828fdd6101e9e5b1c079cb033b79bdf57"
+    },
+    {
+      "path": "docs/spec/SEED_PROGRAMS.md",
+      "bytes": 6415,
+      "sha256": "84f50000fc5750af49a3eba080a4ea9c421efcd08c6d06edb61da6ab770974cb"
+    },
+    {
+      "path": "docs/spec/TEST_FIXTURE_MATRIX.md",
+      "bytes": 1709,
+      "sha256": "d2f54837d4e1801c5669042998cd9fcf34a46d02894456607d1dbb1a84df57f0"
+    },
+    {
+      "path": "docs/spec/TRACEABILITY_MATRIX.md",
+      "bytes": 9856,
+      "sha256": "2a2c24da3cab4b97acc1012faf9c0208ffc526bc88c16d9203721e4059c5f970"
+    },
+    {
+      "path": "docs/spec/TRAINING_ENGINE.md",
+      "bytes": 10883,
+      "sha256": "877c0ba904125500abf9efe5423277fd40c7304bebf455cac666c12817854066"
+    },
+    {
+      "path": "docs/spec/UI_ADOPTION_STRATEGY.md",
+      "bytes": 3455,
+      "sha256": "544916a3d3f4fe10e6578b1817a90dd4037b68055d2a14864446b9f33ae01d5b"
+    },
+    {
+      "path": "docs/spec/USER_FLOWS.md",
+      "bytes": 5530,
+      "sha256": "95a89cc49ff994f134f67ee5cd1d6cccac459141793d92618bb6b678e04c473c"
+    },
+    {
+      "path": "docs/spec/WORKOUT_STATE_MACHINE.md",
+      "bytes": 3128,
+      "sha256": "5d2eeee8ff24577857a5f90490f8e95afc7d954ee079d1ff8f590be1ad6503df"
+    },
+    {
+      "path": "docs/templates/ARCHITECTURE_DECISION_TEMPLATE.md",
+      "bytes": 304,
+      "sha256": "93af951b3c9d971842c4693e0cbd6db8f76899729d4703d3c62e064b9fca587a"
+    },
+    {
+      "path": "docs/templates/AUDIT_REPORT_TEMPLATE.md",
+      "bytes": 1554,
+      "sha256": "7515171aea9ad087e2c6bb3743d462f5526442caf8734d8bb976f954a99a8258"
+    },
+    {
+      "path": "docs/templates/BUG_TRIAGE_TEMPLATE.md",
+      "bytes": 973,
+      "sha256": "ef68f5a22ab672c075156f08aa5ffb403e6c4ce132f192f9bde857dd35dbf069"
+    },
+    {
+      "path": "docs/templates/CHECKPOINT_REPORT_TEMPLATE.md",
+      "bytes": 1331,
+      "sha256": "ec49549af74697340e7db980393f4a121829e6ab815fb86595d0e1d49cf1e1fc"
+    },
+    {
+      "path": "docs/templates/MIGRATION_EVIDENCE_TEMPLATE.md",
+      "bytes": 542,
+      "sha256": "8f21e82067ef5369150604a6c1b8ebafc1a2ea8e1d1ec17557bd8ffd8fcf306d"
+    },
+    {
+      "path": "docs/templates/PR_EVIDENCE_TEMPLATE.md",
+      "bytes": 579,
+      "sha256": "451185cee3f14c933b611bb0a6696f0a66f698d9a26007d7ad20b04c3e02c379"
+    },
+    {
+      "path": "docs/templates/ROOT_CAUSE_REPORT_TEMPLATE.md",
+      "bytes": 2128,
+      "sha256": "2446e4967dff65d909d0ce3555bdc25226a3c2c32483b725cc7112672524aa2e"
+    },
+    {
+      "path": "docs/templates/UI_DONOR_MATRIX_TEMPLATE.md",
+      "bytes": 772,
+      "sha256": "68f83c0367f6298c93912240d33c6d33b51e044911645654fab3c22a72f7a045"
+    }
+  ]
+}

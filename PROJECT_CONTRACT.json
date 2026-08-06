@@ -1,0 +1,119 @@
+{
+  "project": "max&gym",
+  "contractVersion": "2.0.0",
+  "preparedAt": "2026-08-05",
+  "language": "en",
+  "primaryClient": "Android Chrome",
+  "hosting": "GitHub Pages",
+  "foundation": {
+    "repository": "https://github.com/marcsances/repquest",
+    "role": "technical-foundation",
+    "license": "GPL-3.0-or-later",
+    "pinRequired": true
+  },
+  "uiDonor": {
+    "repository": "https://github.com/Snouzy/workout-cool",
+    "role": "ui-reference-and-selective-client-code-donor",
+    "license": "MIT",
+    "pinRequired": true,
+    "forbiddenImports": [
+      "Next.js server architecture",
+      "Prisma",
+      "PostgreSQL",
+      "Better Auth",
+      "Stripe",
+      "advertising",
+      "premium",
+      "email",
+      "leaderboard",
+      "social systems"
+    ]
+  },
+  "uiFramework": "Material UI only",
+  "persistence": "Dexie over IndexedDB",
+  "runtimeNetworkPolicy": "No third-party runtime dependency for core features",
+  "scope": {
+    "frequency": [
+      2,
+      3
+    ],
+    "mainDurationsMinutes": [
+      40,
+      60
+    ],
+    "coreDurationsMinutes": [
+      10,
+      15
+    ],
+    "goals": [
+      "strength",
+      "hypertrophy",
+      "conditioning"
+    ],
+    "tracking": [
+      "workouts",
+      "bodyWeight",
+      "measurements",
+      "progressPhotos"
+    ],
+    "theme": [
+      "dark"
+    ],
+    "exerciseMediaV1": [
+      "two-position-seed-images",
+      "one-custom-image"
+    ]
+  },
+  "hardExclusions": [
+    "bunny-jump",
+    "burpee-like",
+    "plank-to-stand",
+    "rapid-floor-to-standing",
+    "high-impact-ground-transition"
+  ],
+  "process": [
+    "AUDIT",
+    "PLAN",
+    "APPLY",
+    "VERIFY",
+    "CHECKPOINT"
+  ],
+  "checkpoints": [
+    "CP0",
+    "CP1",
+    "CP2",
+    "CP3",
+    "CP4",
+    "CP5",
+    "CP6",
+    "CP7",
+    "CP8"
+  ],
+  "noAutoMerge": true,
+  "noAutomaticNextTask": true,
+  "documentPrecedence": [
+    "PROJECT_CONTRACT.json",
+    "docs/spec/DECISIONS.md",
+    "docs/spec/SAFETY_AND_PRIVACY.md",
+    "docs/spec/PRODUCT_SPEC.md",
+    "docs/spec/ACCEPTANCE_TESTS.md",
+    "docs/spec/ARCHITECTURE.md"
+  ],
+  "constructionTasks": [
+    "00",
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08"
+  ],
+  "diagnosticTask": {
+    "id": "90",
+    "defaultMode": "DIAGNOSE",
+    "fixRequiresExplicitMode": true,
+    "advancesCheckpoint": false
+  }
+}

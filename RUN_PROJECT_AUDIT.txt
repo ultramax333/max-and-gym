@@ -1,0 +1,7 @@
+Execute `CODEX_TASKS/90_DIAGNOSTIC_AUDIT.md`.
+
+This is a diagnostic task, not a feature task. Read `EXECUTION_CORE.md`, `PROJECT_CONTRACT.json`, `AGENTS.md`, `PROJECT_STATUS.md`, the Task 90 context in `TASK_CONTEXT_MAP.md`, the latest accepted checkpoint report, and the supplied bug evidence.
+
+Begin read-only. Reproduce the failure, identify the first failing layer, create a failing automated test when possible, compare with the last green checkpoint, and produce a root-cause report. Do not clear IndexedDB, reset the database, change the service worker, or apply speculative fixes merely to make the symptom disappear.
+
+After the root cause is supported by evidence, propose the smallest fix, the exact regression tests, the affected requirements, the data/cache/migration risk, and the rollback plan. Implement a fix only when the request explicitly includes `MODE=FIX`; otherwise stop after the diagnostic report.
