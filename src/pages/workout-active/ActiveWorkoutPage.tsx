@@ -60,15 +60,15 @@ function WorkoutRestBar({snapshot, onChange}: {snapshot: ActiveWorkoutSnapshot; 
     const paused = snapshot.timer.status === 'paused';
     return <Paper sx={{position: 'sticky', bottom: 0, zIndex: 10, p: 1.5, borderRadius: 0, borderLeft: 0, borderRight: 0}}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
-            <Stack><Typography variant="overline">RÉCUPÉRATION</Typography><Typography variant="h5" sx={{fontVariantNumeric: 'tabular-nums'}}>{formatTimer(remaining)}</Typography></Stack>
+            <Stack><Typography variant="overline">REST</Typography><Typography variant="h5" sx={{fontVariantNumeric: 'tabular-nums'}}>{formatTimer(remaining)}</Typography></Stack>
             <Stack direction="row" alignItems="center">
-                <IconButton aria-label="Retirer 15 secondes" onClick={() => void service?.adjustTimer(snapshot.session.id, -15).then(onChange)}><Remove/></IconButton>
-                <IconButton aria-label={paused ? 'Reprendre le repos' : 'Mettre le repos en pause'} onClick={() => void (paused ? service?.resumeTimer(snapshot.session.id) : service?.pauseTimer(snapshot.session.id))?.then(onChange)}>{paused ? <PlayArrow/> : <Pause/>}</IconButton>
-                <IconButton aria-label="Ajouter 15 secondes" onClick={() => void service?.adjustTimer(snapshot.session.id, 15).then(onChange)}><Add/></IconButton>
+                <IconButton aria-label="Remove 15 seconds" onClick={() => void service?.adjustTimer(snapshot.session.id, -15).then(onChange)}><Remove/></IconButton>
+                <IconButton aria-label={paused ? 'Resume rest' : 'Pause rest'} onClick={() => void (paused ? service?.resumeTimer(snapshot.session.id) : service?.pauseTimer(snapshot.session.id))?.then(onChange)}>{paused ? <PlayArrow/> : <Pause/>}</IconButton>
+                <IconButton aria-label="Add 15 seconds" onClick={() => void service?.adjustTimer(snapshot.session.id, 15).then(onChange)}><Add/></IconButton>
                 <Button startIcon={<SkipNext/>} onClick={() => void service?.skipTimer(snapshot.session.id).then(onChange)}>Passer</Button>
             </Stack>
         </Stack>
-        <Typography variant="caption" color="text.secondary">Le signal est au mieux : Android peut le bloquer si l’application est fermée.</Typography>
+        <Typography variant="caption" color="text.secondary">The signal is best effort: Android may block it when the app is closed.</Typography>
     </Paper>;
 }
 
@@ -91,7 +91,7 @@ export function ActiveWorkoutPage() {
             setSnapshot(await service.recover());
             setError(undefined);
         } catch {
-            setError('La reprise automatique a échoué. Ouvre Diagnostics avant de réessayer.');
+            setError('Automatic recovery failed. Open Diagnostics before trying again.');
         } finally {
             setLoading(false);
         }
@@ -146,7 +146,7 @@ export function ActiveWorkoutPage() {
             setSnapshot(await action());
             setError(undefined);
         } catch {
-            setError('L’écriture n’a pas été validée. Rien n’a été perdu ; tu peux réessayer.');
+            setError('The write was not committed. Nothing was lost; you can retry.');
         } finally {
             setBusy(false);
         }
@@ -157,38 +157,38 @@ export function ActiveWorkoutPage() {
         await perform(() => service.start());
     };
 
-    if (loading) return <Layout title="Séance active" hideNav><LinearProgress aria-label="Chargement de la séance"/></Layout>;
-    if (!snapshot) return <Layout title="Séance active" hideNav><ScreenContainer>{error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}<StatePanel title="Aucune séance active" description="Démarre la séance essentielle : deux exercices et six séries, entièrement disponibles hors ligne." icon={<FitnessCenter/>} action={<PrimaryButton startIcon={<PlayArrow/>} onClick={() => void start()} disabled={busy}>Démarrer</PrimaryButton>}/></ScreenContainer></Layout>;
+    if (loading) return <Layout title="Active workout" hideNav><LinearProgress aria-label="Loading workout"/></Layout>;
+    if (!snapshot) return <Layout title="Active workout" hideNav><ScreenContainer>{error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}<StatePanel title="No active workout" description="Start the essential workout: two exercises and six sets, fully available offline." icon={<FitnessCenter/>} action={<PrimaryButton startIcon={<PlayArrow/>} onClick={() => void start()} disabled={busy}>Start</PrimaryButton>}/></ScreenContainer></Layout>;
 
-    return <Layout title={snapshot.session.nameSnapshot} hideNav hideBack toolItems={<Chip label={snapshot.session.status === 'paused' ? 'En pause' : 'Active'} color={snapshot.session.status === 'paused' ? 'warning' : 'success'}/>}>
+    return <Layout title={snapshot.session.nameSnapshot} hideNav hideBack toolItems={<Chip label={snapshot.session.status === 'paused' ? 'Paused' : 'Active'} color={snapshot.session.status === 'paused' ? 'warning' : 'success'}/>}>
         <ScreenContainer>
             <Stack spacing={2}>
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography color="text.secondary">{completed.length}/{snapshot.sets.length} séries terminées</Typography>
-                    <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Reprendre' : 'Pause'}</Button>
+                    <Typography color="text.secondary">{completed.length}/{snapshot.sets.length} sets completed</Typography>
+                    <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Resume' : 'Pause'}</Button>
                 </Stack>
-                <LinearProgress variant="determinate" value={(completed.length / snapshot.sets.length) * 100} aria-label="Progression de la séance"/>
+                <LinearProgress variant="determinate" value={(completed.length / snapshot.sets.length) * 100} aria-label="Workout progress"/>
                 {!allSetsDone && currentExercise && currentSet && <>
-                    <Card><Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">Média local à venir</Typography></Stack></Box><CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
-                    <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Performance précédente</Typography><Typography color="text.secondary">Aucun historique pour cette séance locale.</Typography></Paper>
-                    <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between"><Typography component="h2" variant="h6">Série {currentSet.sequenceIndex + 1}</Typography><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
+                    <Card><Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">Local media coming soon</Typography></Stack></Box><CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
+                    <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography><Typography color="text.secondary">No history for this local workout.</Typography></Paper>
+                    <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between"><Typography component="h2" variant="h6">Set {currentSet.sequenceIndex + 1}</Typography><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
-                            <TextField fullWidth label="Charge réelle (kg)" type="number" value={load} onChange={(event) => setLoad(Number(event.target.value))} inputProps={{inputMode: 'decimal', min: 0, step: 0.5}}/>
-                            <TextField fullWidth label="Répétitions réelles" type="number" value={reps} onChange={(event) => setReps(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, step: 1}}/>
+                            <TextField fullWidth label="Actual load (kg)" type="number" value={load} onChange={(event) => setLoad(Number(event.target.value))} inputProps={{inputMode: 'decimal', min: 0, step: 0.5}}/>
+                            <TextField fullWidth label="Actual repetitions" type="number" value={reps} onChange={(event) => setReps(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, step: 1}}/>
                             <TextField fullWidth label="RIR (optionnel)" type="number" value={rir} onChange={(event) => setRir(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, max: 10, step: 1}}/>
                         </Stack>
-                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir}))}>Valider la série</PrimaryButton>
+                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir}))}>Complete set</PrimaryButton>
                     </Stack></Paper>
                 </>}
-                {allSetsDone && <StatePanel title="Toutes les séries sont terminées" description="Vérifie le résumé puis termine la séance. Cette action est rejouable sans créer de doublon." icon={<Flag/>}/>}
+                {allSetsDone && <StatePanel title="All sets are complete" description="Review the summary, then finish the workout. This action is safe to retry without creating duplicates." icon={<Flag/>}/>}
                 <Stack direction={{xs: 'column', sm: 'row'}} gap={1}>
-                    <SecondaryButton startIcon={<Undo/>} disabled={!latestCompleted || busy} onClick={() => latestCompleted && void perform(() => service!.undoSet(snapshot.session.id, latestCompleted.id))}>Annuler la dernière série</SecondaryButton>
-                    <Button color="error" variant="outlined" startIcon={<Flag/>} onClick={() => setFinishOpen(true)}>Terminer la séance</Button>
+                    <SecondaryButton startIcon={<Undo/>} disabled={!latestCompleted || busy} onClick={() => latestCompleted && void perform(() => service!.undoSet(snapshot.session.id, latestCompleted.id))}>Undo last set</SecondaryButton>
+                    <Button color="error" variant="outlined" startIcon={<Flag/>} onClick={() => setFinishOpen(true)}>Finish workout</Button>
                 </Stack>
             </Stack>
         </ScreenContainer>
         <WorkoutRestBar snapshot={snapshot} onChange={setSnapshot}/>
-        <Dialog open={finishOpen} onClose={() => setFinishOpen(false)}><DialogTitle>Terminer la séance ?</DialogTitle><DialogContent><Typography>Les séries restantes resteront non réalisées dans ce résumé.</Typography></DialogContent><DialogActions><Button onClick={() => setFinishOpen(false)}>Continuer</Button><Button variant="contained" color="error" startIcon={<Flag/>} onClick={() => void perform(async () => { const result = await service!.finish(snapshot.session.id); navigate(`/workout/summary/${snapshot.session.id}`); return result; })}>Terminer</Button></DialogActions></Dialog>
+        <Dialog open={finishOpen} onClose={() => setFinishOpen(false)}><DialogTitle>Finish workout?</DialogTitle><DialogContent><Typography>Remaining sets will stay incomplete in this summary.</Typography></DialogContent><DialogActions><Button onClick={() => setFinishOpen(false)}>Continue</Button><Button variant="contained" color="error" startIcon={<Flag/>} onClick={() => void perform(async () => { const result = await service!.finish(snapshot.session.id); navigate(`/workout/summary/${snapshot.session.id}`); return result; })}>Finish</Button></DialogActions></Dialog>
     </Layout>;
 }

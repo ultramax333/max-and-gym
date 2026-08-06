@@ -36,7 +36,6 @@ The dependency gate contains one user-approved, expiring exception for `GHSA-qww
 - Android physical-device install, camera/gallery, background capability and vibration/sound checks remain platform verification items before final production acceptance;
 - GitHub Pages deployment, production SHA/tag identity, old-cache upgrade from the deployed build and production smoke have not been executed from this local workspace;
 - browser wake lock, vibration, notifications and persistent storage are best-effort capabilities;
-- some inherited and newer screens do not yet provide complete bilingual copy; English remains the configured release default;
 - the initial JavaScript is 659,633 bytes minified and the reviewed exercise-data chunk is 866,252 bytes; both pass the CP8 budgets but Vite still emits its generic 500 kB warning.
 
 ## Before updating

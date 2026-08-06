@@ -15,7 +15,7 @@ describe('progress calculations', () => {
         expect(estimatedOneRepMax(100, 5)).toBe(116.7);
         expect(result.records).toEqual({maxLoadKg: 100, maxReps: 10, maxVolumeSetKg: 950, estimatedOneRepMaxKg: 126.7});
         expect(result.estimatedMaxTrend).toHaveLength(2);
-        expect(result.textSummary).toContain('maximum estimé');
+        expect(result.textSummary).toContain('estimated maximum');
     });
 
     it('aggregates weekly/monthly frequency, volume, duration and taxonomy distributions', () => {

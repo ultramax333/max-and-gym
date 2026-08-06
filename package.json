@@ -53,7 +53,8 @@
     "audit:licenses": "node scripts/audit-licenses.mjs",
     "audit:assets": "node scripts/audit-assets.mjs",
     "audit:exercise-assets": "node scripts/audit-exercise-assets.mjs",
-    "quality": "npm run typecheck && npm run lint && npm run test && npm run test:migrations && npm run audit:dependencies && npm run audit:architecture && npm run audit:project && npm run audit:network && npm run audit:licenses && npm run audit:assets && npm run audit:exercise-assets && npm run build && npm run audit:accessibility && npm run audit:performance"
+    "audit:language": "node scripts/audit-language.mjs",
+    "quality": "npm run typecheck && npm run lint && npm run test && npm run test:migrations && npm run audit:dependencies && npm run audit:architecture && npm run audit:project && npm run audit:network && npm run audit:licenses && npm run audit:assets && npm run audit:exercise-assets && npm run audit:language && npm run build && npm run audit:accessibility && npm run audit:performance"
   },
   "engines": {
     "node": ">=24.0.0 <25",

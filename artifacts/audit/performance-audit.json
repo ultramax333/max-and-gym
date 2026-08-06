@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-08-06T22:36:31.374Z",
+  "generatedAt": "2026-08-06T23:13:50.700Z",
   "baseline": {
     "cp7EntryBytes": 2124140
   },
   "entry": {
-    "path": "assets/index-CLjsbh4F.js",
-    "bytes": 659633
+    "path": "assets/index-xmQKrTje.js",
+    "bytes": 659525
   },
   "largestRoute": {
     "path": "assets/ExerciseCatalogRepository-B6LlV5oA.js",
     "bytes": 395966
   },
-  "totalBytes": 31036071,
+  "totalBytes": 31033854,
   "checks": [
     {
       "check": "initial JavaScript",
       "status": "pass",
-      "detail": "659633 bytes"
+      "detail": "659525 bytes"
     },
     {
       "check": "CP7 entry reduction",
       "status": "pass",
-      "detail": "68.9%"
+      "detail": "69.0%"
     },
     {
       "check": "largest non-data route chunk",

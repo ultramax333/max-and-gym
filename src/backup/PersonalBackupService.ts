@@ -71,9 +71,9 @@ function jsonBytes(value: unknown): Uint8Array { return encoder.encode(JSON.stri
 
 function tableKey(table: Table, record: unknown): IndexableType {
     const keyPath = table.schema.primKey.keyPath;
-    if (typeof keyPath !== 'string' || !record || typeof record !== 'object') throw new BackupError('IMPORT_SCHEMA_INVALID', `Clé primaire non prise en charge pour ${table.name}.`);
+    if (typeof keyPath !== 'string' || !record || typeof record !== 'object') throw new BackupError('IMPORT_SCHEMA_INVALID', `Unsupported primary key for ${table.name}.`);
     const value = (record as Record<string, unknown>)[keyPath];
-    if (value === undefined || value === null) throw new BackupError('IMPORT_SCHEMA_INVALID', `Clé primaire absente pour ${table.name}.`);
+    if (value === undefined || value === null) throw new BackupError('IMPORT_SCHEMA_INVALID', `Missing primary key for ${table.name}.`);
     return value as IndexableType;
 }
 
@@ -117,7 +117,7 @@ async function archiveFromDatabase(db: DexieDB, exportedAt: string): Promise<Blo
     const {manifest, entries} = await buildEntries(data, exportedAt);
     for (const media of data.media) {
         const source = mediaRows.get(media.id);
-        if (!source) throw new BackupError('BACKUP_BUILD_FAILED', 'Média référencé introuvable.');
+        if (!source) throw new BackupError('BACKUP_BUILD_FAILED', 'Referenced media not found.');
         const bytes = await blobBytes(source.blob);
         entries.push({path: media.filePath, bytes});
         manifest.files[media.filePath] = {sha256: await sha256(bytes), bytes: bytes.length};
@@ -125,7 +125,7 @@ async function archiveFromDatabase(db: DexieDB, exportedAt: string): Promise<Blo
     const customRows = new Map((await db.customExercise.toArray()).map((entry) => [entry.id, entry]));
     for (const custom of data.customImages) {
         const blob = customRows.get(custom.exerciseId)?.customImage;
-        if (!blob) throw new BackupError('BACKUP_BUILD_FAILED', 'Image d’exercice personnalisée introuvable.');
+        if (!blob) throw new BackupError('BACKUP_BUILD_FAILED', 'Custom exercise image not found.');
         const bytes = await blobBytes(blob);
         entries.push({path: custom.filePath, bytes});
         manifest.files[custom.filePath] = {sha256: await sha256(bytes), bytes: bytes.length};
@@ -158,25 +158,25 @@ export async function buildPersonalBackup(db: DexieDB, options: {now?: Date; id?
 async function parseArchiveBytes(bytes: Uint8Array): Promise<Omit<BackupPreview, 'conflicts'>> {
     let decoded: ZipEntry[];
     try { decoded = decodeZip(bytes); }
-    catch (error) { if (error instanceof ArchiveError && error.code === 'ARCHIVE_CHECKSUM_INVALID') throw new BackupError('BACKUP_CHECKSUM_MISMATCH', error.message); throw new BackupError('IMPORT_SCHEMA_INVALID', error instanceof Error ? error.message : 'Archive invalide.'); }
+    catch (error) { if (error instanceof ArchiveError && error.code === 'ARCHIVE_CHECKSUM_INVALID') throw new BackupError('BACKUP_CHECKSUM_MISMATCH', error.message); throw new BackupError('IMPORT_SCHEMA_INVALID', error instanceof Error ? error.message : 'Invalid archive.'); }
     const entries = new Map(decoded.map((entry) => [entry.path, entry.bytes]));
     const manifestBytes = entries.get('manifest.json');
     const dataBytes = entries.get('data.json');
-    if (!manifestBytes || !dataBytes) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Manifest ou données absents.');
+    if (!manifestBytes || !dataBytes) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Manifest or data is missing.');
     let manifest: BackupManifest;
     let data: BackupData;
     try { manifest = JSON.parse(decoder.decode(manifestBytes)); data = JSON.parse(decoder.decode(dataBytes)); }
-    catch { throw new BackupError('IMPORT_SCHEMA_INVALID', 'JSON d’archive invalide.'); }
+    catch { throw new BackupError('IMPORT_SCHEMA_INVALID', 'Invalid archive JSON.'); }
     if (manifest.product !== PRODUCT || !Number.isInteger(manifest.exportFormatVersion)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Manifest incompatible.');
-    if (manifest.exportFormatVersion > buildIdentity.exportFormatVersion || manifest.databaseSchemaVersion > buildIdentity.databaseSchemaVersion) throw new BackupError('IMPORT_UNSUPPORTED_VERSION', 'Cette sauvegarde provient d’une version future.');
-    if (!data || typeof data !== 'object' || !data.tables || !Array.isArray(data.media)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Structure de données invalide.');
+    if (manifest.exportFormatVersion > buildIdentity.exportFormatVersion || manifest.databaseSchemaVersion > buildIdentity.databaseSchemaVersion) throw new BackupError('IMPORT_UNSUPPORTED_VERSION', 'This backup comes from a future version.');
+    if (!data || typeof data !== 'object' || !data.tables || !Array.isArray(data.media)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Invalid data structure.');
     data.customImages ??= [];
     for (const [path, expected] of Object.entries(manifest.files)) {
         const entry = entries.get(path);
-        if (!entry || entry.length !== expected.bytes || await sha256(entry) !== expected.sha256) throw new BackupError('BACKUP_CHECKSUM_MISMATCH', `Somme de contrôle invalide pour ${path}.`);
+        if (!entry || entry.length !== expected.bytes || await sha256(entry) !== expected.sha256) throw new BackupError('BACKUP_CHECKSUM_MISMATCH', `Invalid checksum for ${path}.`);
     }
-    for (const media of data.media) if (!entries.has(media.filePath) || !/^media\/[a-zA-Z0-9._:-]+\.bin$/.test(media.filePath)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Référence média invalide.');
-    for (const custom of data.customImages) if (!entries.has(custom.filePath) || !/^media\/custom-exercise\/[a-zA-Z0-9._:-]+\.bin$/.test(custom.filePath)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Image personnalisée invalide.');
+    for (const media of data.media) if (!entries.has(media.filePath) || !/^media\/[a-zA-Z0-9._:-]+\.bin$/.test(media.filePath)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Invalid media reference.');
+    for (const custom of data.customImages) if (!entries.has(custom.filePath) || !/^media\/custom-exercise\/[a-zA-Z0-9._:-]+\.bin$/.test(custom.filePath)) throw new BackupError('IMPORT_SCHEMA_INVALID', 'Invalid custom image.');
     return {manifest, data, entries, totalBytes: bytes.length};
 }
 
@@ -208,8 +208,8 @@ export async function previewPersonalBackup(db: DexieDB, archive: Blob): Promise
 
 export async function importPersonalBackup(db: DexieDB, archive: Blob, options: {mode: 'replace' | 'merge'; conflictPolicy?: 'reject' | 'keep-current' | 'use-imported'; availableBytes?: number; now?: Date; id?: string}): Promise<{preview: BackupPreview; safetySnapshotId: string}> {
     const preview = await previewPersonalBackup(db, archive);
-    if (options.availableBytes !== undefined && preview.manifest.mediaBytes + preview.totalBytes > options.availableBytes) throw new BackupError('IMPORT_STORAGE_INSUFFICIENT', 'Stockage disponible insuffisant.');
-    if (options.mode === 'merge' && preview.conflicts.length && (options.conflictPolicy ?? 'reject') === 'reject') throw new BackupError('IMPORT_MERGE_CONFLICT', `${preview.conflicts.length} conflit(s) à résoudre.`);
+    if (options.availableBytes !== undefined && preview.manifest.mediaBytes + preview.totalBytes > options.availableBytes) throw new BackupError('IMPORT_STORAGE_INSUFFICIENT', 'Insufficient available storage.');
+    if (options.mode === 'merge' && preview.conflicts.length && (options.conflictPolicy ?? 'reject') === 'reject') throw new BackupError('IMPORT_MERGE_CONFLICT', `${preview.conflicts.length} conflict(s) to resolve.`);
     const now = options.now ?? new Date();
     const operationId = options.id ?? globalThis.crypto.randomUUID();
     const safetySnapshotId = `pre-import:${operationId}`;
@@ -238,7 +238,7 @@ export async function importPersonalBackup(db: DexieDB, archive: Blob, options: 
             if (options.mode === 'replace' || options.conflictPolicy === 'use-imported') await db.mediaBlob.bulkPut(mediaRecords);
             else for (const record of mediaRecords) if (!(await db.mediaBlob.get(record.id))) await db.mediaBlob.put(record);
             const photos = await db.progressPhoto.toArray();
-            for (const photo of photos) if (!(await db.mediaBlob.get(photo.imageBlobId)) || !(await db.mediaBlob.get(photo.thumbnailBlobId))) throw new BackupError('IMPORT_POSTCHECK_FAILED', 'Référence photo manquante après import.');
+            for (const photo of photos) if (!(await db.mediaBlob.get(photo.imageBlobId)) || !(await db.mediaBlob.get(photo.thumbnailBlobId))) throw new BackupError('IMPORT_POSTCHECK_FAILED', 'Photo reference missing after import.');
             await db.operationJournal.put({operationId, type: 'import', status: 'committed', startedAt: now.toISOString(), finishedAt: new Date().toISOString()});
             await db.appMeta.put({key: 'lastImportAt', value: now.toISOString(), updatedAt: now.toISOString()});
         });

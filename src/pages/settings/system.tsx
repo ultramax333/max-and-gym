@@ -66,7 +66,7 @@ export const SystemSettingsPage = () => {
                         <MonitorHeart/>
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary="Diagnostics" secondary="Build, base locale, PWA et erreurs redacted" />
+                <ListItemText primary="Diagnostics" secondary="Build, local database, PWA and redacted errors" />
             </ListItemButton>
             <ListItemButton component="a" onClick={() => window.location.href = window.location.origin}>
                 <ListItemAvatar>

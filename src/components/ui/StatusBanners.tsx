@@ -16,10 +16,10 @@ export function ConnectivityBanner() {
     }, []);
 
     if (online) return null;
-    return <Box sx={{position: 'fixed', zIndex: 1300, top: {xs: 8, md: 16}, left: '50%', transform: 'translateX(-50%)', width: {xs: 'calc(100% - 32px)', sm: 'auto'}, maxWidth: 560}}><Alert severity="info">Mode hors ligne : tes données restent disponibles sur cet appareil.</Alert></Box>;
+    return <Box sx={{position: 'fixed', zIndex: 1300, top: {xs: 8, md: 16}, left: '50%', transform: 'translateX(-50%)', width: {xs: 'calc(100% - 32px)', sm: 'auto'}, maxWidth: 560}}><Alert severity="info">Offline mode: your data remains available on this device.</Alert></Box>;
 }
 
 export function StorageWarning({show = false}: {show?: boolean}) {
     if (!show) return null;
-    return <Alert severity="warning">L’espace de stockage local est presque plein. Pense à exporter une sauvegarde.</Alert>;
+    return <Alert severity="warning">Local storage is almost full. Export a backup soon.</Alert>;
 }

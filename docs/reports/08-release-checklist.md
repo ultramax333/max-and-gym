@@ -16,11 +16,11 @@
 - [x] offline active-workout and Diagnostics reload after SW control;
 - [x] accessibility and performance budgets;
 - [x] README, user guide and release notes;
+- [x] English release copy and automated production-source language audit;
 - [x] CI quality, E2E and single-artifact Pages deployment workflows prepared.
 
 ## Required before CP8 acceptance / tag
 
-- [ ] review and accept the language/copy limitation or complete bilingual release copy;
 - [ ] run the physical Android matrix and attach device/Chrome evidence;
 - [ ] open the release PR and pass GitHub-hosted clean-install workflows;
 - [ ] create `v1.0.0-rc.1` only after authorization;

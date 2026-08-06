@@ -33,13 +33,13 @@ const roundIncrement = (value: number, increment: number) => Math.round(value / 
 
 export function calculateProgression(input: ProgressionInput): ProgressionProposal {
     const base = {exerciseId: input.exerciseId, kind: input.kind, status: 'pending' as const, requiresConfirmation: true as const, createdAt: input.createdAt};
-    if (input.discomfort) return {...base, reasonCode: 'DISCOMFORT_HOLD', reason: 'Augmentation suspendue à cause d’un inconfort associé.'};
-    if (input.kind === 'manual-hold') return {...base, reasonCode: 'MANUAL_HOLD', reason: 'Maintien manuel demandé.'};
-    if (input.kind === 'conditioning-time') return {...base, proposedConditioningSeconds: (input.conditioningSeconds ?? 0) + 30, reasonCode: 'CONDITIONING_INCREASE', reason: 'Ajouter 30 secondes à une seule variable de conditionnement.'};
-    if (input.kind === 'deload-review' || input.comparableMisses >= 2) return {...base, proposedLoadKg: roundIncrement(input.currentLoadKg * 0.9, input.incrementKg), reasonCode: 'DELOAD_REVIEW', reason: 'Deux échecs comparables : réduction proposée pour révision.'};
+    if (input.discomfort) return {...base, reasonCode: 'DISCOMFORT_HOLD', reason: 'Increase paused because of associated discomfort.'};
+    if (input.kind === 'manual-hold') return {...base, reasonCode: 'MANUAL_HOLD', reason: 'Manual hold requested.'};
+    if (input.kind === 'conditioning-time') return {...base, proposedConditioningSeconds: (input.conditioningSeconds ?? 0) + 30, reasonCode: 'CONDITIONING_INCREASE', reason: 'Add 30 seconds to one conditioning variable.'};
+    if (input.kind === 'deload-review' || input.comparableMisses >= 2) return {...base, proposedLoadKg: roundIncrement(input.currentLoadKg * 0.9, input.incrementKg), reasonCode: 'DELOAD_REVIEW', reason: 'Two comparable misses: a reduction is proposed for review.'};
     const completed = input.sets.length > 0 && input.sets.every((set) => set.completed && set.reps >= input.repsMax && (set.rir ?? input.targetRir) >= input.targetRir);
-    if (!completed) return {...base, reasonCode: 'HOLD_INCOMPLETE', reason: 'Conserver la prescription jusqu’à réussite de toutes les séries.'};
+    if (!completed) return {...base, reasonCode: 'HOLD_INCOMPLETE', reason: 'Keep the prescription until all sets are completed successfully.'};
     const proposedLoadKg = roundIncrement(input.currentLoadKg + input.incrementKg, input.incrementKg);
-    if (input.kind === 'top-set-back-off') return {...base, proposedLoadKg, proposedBackoffLoadKg: roundIncrement(proposedLoadKg * 0.9, input.incrementKg), reasonCode: 'SUCCESS_INCREASE', reason: 'Top set réussi : hausse et back-off recalculé proposés.'};
-    return {...base, proposedLoadKg, reasonCode: 'SUCCESS_INCREASE', reason: input.kind === 'fixed-increment' ? 'Objectif atteint : incrément fixe proposé.' : 'Haut de fourchette atteint à la cible RIR : hausse proposée.'};
+    if (input.kind === 'top-set-back-off') return {...base, proposedLoadKg, proposedBackoffLoadKg: roundIncrement(proposedLoadKg * 0.9, input.incrementKg), reasonCode: 'SUCCESS_INCREASE', reason: 'Top set completed: proposed increase and recalculated back-off.'};
+    return {...base, proposedLoadKg, reasonCode: 'SUCCESS_INCREASE', reason: input.kind === 'fixed-increment' ? 'Target achieved: fixed increment proposed.' : 'Top of the rep range reached at target RIR: increase proposed.'};
 }

@@ -41,27 +41,27 @@ test('@a11y phone routes have headings, named controls and no overflow', async (
 test('@a11y primary workout controls meet the 48px target', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
-    const start = page.getByRole('button', {name: /démarrer|start/i});
+    const start = page.getByRole('button', {name: /start/i});
     await expect(start).toBeVisible();
     const box = await start.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(48);
     await start.click();
-    await expect(page.getByRole('button', {name: /valider la série|complete set/i})).toBeVisible();
+    await expect(page.getByRole('button', {name: /complete set/i})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
 test('@offline shell, workout and diagnostics reopen without network', async ({page, context}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
-    await page.getByRole('button', {name: /démarrer|start/i}).click();
+    await page.getByRole('button', {name: /start/i}).click();
     await page.evaluate(() => navigator.serviceWorker.ready);
     await page.reload();
     await page.waitForFunction(() => Boolean(navigator.serviceWorker?.controller));
     await context.setOffline(true);
     await page.reload();
-    await expect(page.getByRole('button', {name: /valider la série|complete set/i})).toBeVisible();
+    await expect(page.getByRole('button', {name: /complete set/i})).toBeVisible();
     await page.goto('./#/diagnostics');
-    await expect(page.getByRole('button', {name: /auto-test|self-test/i})).toBeVisible();
+    await expect(page.getByRole('button', {name: /self-test/i})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 

@@ -7,7 +7,7 @@ Candidate: Max & Gym `1.0.0`, database `8`, export `2`, cache `2`
 
 ## Decision
 
-The local release candidate passes type checking, zero-warning lint, 82 unit/component/domain/migration tests, 12 Chromium release scenarios, production build, GitHub Pages subpath smoke and every reproducible static audit. It is **not yet CP8-accepted or production-released**: incomplete bilingual copy needs an explicit acceptance decision or correction, while physical Android verification, deployed old-cache update, production SHA/tag identity and production smoke require the external GitHub/phone environment.
+The local release candidate passes type checking, zero-warning lint, 82 unit/component/domain/migration tests, 12 Chromium release scenarios, production build, GitHub Pages subpath smoke and every reproducible static audit. It is **not yet CP8-accepted or production-released**: physical Android verification, deployed old-cache update, production SHA/tag identity and production smoke require the external GitHub/phone environment.
 
 Status key: **Pass** = locally executed; **Simulated** = deterministic browser/device/capability fixture; **Pending external** = cannot be truthfully completed in this workspace.
 
@@ -25,7 +25,7 @@ Status key: **Pass** = locally executed; **Simulated** = deterministic browser/d
 | AT-C02 | Pass in Chromium | First-load install, control reload, active-workout and Diagnostics offline reopens pass; precache contains shell/routes/media. |
 | AT-C03 | Simulated pass | Waiting-update deferral while active is covered by PWA/workout tests; real deployed two-build phone path pending. |
 | AT-C04 | Pending external | Cache identity/cleanup/apply controls pass locally; upgrade from the previous deployed artifact is not available here. |
-| AT-D01 | Pass with known copy limitation | Release defaults test covers English/Advanced/Metric/dark/Full Gym/3/60/15/balanced/all exclusions. Some direct screens remain incompletely bilingual. |
+| AT-D01 | Pass | Release defaults test covers English/Advanced/Metric/dark/Full Gym/3/60/15/balanced/all exclusions. All release-owned screens and domain errors use English copy, enforced by a static language audit. |
 | AT-D02 | Simulated pass | Denied capability paths are non-blocking and diagnostic guidance is bounded. |
 | AT-E01 | Pass | Start/resume and single-active-session tests. |
 | AT-E02 | Pass | Duplicate operation identifier and retry idempotency tests. |
@@ -88,15 +88,15 @@ The CP7 complete backup fixture was rerun under the CP8 dependency/runtime set. 
 - ESLint on release production domains, zero warnings;
 - `node scripts/run-tests.mjs` — 27 files, 82 tests;
 - all dependency/architecture/project/network/licence/asset/accessibility/performance audits;
+- English release-copy audit across production TypeScript and TSX sources;
 - Vite 6.4.3 production build and Pages subpath smoke;
 - Playwright 1.61.1 — 12/12 across 360 and 412 projects;
 - npm registry security audit through the strict exception checker.
 
 ## Release blockers outside local scope
 
-1. accept the incomplete bilingual copy as a version-1 limitation or complete the missing translations;
-2. complete the physical Android matrix;
-3. deploy the single CI-verified Pages artifact;
-4. verify deployed identity against the release-candidate commit/tag;
-5. exercise previous-cache to cache-2 update and production smoke;
-6. accept CP8 before creating `v1.0.0`.
+1. complete the physical Android matrix;
+2. deploy the single CI-verified Pages artifact;
+3. verify deployed identity against the release-candidate commit/tag;
+4. exercise previous-cache to cache-2 update and production smoke;
+5. accept CP8 before creating `v1.0.0`.

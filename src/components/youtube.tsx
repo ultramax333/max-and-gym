@@ -19,8 +19,8 @@ import PropTypes from "prop-types";
 import {Button, Stack, Typography} from '@mui/material';
 
 const YoutubeEmbed = (props: { embedId: string }) => <Stack spacing={2} sx={{p: 3, alignItems: 'center'}}>
-    <Typography>La vidéo externe n’est pas chargée automatiquement afin de préserver votre confidentialité.</Typography>
-    <Button component="a" href={`https://www.youtube.com/watch?v=${encodeURIComponent(props.embedId)}`} target="_blank" rel="noreferrer" variant="contained">Ouvrir sur YouTube</Button>
+    <Typography>External video is not loaded automatically to protect your privacy.</Typography>
+    <Button component="a" href={`https://www.youtube.com/watch?v=${encodeURIComponent(props.embedId)}`} target="_blank" rel="noreferrer" variant="contained">Open on YouTube</Button>
 </Stack>;
 
 YoutubeEmbed.propTypes = {

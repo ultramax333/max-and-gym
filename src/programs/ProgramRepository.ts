@@ -42,8 +42,8 @@ export class ProgramRepository {
         if (![2, 3].includes(input.weeklyFrequency)) throw new ProgramDomainError('PROGRAM_INVALID_FREQUENCY', 'A program must contain two or three days.');
         const now = this.iso();
         const id = this.clock.id();
-        const program: TrainingProgramRecord = {id, name: input.name.trim() || 'Mon programme', description: '', source: 'manual', status: 'draft', weeklyFrequency: input.weeklyFrequency, defaultDurationMinutes: input.defaultDurationMinutes, currentDayIndex: 0, createdAt: now, updatedAt: now};
-        const days = Array.from({length: input.weeklyFrequency}, (_, sequenceIndex) => ({id: this.clock.id(), programId: id, name: `Jour ${String.fromCharCode(65 + sequenceIndex)}`, sequenceIndex, emphasis: 'Full body', targetDurationMinutes: input.defaultDurationMinutes, warmupSeconds: input.defaultDurationMinutes === 40 ? 300 : 420, conditioningSeconds: 0, notes: ''} as const));
+        const program: TrainingProgramRecord = {id, name: input.name.trim() || 'My program', description: '', source: 'manual', status: 'draft', weeklyFrequency: input.weeklyFrequency, defaultDurationMinutes: input.defaultDurationMinutes, currentDayIndex: 0, createdAt: now, updatedAt: now};
+        const days = Array.from({length: input.weeklyFrequency}, (_, sequenceIndex) => ({id: this.clock.id(), programId: id, name: `Day ${String.fromCharCode(65 + sequenceIndex)}`, sequenceIndex, emphasis: 'Full body', targetDurationMinutes: input.defaultDurationMinutes, warmupSeconds: input.defaultDurationMinutes === 40 ? 300 : 420, conditioningSeconds: 0, notes: ''} as const));
         await this.db.transaction('rw', [this.db.trainingProgram, this.db.programDay], () => this.db.trainingProgram.add(program).then(() => this.db.programDay.bulkAdd(days)));
         return (await this.get(id))!;
     }
@@ -103,7 +103,7 @@ export class ProgramRepository {
         const [id, prescriptionId, progressionRuleId] = [this.clock.id(), this.clock.id(), this.clock.id()];
         const count = await this.db.programExercise.where('programDayId').equals(day.id).count();
         const prescription: ExercisePrescriptionRecord = {id: prescriptionId, workingSets: 3, repsMin: input.defaultReps.min, repsMax: input.defaultReps.max, targetRir: 2, restSeconds: input.defaultRestSeconds, loadReferenceKg: 0};
-        const progressionRule: ProgressionRuleRecord = {id: progressionRuleId, kind: 'double-progression', description: 'Augmenter la charge après réussite de toutes les séries dans la fourchette.', requiresApproval: true};
+        const progressionRule: ProgressionRuleRecord = {id: progressionRuleId, kind: 'double-progression', description: 'Increase the load after completing all sets within the rep range.', requiresApproval: true};
         const exercise: ProgramExerciseRecord = {id, programDayId: day.id, exerciseId: input.exerciseId, exerciseNameSnapshot: input.exerciseName, movementPatternSnapshot: input.movementPattern, primaryMusclesSnapshot: input.primaryMuscles, sequenceIndex: count, role: count < 2 ? 'primary' : 'secondary', groupType: 'single', groupSequenceIndex: 0, locked: false, alternativeExerciseIds: [], prescriptionId, progressionRuleId, notes: ''};
         await this.db.transaction('rw', [this.db.programExercise, this.db.exercisePrescription, this.db.progressionRule, this.db.trainingProgram], async () => {
             await this.db.exercisePrescription.add(prescription);

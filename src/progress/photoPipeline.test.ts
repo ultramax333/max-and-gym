@@ -16,8 +16,8 @@ describe('photo pipeline', () => {
     });
 
     it('rejects unsupported or oversized inputs before decode', () => {
-        expect(() => validatePhotoFile(new Blob(['x'], {type: 'text/plain'}))).toThrow('Format image');
-        expect(() => validatePhotoFile(new Blob([new Uint8Array(20 * 1024 * 1024 + 1)], {type: 'image/jpeg'}))).toThrow('20 Mo');
+        expect(() => validatePhotoFile(new Blob(['x'], {type: 'text/plain'}))).toThrow('Unsupported image format');
+        expect(() => validatePhotoFile(new Blob([new Uint8Array(20 * 1024 * 1024 + 1)], {type: 'image/jpeg'}))).toThrow('20 MB');
     });
 
     it('falls back to JPEG when WebP encoding is unavailable', async () => {

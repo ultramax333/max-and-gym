@@ -18,5 +18,5 @@ export function PrimaryButton(props: React.ComponentProps<typeof Button>) { retu
 export function SecondaryButton(props: React.ComponentProps<typeof Button>) { return <Button {...props} variant="outlined" color="primary"/>; }
 
 export function ReorderControls({onMoveUp, onMoveDown}: {onMoveUp: () => void; onMoveDown: () => void}) {
-    return <Stack direction="row" gap={1}><Button aria-label="Déplacer vers le haut" onClick={onMoveUp} startIcon={<ArrowUpward/>}>Monter</Button><Button aria-label="Déplacer vers le bas" onClick={onMoveDown} startIcon={<ArrowDownward/>}>Descendre</Button></Stack>;
+    return <Stack direction="row" gap={1}><Button aria-label="Move up" onClick={onMoveUp} startIcon={<ArrowUpward/>}>Up</Button><Button aria-label="Move down" onClick={onMoveDown} startIcon={<ArrowDownward/>}>Down</Button></Stack>;
 }

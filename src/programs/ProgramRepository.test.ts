@@ -27,8 +27,8 @@ describe('ProgramRepository', () => {
     const add = async (dayId: string, name = 'Squat') => repository.addExercise({dayId, exerciseId: name.toLowerCase(), exerciseName: name, movementPattern: 'squat', primaryMuscles: ['quadriceps'], defaultRestSeconds: 180, defaultReps: {min: 5, max: 8}});
 
     it('creates only two or three ordered days and performs CRUD locally', async () => {
-        const program = await repository.create({name: 'Force', weeklyFrequency: 2, defaultDurationMinutes: 40});
-        expect(program.days.map((day) => day.name)).toEqual(['Jour A', 'Jour B']);
+        const program = await repository.create({name: 'Strength', weeklyFrequency: 2, defaultDurationMinutes: 40});
+        expect(program.days.map((day) => day.name)).toEqual(['Day A', 'Day B']);
         await expect(repository.create({name: 'Bad', weeklyFrequency: 4 as 2, defaultDurationMinutes: 40})).rejects.toBeInstanceOf(ProgramDomainError);
         const exercise = await add(program.days[0].id);
         await repository.updatePrescription(exercise.prescriptionId, {workingSets: 4, restSeconds: 210});
@@ -66,7 +66,7 @@ describe('ProgramRepository', () => {
         const exercise = await add(program.days[0].id);
         await repository.updateExercise(exercise.id, {locked: true, alternativeExerciseIds: ['alt-a']});
         const workout = new DexieWorkoutRepository(db, {now: () => new Date('2026-08-06T12:00:00Z'), id: () => `workout-${++ids}`});
-        const session = await workout.startProgramDay({name: program.days[0].name, programId: program.id, programDayId: program.days[0].id, exercises: [{exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseNameSnapshot, prescriptionSnapshot: '3 × 5–8 · repos 180 s', workingSets: 3, repsMin: 5, repsMax: 8, targetLoadKg: 0, targetRir: 2, restSeconds: 180, locked: true, alternativeExerciseIds: ['alt-a']}]}, 'start');
+        const session = await workout.startProgramDay({name: program.days[0].name, programId: program.id, programDayId: program.days[0].id, exercises: [{exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseNameSnapshot, prescriptionSnapshot: '3 × 5–8 · rest 180 s', workingSets: 3, repsMin: 5, repsMax: 8, targetLoadKg: 0, targetRir: 2, restSeconds: 180, locked: true, alternativeExerciseIds: ['alt-a']}]}, 'start');
         await repository.updatePrescription(exercise.prescriptionId, {workingSets: 5, restSeconds: 60});
         await repository.updateExercise(exercise.id, {locked: false, alternativeExerciseIds: ['alt-b']});
         expect((await workout.get(session.session.id))?.sets).toHaveLength(3);
@@ -91,7 +91,7 @@ describe('ProgramRepository', () => {
         const program = await repository.create({name: 'Progression', weeklyFrequency: 2, defaultDurationMinutes: 40});
         const exercise = await add(program.days[0].id);
         const workout = new DexieWorkoutRepository(db, {now: () => new Date('2026-08-06T12:00:00Z'), id: () => `workout-${++ids}`});
-        const session = await workout.startProgramDay({name: 'Jour A', programId: program.id, programDayId: program.days[0].id, exercises: [{programExerciseId: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseNameSnapshot, prescriptionSnapshot: '3 × 5–8', workingSets: 3, repsMin: 5, repsMax: 8, targetLoadKg: 100, targetRir: 2, restSeconds: 180}]}, 'start-progress');
+        const session = await workout.startProgramDay({name: 'Day A', programId: program.id, programDayId: program.days[0].id, exercises: [{programExerciseId: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseNameSnapshot, prescriptionSnapshot: '3 × 5–8', workingSets: 3, repsMin: 5, repsMax: 8, targetLoadKg: 100, targetRir: 2, restSeconds: 180}]}, 'start-progress');
         for (const [index, set] of session.sets.entries()) await workout.completeSet({sessionId: session.session.id, setId: set.id, operationId: `complete-${index}`, actualLoadKg: 100, actualReps: 8, actualRir: 2});
         await workout.finish(session.session.id, 'finish-progress');
         expect(await db.progressionProposal.where('sessionId').equals(session.session.id).count()).toBe(1);

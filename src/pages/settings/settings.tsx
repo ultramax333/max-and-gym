@@ -105,7 +105,7 @@ export const SettingsPage = () => {
                         <MonitorHeart sx={{color: (theme) => theme.palette.secondary.contrastText}}/>
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary="Diagnostics" secondary="Vérifier le stockage, les migrations et l’état local." />
+                <ListItemText primary="Diagnostics" secondary="Check storage, migrations and local status." />
             </ListItemButton>
             <ListItemButton component="a" href="https://docs.google.com/forms/d/e/1FAIpQLSdrG44hZZ8MoGzFx2DjIVKSnFylDDbCHtaQL3vhEGM4yuOb8g/viewform?usp=sf_link" target="_blank">
                 <ListItemAvatar>

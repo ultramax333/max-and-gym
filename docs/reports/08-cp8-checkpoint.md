@@ -30,6 +30,6 @@ The production PWA was exercised at both target phone widths for hash routes, se
 
 ## Checkpoint decision
 
-All automated local code/test/audit gates pass. CP8 is not marked accepted because incomplete bilingual copy still needs an explicit product decision or correction, and its exit gate requires physical Android evidence, production identity/tag parity, deployed old-cache update and production smoke. `PROJECT_STATUS.md` remains unchanged. No tag, push, merge or publication was performed.
+All automated local code/test/audit gates pass. English release copy is now complete and guarded by an automated production-source audit. CP8 is not marked accepted because its exit gate still requires physical Android evidence, production identity/tag parity, deployed old-cache update and production smoke. `PROJECT_STATUS.md` remains unchanged. No tag, push, merge or publication was performed.
 
 Recommended next action: review this candidate, complete the external checklist, then authorize the release-candidate tag and GitHub publication workflow.
