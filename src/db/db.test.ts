@@ -9,7 +9,7 @@ describe('legacy database compatibility', () => {
         localStorage.clear();
     });
 
-    it('migrates an existing version 3 database additively to program schema version 6', async () => {
+    it('migrates an existing version 3 database additively to progression schema version 7', async () => {
         localStorage.setItem('userName', 'Default User');
         const baseline = new Dexie('weightlog');
         baseline.version(3).stores({
@@ -22,13 +22,13 @@ describe('legacy database compatibility', () => {
 
         const db = new DexieDB();
         await db.open();
-        expect(db.verno).toBe(6);
+        expect(db.verno).toBe(7);
         expect(db.tables.map((table) => table.name).sort()).toEqual([
             'exercise', 'exerciseSet', 'plan', 'user', 'userMetric', 'workout',
             'workoutExercise', 'workoutHistory', 'workoutSession', 'sessionExercise',
             'performedSet', 'restTimer', 'workoutOperation', 'exerciseCatalog',
             'exercisePreference', 'customExercise', 'trainingProgram', 'programDay',
-            'programExercise', 'exercisePrescription', 'progressionRule',
+            'programExercise', 'exercisePrescription', 'progressionRule', 'progressionProposal',
         ].sort());
         db.close();
     });

@@ -1,5 +1,6 @@
 import {DexieDB} from '../db/db';
 import {AddProgramExerciseInput, CreateProgramInput, ExerciseGroupType, ExercisePrescriptionRecord, ProgramDayDetail, ProgramDetail, ProgramExerciseDetail, ProgramExerciseRecord, ProgressionRuleRecord, TrainingProgramRecord} from './types';
+import type {GeneratedProgram} from '../generator/types';
 
 export class ProgramDomainError extends Error {
     constructor(public readonly code: 'PROGRAM_NOT_FOUND' | 'PROGRAM_INVALID_FREQUENCY' | 'PROGRAM_INVALID_GROUP' | 'PROGRAM_EMPTY_DAY', message: string) {
@@ -45,6 +46,45 @@ export class ProgramRepository {
         const days = Array.from({length: input.weeklyFrequency}, (_, sequenceIndex) => ({id: this.clock.id(), programId: id, name: `Jour ${String.fromCharCode(65 + sequenceIndex)}`, sequenceIndex, emphasis: 'Full body', targetDurationMinutes: input.defaultDurationMinutes, warmupSeconds: input.defaultDurationMinutes === 40 ? 300 : 420, conditioningSeconds: 0, notes: ''} as const));
         await this.db.transaction('rw', [this.db.trainingProgram, this.db.programDay], () => this.db.trainingProgram.add(program).then(() => this.db.programDay.bulkAdd(days)));
         return (await this.get(id))!;
+    }
+
+    async createGenerated(generated: GeneratedProgram): Promise<ProgramDetail> {
+        const created = await this.create({name: generated.name, weeklyFrequency: generated.frequency, defaultDurationMinutes: generated.durationMinutes});
+        await this.db.trainingProgram.update(created.id, {source: 'generator', generatorVersion: generated.generatorVersion, generatorSeed: generated.seed, generatorInputSnapshot: JSON.stringify(generated.explanation.normalizedInput), generatorExplanationSnapshot: JSON.stringify(generated.explanation), generatorProgramSnapshot: JSON.stringify(generated)});
+        for (const [dayIndex, generatedDay] of generated.days.entries()) {
+            const day = created.days[dayIndex];
+            await this.updateDay(day.id, {name: generatedDay.name, emphasis: generatedDay.emphasis, warmupSeconds: generatedDay.duration.warmup, conditioningSeconds: generatedDay.duration.conditioning, notes: generatedDay.conditioning.name});
+            for (const generatedExercise of generatedDay.exercises) {
+                const added = await this.addExercise({dayId: day.id, exerciseId: generatedExercise.exerciseId, exerciseName: generatedExercise.exerciseName, movementPattern: generatedExercise.movementPattern, primaryMuscles: generatedExercise.primaryMuscles, defaultRestSeconds: generatedExercise.prescription.restSeconds, defaultReps: {min: generatedExercise.prescription.repsMin, max: generatedExercise.prescription.repsMax}});
+                const {id: ignoredPrescriptionId, ...prescription} = generatedExercise.prescription;
+                void ignoredPrescriptionId;
+                await this.updatePrescription(added.prescriptionId, prescription);
+                const role = generatedExercise.role === 'accessory' ? 'accessory' : ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(generatedExercise.role) ? 'primary' : 'secondary';
+                await this.db.programExercise.update(added.id, {role, generatorRoleSnapshot: generatedExercise.role, locked: generatedExercise.locked, stableUntil: generatedExercise.stableUntil, alternativeExerciseIds: generatedExercise.alternativeExerciseIds});
+            }
+        }
+        return (await this.get(created.id))!;
+    }
+
+    async applyRegeneratedAccessories(programId: string, generated: GeneratedProgram): Promise<ProgramDetail> {
+        const current = await this.get(programId);
+        if (!current || current.source !== 'generator') throw new ProgramDomainError('PROGRAM_NOT_FOUND', 'Generated program not found.');
+        await this.db.transaction('rw', [this.db.trainingProgram, this.db.programExercise, this.db.exercisePrescription], async () => {
+            for (const [dayIndex, day] of current.days.entries()) {
+                const currentAccessories = day.exercises.filter((entry) => entry.generatorRoleSnapshot === 'accessory' && !entry.locked);
+                const nextAccessories = generated.days[dayIndex].exercises.filter((entry) => entry.role === 'accessory' && !entry.locked);
+                for (const [index, currentAccessory] of currentAccessories.entries()) {
+                    const next = nextAccessories[index];
+                    if (!next) continue;
+                    await this.db.programExercise.update(currentAccessory.id, {exerciseId: next.exerciseId, exerciseNameSnapshot: next.exerciseName, movementPatternSnapshot: next.movementPattern, primaryMusclesSnapshot: next.primaryMuscles, alternativeExerciseIds: next.alternativeExerciseIds, generatorRoleSnapshot: next.role});
+                    const {id: ignored, ...prescription} = next.prescription;
+                    void ignored;
+                    await this.db.exercisePrescription.update(currentAccessory.prescriptionId, prescription);
+                }
+            }
+            await this.db.trainingProgram.update(programId, {generatorVersion: generated.generatorVersion, generatorSeed: generated.seed, generatorInputSnapshot: JSON.stringify(generated.explanation.normalizedInput), generatorExplanationSnapshot: JSON.stringify(generated.explanation), generatorProgramSnapshot: JSON.stringify(generated), updatedAt: this.iso()});
+        });
+        return (await this.get(programId))!;
     }
 
     async updateProgram(programId: string, change: Partial<Pick<TrainingProgramRecord, 'name' | 'description'>>): Promise<ProgramDetail> {

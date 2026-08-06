@@ -1,6 +1,7 @@
 import {DexieDB} from '../db/db';
 import {ActiveWorkoutSnapshot, CompleteSetInput, PerformedSetRecord, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
 import {WorkoutRepository} from './WorkoutRepository';
+import {calculateProgression, ProgressionKind} from '../generator/progression';
 
 export class WorkoutDomainError extends Error {
     constructor(public readonly code: 'WORKOUT_ACTIVE_SESSION_CONFLICT' | 'WORKOUT_DUPLICATE_SET_BLOCKED' | 'DB_INVARIANT_VIOLATION' | 'TIMER_OWNER_MISMATCH', message: string) {
@@ -66,7 +67,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             if (active) throw new WorkoutDomainError('WORKOUT_ACTIVE_SESSION_CONFLICT', 'An active session already exists.');
             await this.db.workoutOperation.put({operationId, kind: 'start', status: 'started', sessionId, startedAt: now});
             const exerciseIds = input.exercises.map(() => this.clock.id());
-            const exercises: SessionExerciseRecord[] = input.exercises.map((entry, sequenceIndex) => ({id: exerciseIds[sequenceIndex], sessionId, exerciseId: entry.exerciseId, exerciseNameSnapshot: entry.exerciseName, prescriptionSnapshot: entry.prescriptionSnapshot, lockedSnapshot: entry.locked ?? false, alternativeExerciseIdsSnapshot: [...(entry.alternativeExerciseIds ?? [])], sequenceIndex, status: sequenceIndex === 0 ? 'active' : 'pending', createdAt: now, updatedAt: now}));
+            const exercises: SessionExerciseRecord[] = input.exercises.map((entry, sequenceIndex) => ({id: exerciseIds[sequenceIndex], sessionId, exerciseId: entry.exerciseId, exerciseNameSnapshot: entry.exerciseName, prescriptionSnapshot: entry.prescriptionSnapshot, programExerciseId: entry.programExerciseId, lockedSnapshot: entry.locked ?? false, alternativeExerciseIdsSnapshot: [...(entry.alternativeExerciseIds ?? [])], sequenceIndex, status: sequenceIndex === 0 ? 'active' : 'pending', createdAt: now, updatedAt: now}));
             const sets: PerformedSetRecord[] = input.exercises.flatMap((entry, exerciseIndex) => Array.from({length: entry.workingSets}, (_, sequenceIndex) => ({id: this.clock.id(), sessionId, sessionExerciseId: exerciseIds[exerciseIndex], sequenceIndex, status: 'planned' as const, targetRepsMin: entry.repsMin, targetRepsMax: entry.repsMax, targetLoadKg: entry.targetLoadKg, targetRir: entry.targetRir, restSeconds: entry.restSeconds, createdAt: now, updatedAt: now})));
             const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
             await this.db.workoutSession.add(session);
@@ -194,7 +195,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
 
     async finish(sessionId: string, operationId: string): Promise<ActiveWorkoutSnapshot> {
         const now = this.iso();
-        await this.db.transaction('rw', [this.db.workoutSession, this.db.restTimer, this.db.workoutOperation, this.db.trainingProgram], async () => {
+        await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.restTimer, this.db.workoutOperation, this.db.trainingProgram, this.db.programExercise, this.db.exercisePrescription, this.db.progressionRule, this.db.progressionProposal], async () => {
             if ((await this.db.workoutOperation.get(operationId))?.status === 'committed') return;
             const session = await this.db.workoutSession.get(sessionId);
             if (!session) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session does not exist.');
@@ -202,6 +203,19 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             await this.db.workoutOperation.put({operationId, kind: 'finish', status: 'started', sessionId, startedAt: now});
             const elapsedSeconds = Math.max(0, Math.floor((this.clock.now().getTime() - new Date(session.startedAt).getTime()) / 1000) - session.pausedDurationSeconds);
             await this.db.workoutSession.update(sessionId, {status: 'completed', finishOperationId: operationId, endedAt: now, elapsedSeconds, updatedAt: now});
+            if (session.programId) {
+                const sessionExercises = await this.db.sessionExercise.where('sessionId').equals(session.id).toArray();
+                const performedSets = await this.db.performedSet.where('sessionId').equals(session.id).toArray();
+                for (const sessionExercise of sessionExercises.filter((entry) => entry.programExerciseId)) {
+                    const programExercise = await this.db.programExercise.get(sessionExercise.programExerciseId!);
+                    if (!programExercise) continue;
+                    const [prescription, rule] = await Promise.all([this.db.exercisePrescription.get(programExercise.prescriptionId), this.db.progressionRule.get(programExercise.progressionRuleId)]);
+                    if (!prescription || !rule) continue;
+                    const relevant = performedSets.filter((entry) => entry.sessionExerciseId === sessionExercise.id);
+                    const proposal = calculateProgression({exerciseId: sessionExercise.exerciseId, kind: (rule.kind === 'load-after-success' ? 'fixed-increment' : rule.kind === 'manual' ? 'manual-hold' : rule.kind) as ProgressionKind, sets: relevant.map((entry) => ({reps: entry.actualReps ?? 0, loadKg: entry.actualLoadKg ?? entry.targetLoadKg, rir: entry.actualRir, completed: entry.status === 'completed'})), repsMax: prescription.repsMax, targetRir: prescription.targetRir, currentLoadKg: prescription.loadReferenceKg, incrementKg: 2.5, comparableMisses: 0, discomfort: false, conditioningSeconds: undefined, createdAt: now});
+                    await this.db.progressionProposal.put({...proposal, id: `progression:${session.id}:${programExercise.id}`, sessionId: session.id, programId: session.programId, programExerciseId: programExercise.id, prescriptionId: prescription.id, updatedAt: now});
+                }
+            }
             if (session.programId) {
                 const program = await this.db.trainingProgram.get(session.programId);
                 if (program) await this.db.trainingProgram.update(program.id, {currentDayIndex: (program.currentDayIndex + 1) % program.weeklyFrequency, updatedAt: now});

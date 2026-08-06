@@ -5,6 +5,9 @@ import {DexieDB} from '../db/db';
 import {DexieWorkoutRepository} from '../workout/DexieWorkoutRepository';
 import {ProgramDomainError, ProgramRepository} from './ProgramRepository';
 import {SetType} from '../models/workout';
+import reviewed from '../exerciseCatalog/reviewed-exercises.json';
+import {generateProgram} from '../generator/deterministicGenerator';
+import {GENERATOR_VERSION, GeneratorCandidate, PROGRAM_SEED_VERSION} from '../generator/types';
 
 describe('ProgramRepository', () => {
     let db: DexieDB;
@@ -82,5 +85,60 @@ describe('ProgramRepository', () => {
         const imported = (await repository.list())[0];
         expect((await repository.get(imported.id))?.days.map((day) => [day.name, day.exercises[0].exerciseNameSnapshot, day.exercises[0].prescription.workingSets])).toEqual([['Legacy A', 'Legacy press', 2], ['Legacy B', 'Legacy press', 2]]);
         expect(await db.plan.count()).toBe(1);
+    });
+
+    it('creates pending progression proposals on finish without mutating prescriptions', async () => {
+        const program = await repository.create({name: 'Progression', weeklyFrequency: 2, defaultDurationMinutes: 40});
+        const exercise = await add(program.days[0].id);
+        const workout = new DexieWorkoutRepository(db, {now: () => new Date('2026-08-06T12:00:00Z'), id: () => `workout-${++ids}`});
+        const session = await workout.startProgramDay({name: 'Jour A', programId: program.id, programDayId: program.days[0].id, exercises: [{programExerciseId: exercise.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseNameSnapshot, prescriptionSnapshot: '3 × 5–8', workingSets: 3, repsMin: 5, repsMax: 8, targetLoadKg: 100, targetRir: 2, restSeconds: 180}]}, 'start-progress');
+        for (const [index, set] of session.sets.entries()) await workout.completeSet({sessionId: session.session.id, setId: set.id, operationId: `complete-${index}`, actualLoadKg: 100, actualReps: 8, actualRir: 2});
+        await workout.finish(session.session.id, 'finish-progress');
+        expect(await db.progressionProposal.where('sessionId').equals(session.session.id).count()).toBe(1);
+        expect((await db.progressionProposal.where('sessionId').equals(session.session.id).first())?.status).toBe('pending');
+        expect((await db.exercisePrescription.get(exercise.prescriptionId))?.loadReferenceKg).toBe(0);
+    });
+
+    it('persists a generated explanation, versions and explicit day content as a draft', async () => {
+        const generated = generateProgram({frequency: 2, durationMinutes: 40, goal: 'balanced', equipment: ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'], priorityMuscles: [], variation: 'moderate', blockedExerciseIds: [], blockedTags: [], favouriteExerciseIds: [], neverSuggestExerciseIds: [], stableExercises: [], coreMinutes: 10, lowBackComfortWarmup: true, seed: 'persist', generatorVersion: GENERATOR_VERSION, exerciseSeedVersion: 'reviewed-1', programSeedVersion: PROGRAM_SEED_VERSION}, reviewed as GeneratorCandidate[]);
+        expect(generated.ok).toBe(true);
+        if (!generated.ok) return;
+        const saved = await repository.createGenerated(generated.program);
+        expect(saved).toMatchObject({source: 'generator', status: 'draft', generatorVersion: GENERATOR_VERSION, generatorSeed: 'persist'});
+        expect(saved.days).toHaveLength(2);
+        expect(saved.days.every((day) => day.exercises.length >= 3)).toBe(true);
+        expect(JSON.parse(saved.generatorExplanationSnapshot ?? '{}').normalizedInput.seed).toBe('persist');
+    });
+
+    it('replaces only unlocked accessories during persisted regeneration', async () => {
+        const generated = generateProgram({frequency: 2, durationMinutes: 60, goal: 'balanced', equipment: ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'], priorityMuscles: [], variation: 'moderate', blockedExerciseIds: [], blockedTags: [], favouriteExerciseIds: [], neverSuggestExerciseIds: [], stableExercises: [], coreMinutes: 10, lowBackComfortWarmup: true, seed: 'regenerate', generatorVersion: GENERATOR_VERSION, exerciseSeedVersion: 'reviewed-1', programSeedVersion: PROGRAM_SEED_VERSION}, reviewed as GeneratorCandidate[]);
+        expect(generated.ok).toBe(true);
+        if (!generated.ok) return;
+        const saved = await repository.createGenerated(generated.program);
+        const before = saved.days.flatMap((day) => day.exercises);
+        const unlockedAccessory = before.find((entry) => entry.generatorRoleSnapshot === 'accessory' && !entry.locked);
+        expect(unlockedAccessory).toBeDefined();
+        if (!unlockedAccessory) return;
+        const lockedMain = before.find((entry) => entry.generatorRoleSnapshot !== 'accessory');
+        expect(lockedMain).toBeDefined();
+        if (!lockedMain) return;
+
+        const next = structuredClone(generated.program);
+        const nextAccessory = next.days.flatMap((day) => day.exercises).find((entry) => entry.exerciseId === unlockedAccessory.exerciseId);
+        expect(nextAccessory).toBeDefined();
+        if (!nextAccessory) return;
+        next.seed = 'regenerate:accessories';
+        nextAccessory.exerciseId = 'replacement-accessory';
+        nextAccessory.exerciseName = 'Replacement accessory';
+        nextAccessory.prescription.loadReferenceKg = 12;
+        await repository.applyRegeneratedAccessories(saved.id, next);
+
+        const after = (await repository.get(saved.id))!;
+        const persistedAccessory = after.days.flatMap((day) => day.exercises).find((entry) => entry.id === unlockedAccessory.id);
+        const persistedMain = after.days.flatMap((day) => day.exercises).find((entry) => entry.id === lockedMain.id);
+        expect(persistedAccessory).toMatchObject({exerciseId: 'replacement-accessory', exerciseNameSnapshot: 'Replacement accessory'});
+        expect(persistedAccessory?.prescription.loadReferenceKg).toBe(12);
+        expect(persistedMain).toMatchObject({exerciseId: lockedMain.exerciseId, prescription: lockedMain.prescription});
+        expect(after.generatorSeed).toBe('regenerate:accessories');
     });
 });

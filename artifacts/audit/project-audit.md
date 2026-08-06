@@ -8,4 +8,4 @@
 | GitHub Pages base | pass | /max-and-gym/ |
 | prompted PWA update | pass | prompt |
 | error code uniqueness | pass | 56 registered |
-| legacy direct database access | warning | 20 files; replacement staged in later domain tasks |
+| legacy direct database access | warning | 23 files; replacement staged in later domain tasks |

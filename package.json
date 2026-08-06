@@ -56,7 +56,7 @@
     "preview": "node scripts/preview.mjs",
     "serve": "node scripts/preview.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint vite.config.ts src/diagnostics src/pwa src/pages/diagnostics src/pages/shell src/pages/workout-active src/pages/library src/pages/programs src/programs src/workout src/exerciseCatalog src/theme src/components/ui src/components/errorBoundary.tsx src/components/nav.tsx src/components/layout.tsx src/components/app_bar.tsx --ext .ts,.tsx --max-warnings 0",
+    "lint": "eslint vite.config.ts src/diagnostics src/pwa src/pages/diagnostics src/pages/shell src/pages/workout-active src/pages/library src/pages/programs src/pages/progression src/programs src/generator src/progression src/workout src/exerciseCatalog src/theme src/components/ui src/components/errorBoundary.tsx src/components/nav.tsx src/components/layout.tsx src/components/app_bar.tsx --ext .ts,.tsx --max-warnings 0",
     "test": "node scripts/run-tests.mjs",
     "test:unit": "node scripts/run-tests.mjs src/diagnostics",
     "test:components": "node scripts/run-tests.mjs src/components",

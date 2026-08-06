@@ -29,6 +29,7 @@ export interface StartWorkoutInput {
         exerciseId: string;
         exerciseName: string;
         prescriptionSnapshot: string;
+        programExerciseId?: string;
         workingSets: number;
         repsMin: number;
         repsMax: number;
@@ -46,6 +47,7 @@ export interface SessionExerciseRecord {
     exerciseId: string;
     exerciseNameSnapshot: string;
     prescriptionSnapshot: string;
+    programExerciseId?: string;
     lockedSnapshot: boolean;
     alternativeExerciseIdsSnapshot: string[];
     sequenceIndex: number;

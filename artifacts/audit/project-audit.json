@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T19:19:21.698Z",
+  "generatedAt": "2026-08-06T19:46:58.137Z",
   "checks": [
     {
       "check": "project identity",
@@ -34,7 +34,7 @@
     {
       "check": "legacy direct database access",
       "status": "warning",
-      "detail": "20 files; replacement staged in later domain tasks"
+      "detail": "23 files; replacement staged in later domain tasks"
     }
   ],
   "findings": [],

@@ -31,11 +31,12 @@ import Wrapped from "./pages/wrapped";
 import EOLPage from "./pages/eol";
 import DiagnosticsPage, {IntentionalRouteError} from './pages/diagnostics/DiagnosticsPage';
 import ErrorBoundary from './components/errorBoundary';
-import {HomeShellPage, ProgressShellPage, TrainShellPage} from './pages/shell/ShellPages';
+import {HomeShellPage, TrainShellPage} from './pages/shell/ShellPages';
 import {ActiveWorkoutPage} from './pages/workout-active/ActiveWorkoutPage';
 import {WorkoutSummaryPage} from './pages/workout-active/WorkoutSummaryPage';
 import {ExerciseDetailPage, LibraryPage} from './pages/library/LibraryPages';
-import {ProgramDetailPage, ProgramListPage} from './pages/programs/ProgramPages';
+import {GeneratorPage, ProgramDetailWithGeneratorActions, ProgramsWithGeneratorPage} from './pages/programs/GeneratorPage';
+import {ProgressionProposalsPage, ProgressWithProposalsPage} from './pages/progression/ProgressionProposalsPage';
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
@@ -43,9 +44,11 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login/>}/>
         <Route path="/" element={<HomeShellPage/>}/>
         <Route path="/train" element={<TrainShellPage/>}/>
-        <Route path="/programs" element={<ProgramListPage/>}/>
-        <Route path="/programs/:programId" element={<ProgramDetailPage/>}/>
-        <Route path="/progress" element={<ProgressShellPage/>}/>
+        <Route path="/programs" element={<ProgramsWithGeneratorPage/>}/>
+        <Route path="/programs/generate" element={<GeneratorPage/>}/>
+        <Route path="/programs/:programId" element={<ProgramDetailWithGeneratorActions/>}/>
+        <Route path="/progress" element={<ProgressWithProposalsPage/>}/>
+        <Route path="/progress/proposals" element={<ProgressionProposalsPage/>}/>
         <Route path="/workouts" element={<WorkoutList/>}/>
         <Route path="/apps" element={<AppsMenu/>}/>
         <Route path="/apps/timer" element={<Timer/>}/>

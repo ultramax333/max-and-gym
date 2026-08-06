@@ -21,6 +21,7 @@ import {UserMetric} from "../models/user";
 import {PerformedSetRecord, RestTimerRecord, SessionExerciseRecord, WorkoutOperationRecord, WorkoutSessionRecord} from '../workout/types';
 import {CustomExerciseRecord, ExercisePreference, ReviewedExercise} from '../exerciseCatalog/types';
 import {ExercisePrescriptionRecord, ProgramDayRecord, ProgramExerciseRecord, ProgressionRuleRecord, TrainingProgramRecord} from '../programs/types';
+import {ProgressionProposalRecord} from '../progression/types';
 
 export class DexieDB extends Dexie {
     exercise!: Table<Exercise>;
@@ -42,6 +43,7 @@ export class DexieDB extends Dexie {
     programExercise!: Table<ProgramExerciseRecord, string>;
     exercisePrescription!: Table<ExercisePrescriptionRecord, string>;
     progressionRule!: Table<ProgressionRuleRecord, string>;
+    progressionProposal!: Table<ProgressionProposalRecord, string>;
     constructor() {
         const maybeUser = localStorage.getItem("userName");
         super(maybeUser && maybeUser !== "Default User" ? `weightlog-${maybeUser}` : 'weightlog');
@@ -104,6 +106,9 @@ export class DexieDB extends Dexie {
             programExercise: "&id, programDayId, [programDayId+sequenceIndex], exerciseId, groupId",
             exercisePrescription: "&id",
             progressionRule: "&id"
+        });
+        this.version(7).stores({
+            progressionProposal: "&id, status, sessionId, programId, programExerciseId, createdAt"
         });
     }
 }

@@ -16,6 +16,11 @@ export interface TrainingProgramRecord {
     createdAt: string;
     updatedAt: string;
     archivedAt?: string;
+    generatorVersion?: string;
+    generatorSeed?: string;
+    generatorInputSnapshot?: string;
+    generatorExplanationSnapshot?: string;
+    generatorProgramSnapshot?: string;
 }
 
 export interface ProgramDayRecord {
@@ -39,6 +44,7 @@ export interface ProgramExerciseRecord {
     primaryMusclesSnapshot: string[];
     sequenceIndex: number;
     role: ExerciseRole;
+    generatorRoleSnapshot?: string;
     groupId?: string;
     groupType: ExerciseGroupType;
     groupSequenceIndex: number;
@@ -63,7 +69,7 @@ export interface ExercisePrescriptionRecord {
 
 export interface ProgressionRuleRecord {
     id: string;
-    kind: 'double-progression' | 'load-after-success' | 'manual';
+    kind: 'double-progression' | 'fixed-increment' | 'top-set-back-off' | 'conditioning-time' | 'manual-hold' | 'deload-review' | 'load-after-success' | 'manual';
     description: string;
     requiresApproval: true;
 }
