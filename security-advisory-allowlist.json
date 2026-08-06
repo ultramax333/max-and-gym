@@ -1,0 +1,9 @@
+{
+  "GHSA-qwww-vcr4-c8h2": {
+    "packages": ["react-router", "react-router-dom"],
+    "requiredDirectPackage": "react-router-dom",
+    "requiredVersion": "7.18.2",
+    "expires": "2026-10-01",
+    "rationale": "User-approved on 2026-08-07. The advisory is limited to React Router RSC/server action processing. max&gym is a static declarative HashRouter SPA and ships no React Router server, RSC, action, loader, SSR or framework runtime."
+  }
+}

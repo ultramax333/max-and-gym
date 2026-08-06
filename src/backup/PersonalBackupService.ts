@@ -63,7 +63,7 @@ async function blobBytes(blob: Blob): Promise<Uint8Array> {
 }
 
 async function sha256(bytes: Uint8Array): Promise<string> {
-    const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+    const digest = await globalThis.crypto.subtle.digest('SHA-256', Uint8Array.from(bytes).buffer);
     return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join('');
 }
 
@@ -133,7 +133,7 @@ async function archiveFromDatabase(db: DexieDB, exportedAt: string): Promise<Blo
     const manifestEntry = {path: 'manifest.json', bytes: jsonBytes(manifest)};
     const zip = encodeZip([manifestEntry, ...entries]);
     await parseArchiveBytes(zip);
-    return new Blob([zip], {type: 'application/vnd.maxgym+zip'});
+    return new Blob([Uint8Array.from(zip).buffer], {type: 'application/vnd.maxgym+zip'});
 }
 
 export async function buildPersonalBackup(db: DexieDB, options: {now?: Date; id?: string; recordSuccess?: boolean} = {}): Promise<Blob> {
@@ -224,7 +224,7 @@ export async function importPersonalBackup(db: DexieDB, archive: Blob, options: 
                 const table = db.table(name);
                 const hydratedRecords = name === 'customExercise' ? records.map((record) => {
                     const custom = preview.data.customImages.find((entry) => entry.exerciseId === (record as {id?: string}).id);
-                    return custom ? {...record as object, customImage: new Blob([preview.entries.get(custom.filePath)!], {type: custom.mimeType}), customImageMimeType: custom.mimeType} : record;
+                    return custom ? {...record as object, customImage: new Blob([Uint8Array.from(preview.entries.get(custom.filePath)!).buffer], {type: custom.mimeType}), customImageMimeType: custom.mimeType} : record;
                 }) : records;
                 if (options.mode === 'replace' || options.conflictPolicy === 'use-imported') await table.bulkPut(hydratedRecords);
                 else {
@@ -233,7 +233,7 @@ export async function importPersonalBackup(db: DexieDB, archive: Blob, options: 
             }
             const mediaRecords: MediaBlobRecord[] = preview.data.media.map((record) => {
                 const {filePath, ...metadata} = record;
-                return {...metadata, blob: new Blob([preview.entries.get(filePath)!], {type: metadata.mimeType})};
+                return {...metadata, blob: new Blob([Uint8Array.from(preview.entries.get(filePath)!).buffer], {type: metadata.mimeType})};
             });
             if (options.mode === 'replace' || options.conflictPolicy === 'use-imported') await db.mediaBlob.bulkPut(mediaRecords);
             else for (const record of mediaRecords) if (!(await db.mediaBlob.get(record.id))) await db.mediaBlob.put(record);

@@ -17,7 +17,7 @@
 import React, {ReactElement, useContext, useEffect, useReducer, useState} from 'react';
 import './App.css';
 import {HashRouter, useNavigate} from "react-router-dom";
-import {Box, CssBaseline, ThemeProvider} from '@mui/material';
+import {Alert, Box, Button, CssBaseline, Stack, ThemeProvider, Typography} from '@mui/material';
 import {DBContext} from "./context/dbContext";
 import {DexieDB} from "./db/db";
 import {WorkoutContextProvider} from './context/workoutContext';
@@ -35,12 +35,14 @@ import defer from "./utils/defer";
 import {PwaProvider} from './pwa/PwaContext';
 import {UpdatePrompt} from './pwa/UpdatePrompt';
 import {maxGymTheme} from './theme/maxGymTheme';
+import {recordException} from './diagnostics/service';
 
 const DBGuard = ({children}: { children: ReactElement }) => {
     const {db} = useContext(DBContext);
     const {t} = useTranslation();
     const [userReady, setUserReady] = useState(false);
     const [dbReady, setDbReady] = useState(false);
+    const [databaseErrorId, setDatabaseErrorId] = useState<string>();
     const navigate = useNavigate();
     const [, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -50,7 +52,7 @@ const DBGuard = ({children}: { children: ReactElement }) => {
             localStorage.setItem("userName", "Default User");
             defer(() => window.location.reload());
         } else setUserReady(true);
-    }, [db]);
+    }, [userReady]);
     useEffect(() => {
         if (userReady && db) db.plan.count().then((count) => {
             if (count === 0) {
@@ -68,8 +70,9 @@ const DBGuard = ({children}: { children: ReactElement }) => {
             } else {
                 setDbReady(true);
             }
-        });
+        }).catch((error: unknown) => setDatabaseErrorId(recordException(error, 'DB_OPEN_FAILED', 'DB', 'The local database could not be opened.')));
     }, [db, userReady]);
+    if (databaseErrorId) return <Box component="main" sx={{minHeight: '100dvh', display: 'grid', placeItems: 'center', p: 3}}><Stack spacing={2} sx={{maxWidth: 560}}><Typography component="h1" variant="h4">Local data needs recovery</Typography><Alert severity="error">Your data was not deleted. Update the application or inspect Diagnostics before attempting a restore. Error ID: {databaseErrorId}</Alert><Stack direction={{xs: 'column', sm: 'row'}} gap={1}><Button variant="contained" onClick={() => window.location.reload()}>Retry safely</Button><Button variant="outlined" onClick={() => { window.location.hash = '#/diagnostics'; }}>Open Diagnostics</Button></Stack></Stack></Box>;
     if (dbReady || location.hash === "#/login" || location.hash === "#/onboarding") return children;
     return <div style={{width: "100vw", height: "100vh"}}><Loader prompt={t("loading")}/></div>;
 }

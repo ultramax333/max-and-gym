@@ -17,7 +17,7 @@
 import React, {useContext, useState} from "react";
 import Layout from "../../components/layout";
 import {useTranslation} from "react-i18next";
-import {Avatar, List, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
+import {Avatar, List, ListItemAvatar, ListItemButton, ListItemText, Typography} from "@mui/material";
 import TranslateIcon from '@mui/icons-material/Translate';
 import pjson from "../../../package.json";
 import i18n from "i18next";
@@ -31,17 +31,16 @@ import {SettingsContext} from "../../context/settingsContext";
 import {UserContext} from "../../context/userContext";
 import languages from "../../i18n/languages";
 
-declare let window: any;
 export const SettingsPage = () => {
     const {t} = useTranslation();
     const {db} = useContext(DBContext);
     const {lang, saveLang} = useContext(SettingsContext);
     const install = async () => {
-        if (window.deferredPrompt !== null) {
-            window.deferredPrompt.prompt();
-            const {outcome} = await (window.deferredPrompt.userChoice as Promise<{ outcome: string }>);
+        if (window.deferredPrompt) {
+            await window.deferredPrompt.prompt();
+            const {outcome} = await window.deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                window.deferredPrompt = null;
+                window.deferredPrompt = undefined;
             }
         }
     }
@@ -52,6 +51,7 @@ export const SettingsPage = () => {
     const {theme: appTheme} = useContext(SettingsContext);
 
     return <Layout showAccountMenu title={t("settings")}>
+        <Typography component="h1" variant="h4" sx={{px: 2, pt: 2}}>{t("settings")}</Typography>
         <List dense sx={{backgroundImage: {dark: "url('/logofadenoback.png')", light: "url('/logofadelight.png')"}[appTheme], backgroundSize: "contain", backgroundPosition: "right bottom", backgroundRepeat: "no-repeat", width: '100%', height: 'calc(100% - 74px)', overflow: "auto"}}>
             <ListItemButton component="a" onClick={() => navigate("/account")}>
                 <ListItemAvatar>

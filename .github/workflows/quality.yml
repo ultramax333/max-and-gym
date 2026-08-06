@@ -21,11 +21,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run doctor
+      - name: Query npm advisories
+        run: npm audit --omit=dev --json > artifacts/audit/npm-audit.json || true
+      - name: Enforce high/critical advisory policy
+        run: node scripts/check-vulnerabilities.mjs artifacts/audit/npm-audit.json
       - run: npm run quality
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cp1-audit-and-build
+          name: cp8-audit-and-build
           path: |
             artifacts/
             build/

@@ -38,6 +38,7 @@ export default function DiagnosticsPage() {
 
     return <Layout title="Diagnostics" hideNav scroll>
         <Stack spacing={2} sx={{p: 2, pb: 4, maxWidth: 820, mx: 'auto'}}>
+            <Typography component="h1" variant="h4">Diagnostics</Typography>
             <Alert severity="info">Les diagnostics restent sur cet appareil et excluent les notes, charges, répétitions et mesures.</Alert>
             <Card><CardContent><Typography variant="h6" gutterBottom>Identité du build</Typography>
                 <IdentityRow label="Version" value={buildIdentity.appVersion}/><IdentityRow label="Git SHA" value={buildIdentity.gitSha}/>

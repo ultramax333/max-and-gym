@@ -3,7 +3,7 @@ import {Box, Button, Paper, Stack, Typography} from '@mui/material';
 import {ArrowDownward, ArrowUpward, Inbox} from '@mui/icons-material';
 
 export function ScreenContainer({children}: {children: ReactNode}) {
-    return <Box component="main" sx={{width: '100%', maxWidth: 1100, mx: 'auto', px: {xs: 2, sm: 3}, py: {xs: 2, sm: 3}, pb: {xs: 'calc(96px + env(safe-area-inset-bottom))', md: 4}}}>{children}</Box>;
+    return <Box sx={{width: '100%', maxWidth: 1100, mx: 'auto', px: {xs: 2, sm: 3}, py: {xs: 2, sm: 3}, pb: {xs: 'calc(96px + env(safe-area-inset-bottom))', md: 4}}}>{children}</Box>;
 }
 
 export function SectionHeader({eyebrow, title, action}: {eyebrow?: string; title: string; action?: ReactNode}) {

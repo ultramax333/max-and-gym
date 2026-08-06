@@ -40,7 +40,7 @@ const Layout = (props: {
         {!hideNav && <WLNav desktop/>}
         <Box sx={{display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, ...(hideNav ? {} : {ml: {md: '88px'}})}}>
         {!hideAppBar && <WLAppBar title={title} showAccountMenu={showAccountMenu} leftToolItems={leftToolItems} toolItems={toolItems} hideBack={hideBack} onBack={onBack}/>}
-        <Box sx={{flexGrow: nogrow ? undefined : 1, mt: hideAppBar ? 0 : '72px', ...(scroll ? {overflowY: 'auto'} : {minHeight: 0}), ...sx}}>{children}</Box>
+        <Box component="main" sx={{flexGrow: nogrow ? undefined : 1, mt: hideAppBar ? 0 : '72px', ...(scroll ? {overflowY: 'auto'} : {minHeight: 0}), ...sx}}>{children}</Box>
         {!hideNav && <WLNav/>}
         </Box>
     </Box>;

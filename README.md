@@ -1,110 +1,53 @@
-# RepQuest (Codename WeightLog)
+# Max & Gym
 
-![Node JS CI](https://github.com/marcsances/repquest/actions/workflows/node.js.yml/badge.svg)
+Max & Gym is a local-first workout Progressive Web App designed for Android Chrome. Workouts, programs, measurements, progress photos, backups and diagnostics stay in the browser's IndexedDB; the version-1 core has no backend, account requirement, telemetry or third-party runtime request.
 
-This is a free workout and fitness tracker developed as a PWA.
+## Version 1 scope
 
-It is being developed by [Marc Sances](mailto:marc.sances@coetic.cat).
+- manual and deterministic two- or three-day programs;
+- resilient active workouts, persisted rest timers, summaries and progression proposals;
+- reviewed exercise library with local two-position images;
+- measurements, workout history and private local progress photos;
+- complete checksummed `.maxgym` backup/import and separate redacted diagnostic export;
+- installable PWA, prompted/deferred updates and offline operation after the first online load.
 
-## Technologies
+Training suggestions are organizational aids, not medical or coaching advice. Stop when something hurts and consult a qualified professional when appropriate.
 
-* Frontend: [React](https://react.dev)
-* UI kit: [MUI](https://mui.com)
-* Compiler: [Vite](https://vitejs.dev)
-* Language: [Typescript](https://www.typescriptlang.org/)
-* Local Database: [Dexie (IndexedDB)](https://dexie.org)
-* CI/CD: [Github Actions](https://github.com/features/actions)
-* Package manager: [npm](https://www.npmjs.com/)
-* Error tracing: [Sentry](https://sentry.io)
+## Run locally
 
-## Requirements
+Requirements: Node 24 and npm 11, as pinned by `.nvmrc`, `package.json` and `package-lock.json`.
 
-* Node 17+ (Tested on Node 21)
-
-## Changelog
-
-Refer to the file [whatsNew.tsx](./src/pages/whatsNew/whatsNew.tsx) or [the built in What's new page in the app](https://weightlog.marcsances.net/#/whats-new) for a changelog.
-
-## Usage
-
-**You can access a live version of this app through [this link](https://client.repquest.app)**. 
-
-The next steps are
-necessary only if you want to run or modify this app locally.
-
-To install, run:
-
-```
-npm install
-```
-
-**Please remove the Alceris tracking script (https://alceris.com/script.js) on index.html if you want to deploy in production your own instance, otherwise your events will end up in my analytics dashboard.**
-
-```
+```sh
+npm ci
 npm start
 ```
 
-To build for production, run:
+Open `http://localhost:3000/max-and-gym/`. The production build and release gates are:
 
-```
+```sh
+npm run quality
 npm run build
+npm run test:release
 ```
 
-## FAQ
+The build is written to `build/` and is configured for the GitHub Pages subpath `/max-and-gym/`.
 
-##### Why there are no workouts by default?
+## Data safety
 
-This app is intended to be a workout log for already instructed users.
+Browser storage can be removed by the operating system, browser cleanup, private browsing, origin/domain changes or device loss. Export a `.maxgym` backup after meaningful changes and before an application or hosting-origin change. A Replace import is destructive only after preview and confirmation; Merge reports conflicts first.
 
-It is being developed by a single developer with no fitness instruction, and providing any kind of opinionated
-information would be detrimental in the job of fitness professionals. Please refer to a qualified fitness professional
-if you require assistance using this app.
+See [User guide](docs/USER_GUIDE.md), [version 1 release notes](docs/RELEASE_NOTES_1.0.0.md), [deployment specification](docs/spec/DEPLOYMENT.md), and [release checklist](docs/reports/08-release-checklist.md).
 
-We do offer the possibility to import exercises from [Free Exercise DB](https://github.com/yuhonas/free-exercise-db), but without any kind of assistance whatsoever.
+## Architecture and privacy
 
-##### Do I need to clone this project and host it to use this app?
+- React 18, TypeScript, Vite and Material UI;
+- Dexie over IndexedDB;
+- HashRouter for GitHub Pages compatibility;
+- generated service worker through `vite-plugin-pwa`;
+- no server, sync, advertising, analytics or remote font dependency.
 
-No, you can use my hosted version at [https://client.repquest.app](https://client.repquest.app)
+Source, licence pins and third-party notices are recorded in `SOURCE_PINS.json`, `THIRD_PARTY_CODE_MAP.md`, `THIRD_PARTY_NOTICES.md` and `COPYING`.
 
-##### Can I host this project or modified versions of it?
+## Licence
 
-Yes, you can under the terms of the GNU General Public License version 3 or, at your election, any later version.
-
-This means, along further restrictions, that you are required to provide your users with access to the source code,
-should they request you to do so.
-
-##### Can I charge for modified versions of this app?
-
-Yes, but you are required to provide the source code for them upon request from your users, which may also freely
-distribute your app if they wish to do so.
-
-##### Will this app always be free?
-
-The core app (RepQuest) will always be free for everyone. Plans for additional services on top of it are undergoing, we
-will be excited to announce them when they are available.
-
-##### Are pull requests accepted?
-
-Yes, refer to the file [CONTRIBUTING.md](./CONTRIBUTING.md) before sending a pull request.
-
-##### Where can I contact you?
-
-Either use the [contact form at this link](https://docs.google.com/forms/d/e/1FAIpQLSdrG44hZZ8MoGzFx2DjIVKSnFylDDbCHtaQL3vhEGM4yuOb8g/viewform?usp=sf_link) or you may email me directly at [marc.sances@coetic.cat](mailto:marc.sances@coetic.cat)
-
-## License
-
-Copyright Marc Sances 2025. All rights reserved.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see [https://www.gnu.org/licenses/](https://www.gnu.org/licenses/)
-
+Max & Gym is distributed under GPL-3.0-or-later and retains the notices required by its RepQuest foundation and other sources. See [COPYING](COPYING) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

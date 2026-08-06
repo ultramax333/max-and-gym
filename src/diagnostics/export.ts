@@ -31,6 +31,6 @@ export async function buildDiagnosticExport(db: DexieDB, suppliedSelfTest?: Self
         {path: 'feature-status.json', bytes: json({progress: 'enabled', photos: 'enabled-local-only', backup: 'enabled', generator: buildIdentity.generatorVersion})},
         {path: 'README.txt', bytes: encoder.encode('Max & Gym technical diagnostics. This package intentionally excludes personal training values, names, notes, measurements, photos and media.\n')},
     ];
-    const blob = new Blob([encodeZip(files)], {type: 'application/zip'});
+    const blob = new Blob([Uint8Array.from(encodeZip(files)).buffer], {type: 'application/zip'});
     return {blob, filename: `max-and-gym-diagnostics-${exportedAt.replace(/[:.]/g, '-')}.zip`, categories};
 }

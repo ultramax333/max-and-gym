@@ -1,47 +1,57 @@
-import {Navigate, Route, Routes} from "react-router-dom";
-import {Login} from "./pages/profile/login";
-import {WorkoutList} from "./pages/workout-list/workout_list";
-import {AppsMenu} from "./pages/apps/appsMenu";
-import {Timer} from "./pages/apps/timer";
-import {HistoryPage} from "./pages/history/history";
-import StatsPage from "./pages/stats/stats";
-import MetricsPage from "./pages/profile/metrics";
-import {AppearanceSettingsPage} from "./pages/settings/appearanceSettings";
-import {Backup} from "./pages/settings/backup";
-import {SettingsPage} from "./pages/settings/settings";
-import {WorkoutSettingsPage} from "./pages/settings/workoutSettings";
-import {SystemSettingsPage} from "./pages/settings/system";
-import {WorkoutPage} from "./pages/workout/workout";
-import PostWorkout from "./pages/workout/postWorkout";
-import {WorkoutEditor} from "./pages/workout-editor/workout_editor";
-import {WorkoutExerciseEditor} from "./pages/workout-editor/workoutExercise_editor";
-import {ExerciseList} from "./pages/workout-editor/exercise_list";
-import {ExerciseEditor} from "./pages/workout-editor/exercise_editor";
-import {YoutubePlayer} from "./pages/workout/youtubePlayer";
-import {PictureViewer} from "./pages/workout/pictureViewer";
-import {WhatsNew} from "./pages/whatsNew/whatsNew";
-import {License} from "./pages/whatsNew/license";
-import OneRmCalculator from "./components/onermcalc";
-import {AccountMenu} from "./pages/profile/accountMenu";
-import NotImplemented from "./pages/notImplemented";
-import Onboarding from "./pages/onboarding/onboarding";
+import {Route, Routes} from "react-router-dom";
 import React from "react";
-import BulkEditor from "./pages/workout-editor/bulkEditor";
-import Wrapped from "./pages/wrapped";
-import EOLPage from "./pages/eol";
-import DiagnosticsPage, {IntentionalRouteError} from './pages/diagnostics/DiagnosticsPage';
 import ErrorBoundary from './components/errorBoundary';
-import {HomeShellPage, TrainShellPage} from './pages/shell/ShellPages';
-import {ActiveWorkoutPage} from './pages/workout-active/ActiveWorkoutPage';
-import {WorkoutSummaryPage} from './pages/workout-active/WorkoutSummaryPage';
-import {ExerciseDetailPage, LibraryPage} from './pages/library/LibraryPages';
-import {GeneratorPage, ProgramDetailWithGeneratorActions, ProgramsWithGeneratorPage} from './pages/programs/GeneratorPage';
-import {ProgressionProposalsPage, ProgressWithProposalsPage} from './pages/progression/ProgressionProposalsPage';
-import {ExerciseProgressPage, MeasurementsPage, PhotosPage} from './pages/progress/ProgressPages';
-import BackupPage from './pages/backup/BackupPage';
+import Loader from './components/Loader';
+
+const Login = React.lazy(() => import('./pages/profile/login').then((module) => ({default: module.Login})));
+const WorkoutList = React.lazy(() => import('./pages/workout-list/workout_list').then((module) => ({default: module.WorkoutList})));
+const AppsMenu = React.lazy(() => import('./pages/apps/appsMenu').then((module) => ({default: module.AppsMenu})));
+const Timer = React.lazy(() => import('./pages/apps/timer').then((module) => ({default: module.Timer})));
+const HistoryPage = React.lazy(() => import('./pages/history/history').then((module) => ({default: module.HistoryPage})));
+const StatsPage = React.lazy(() => import('./pages/stats/stats'));
+const MetricsPage = React.lazy(() => import('./pages/profile/metrics'));
+const AppearanceSettingsPage = React.lazy(() => import('./pages/settings/appearanceSettings').then((module) => ({default: module.AppearanceSettingsPage})));
+const Backup = React.lazy(() => import('./pages/settings/backup').then((module) => ({default: module.Backup})));
+const SettingsPage = React.lazy(() => import('./pages/settings/settings').then((module) => ({default: module.SettingsPage})));
+const WorkoutSettingsPage = React.lazy(() => import('./pages/settings/workoutSettings').then((module) => ({default: module.WorkoutSettingsPage})));
+const SystemSettingsPage = React.lazy(() => import('./pages/settings/system').then((module) => ({default: module.SystemSettingsPage})));
+const WorkoutPage = React.lazy(() => import('./pages/workout/workout').then((module) => ({default: module.WorkoutPage})));
+const PostWorkout = React.lazy(() => import('./pages/workout/postWorkout'));
+const WorkoutEditor = React.lazy(() => import('./pages/workout-editor/workout_editor').then((module) => ({default: module.WorkoutEditor})));
+const WorkoutExerciseEditor = React.lazy(() => import('./pages/workout-editor/workoutExercise_editor').then((module) => ({default: module.WorkoutExerciseEditor})));
+const ExerciseList = React.lazy(() => import('./pages/workout-editor/exercise_list').then((module) => ({default: module.ExerciseList})));
+const ExerciseEditor = React.lazy(() => import('./pages/workout-editor/exercise_editor').then((module) => ({default: module.ExerciseEditor})));
+const YoutubePlayer = React.lazy(() => import('./pages/workout/youtubePlayer').then((module) => ({default: module.YoutubePlayer})));
+const PictureViewer = React.lazy(() => import('./pages/workout/pictureViewer').then((module) => ({default: module.PictureViewer})));
+const WhatsNew = React.lazy(() => import('./pages/whatsNew/whatsNew').then((module) => ({default: module.WhatsNew})));
+const License = React.lazy(() => import('./pages/whatsNew/license').then((module) => ({default: module.License})));
+const OneRmCalculator = React.lazy(() => import('./components/onermcalc'));
+const AccountMenu = React.lazy(() => import('./pages/profile/accountMenu').then((module) => ({default: module.AccountMenu})));
+const NotImplemented = React.lazy(() => import('./pages/notImplemented'));
+const Onboarding = React.lazy(() => import('./pages/onboarding/onboarding'));
+const BulkEditor = React.lazy(() => import('./pages/workout-editor/bulkEditor'));
+const Wrapped = React.lazy(() => import('./pages/wrapped'));
+const EOLPage = React.lazy(() => import('./pages/eol'));
+const DiagnosticsPage = React.lazy(() => import('./pages/diagnostics/DiagnosticsPage'));
+const IntentionalRouteError = React.lazy(() => import('./pages/diagnostics/DiagnosticsPage').then((module) => ({default: module.IntentionalRouteError})));
+const HomeShellPage = React.lazy(() => import('./pages/shell/ShellPages').then((module) => ({default: module.HomeShellPage})));
+const TrainShellPage = React.lazy(() => import('./pages/shell/ShellPages').then((module) => ({default: module.TrainShellPage})));
+const ActiveWorkoutPage = React.lazy(() => import('./pages/workout-active/ActiveWorkoutPage').then((module) => ({default: module.ActiveWorkoutPage})));
+const WorkoutSummaryPage = React.lazy(() => import('./pages/workout-active/WorkoutSummaryPage').then((module) => ({default: module.WorkoutSummaryPage})));
+const ExerciseDetailPage = React.lazy(() => import('./pages/library/LibraryPages').then((module) => ({default: module.ExerciseDetailPage})));
+const LibraryPage = React.lazy(() => import('./pages/library/LibraryPages').then((module) => ({default: module.LibraryPage})));
+const GeneratorPage = React.lazy(() => import('./pages/programs/GeneratorPage').then((module) => ({default: module.GeneratorPage})));
+const ProgramDetailWithGeneratorActions = React.lazy(() => import('./pages/programs/GeneratorPage').then((module) => ({default: module.ProgramDetailWithGeneratorActions})));
+const ProgramsWithGeneratorPage = React.lazy(() => import('./pages/programs/GeneratorPage').then((module) => ({default: module.ProgramsWithGeneratorPage})));
+const ProgressionProposalsPage = React.lazy(() => import('./pages/progression/ProgressionProposalsPage').then((module) => ({default: module.ProgressionProposalsPage})));
+const ProgressWithProposalsPage = React.lazy(() => import('./pages/progression/ProgressionProposalsPage').then((module) => ({default: module.ProgressWithProposalsPage})));
+const ExerciseProgressPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.ExerciseProgressPage})));
+const MeasurementsPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.MeasurementsPage})));
+const PhotosPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.PhotosPage})));
+const BackupPage = React.lazy(() => import('./pages/backup/BackupPage'));
 
 const AppRoutes = () => {
-    return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
+    return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><React.Suspense fallback={<Loader prompt="Loading…"/>}><Routes>
         <Route path="/onboarding" element={<Onboarding/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/" element={<HomeShellPage/>}/>
@@ -103,7 +113,7 @@ const AppRoutes = () => {
         <Route path="/wrapped" element={<Wrapped/>}/>
         <Route path="/eol" element={<EOLPage/>}/>
         <Route path="*" element={<NotImplemented/>}/>
-    </Routes></ErrorBoundary>
+    </Routes></React.Suspense></ErrorBoundary>
 }
 
 export default AppRoutes;

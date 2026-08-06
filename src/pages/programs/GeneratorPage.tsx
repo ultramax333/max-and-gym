@@ -13,6 +13,7 @@ import {generateProgram, regenerateAccessories} from '../../generator/determinis
 import {GeneratedCoreSession, GeneratedProgram, GeneratorCandidate, GeneratorInput, GoalBlend} from '../../generator/types';
 import {ProgramRepository} from '../../programs/ProgramRepository';
 import {ProgramDetailPage, ProgramListPage} from './ProgramPages';
+import {RELEASE_DEFAULTS} from '../../config/releaseDefaults';
 
 const catalog = new ExerciseCatalogRepository(db);
 const programs = new ProgramRepository(db);
@@ -43,10 +44,10 @@ export function ProgramDetailWithGeneratorActions() {
 
 export function GeneratorPage() {
     const navigate = useNavigate();
-    const [frequency, setFrequency] = useState<2 | 3>(2);
-    const [duration, setDuration] = useState<40 | 60>(40);
-    const [goal, setGoal] = useState<GoalBlend>('balanced');
-    const [coreMinutes, setCoreMinutes] = useState<10 | 15>(10);
+    const [frequency, setFrequency] = useState<2 | 3>(RELEASE_DEFAULTS.frequency);
+    const [duration, setDuration] = useState<40 | 60>(RELEASE_DEFAULTS.durationMinutes);
+    const [goal, setGoal] = useState<GoalBlend>(RELEASE_DEFAULTS.goal);
+    const [coreMinutes, setCoreMinutes] = useState<10 | 15>(RELEASE_DEFAULTS.coreMinutes);
     const [lowBackComfort, setLowBackComfort] = useState(true);
     const [equipment, setEquipment] = useState(allEquipment);
     const [seed, setSeed] = useState('maxgym-01');

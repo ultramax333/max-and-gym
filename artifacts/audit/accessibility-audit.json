@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-08-06T22:34:02.392Z",
+  "standard": "WCAG 2.2 AA",
+  "checks": [
+    {
+      "check": "primary text contrast",
+      "status": "pass",
+      "detail": "17.94:1"
+    },
+    {
+      "check": "secondary text contrast",
+      "status": "pass",
+      "detail": "9.36:1"
+    },
+    {
+      "check": "visible keyboard focus",
+      "status": "pass",
+      "detail": "3px outline"
+    },
+    {
+      "check": "reduced motion",
+      "status": "pass",
+      "detail": "nonessential motion reduced"
+    },
+    {
+      "check": "button target",
+      "status": "pass",
+      "detail": "48 CSS px"
+    },
+    {
+      "check": "icon target",
+      "status": "pass",
+      "detail": "48 × 48 CSS px"
+    }
+  ]
+}

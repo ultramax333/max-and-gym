@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-08-06T22:34:01.568Z",
+  "checks": [
+    {
+      "check": "pure domain boundaries",
+      "status": "pass",
+      "detail": "9 files"
+    },
+    {
+      "check": "single UI system",
+      "status": "pass",
+      "detail": "Material UI only"
+    },
+    {
+      "check": "release route splitting",
+      "status": "pass",
+      "detail": "route-level lazy imports"
+    },
+    {
+      "check": "legacy direct UI database access",
+      "status": "warning",
+      "detail": "15 legacy page file(s)"
+    }
+  ],
+  "domainViolations": [],
+  "secondUiSystems": [],
+  "directUiDatabase": [
+    "src/pages/backup/BackupPage.tsx",
+    "src/pages/diagnostics/DiagnosticsPage.tsx",
+    "src/pages/history/history.tsx",
+    "src/pages/onboarding/onboarding.tsx",
+    "src/pages/profile/metrics.tsx",
+    "src/pages/progression/ProgressionProposalsPage.tsx",
+    "src/pages/workout/addExercisePicker.tsx",
+    "src/pages/workout/postWorkout.tsx",
+    "src/pages/workout/workout.tsx",
+    "src/pages/workout-editor/bulkEditor.tsx",
+    "src/pages/workout-editor/exercise_editor.tsx",
+    "src/pages/workout-editor/workoutExercise_editor.tsx",
+    "src/pages/workout-editor/workout_editor.tsx",
+    "src/pages/workout-list/workout_list.tsx",
+    "src/pages/wrapped.tsx"
+  ]
+}
