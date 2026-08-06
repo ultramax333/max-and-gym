@@ -1,6 +1,7 @@
 import React, {createContext, ReactElement, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import {registerSW} from 'virtual:pwa-register';
 import {recordDiagnostic} from '../diagnostics/service';
+import {hasActiveWorkoutMarker} from '../workout/WorkoutApplicationService';
 
 interface PwaState {
     registered: boolean;
@@ -54,6 +55,11 @@ export function PwaProvider({children}: {children: ReactElement}) {
     const applyUpdate = useCallback(async () => {
         if (!updateServiceWorker) return;
         try {
+            if (hasActiveWorkoutMarker()) {
+                setUpdateWaiting(true);
+                recordDiagnostic({level: 'warning', subsystem: 'PWA', code: 'PWA_UPDATE_DEFERRED', safeMessage: 'The update was deferred because a workout is active.'});
+                return;
+            }
             const storedWorkout = localStorage.getItem('workoutContext');
             const activeWorkout = storedWorkout ? JSON.parse(storedWorkout) as {timeStarted?: string} : undefined;
             if (activeWorkout?.timeStarted) {

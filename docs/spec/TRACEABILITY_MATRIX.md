@@ -40,22 +40,22 @@ This matrix links every implementation requirement in `BACKLOG.md` to its owning
 | UI-018 | Establish visual-regression baseline | 02 | CP2 | AT-K01, AT-K04; CP2 screenshots |
 | UI-019 | Establish accessibility baseline | 02 | CP2 | AT-K02, AT-K03, AT-K04; component tests and audit |
 | UI-020 | Record any donor-code adaptation | 02 | CP2 | AT-K05; donor application report |
-| WKT-001 | Define workout repository/application-service boundary | 03 | CP3 | AT-E01–AT-E10 |
-| WKT-002 | Create/resume active session transactionally | 03 | CP3 | AT-E01, AT-E06 |
-| WKT-003 | Render current exercise and sets | 03 | CP3 | AT-E01, AT-K01 |
-| WKT-004 | Enter actual load, repetitions, effort | 03 | CP3 | AT-E02, AT-E03, AT-K01, AT-K02 |
-| WKT-005 | Complete set idempotently | 03 | CP3 | AT-E02, AT-E03 |
-| WKT-006 | Undo recent set action | 03 | CP3 | AT-E08 |
-| WKT-007 | Persist/restore active position | 03 | CP3 | AT-E06 |
-| WKT-008 | Implement timestamp rest timer | 03 | CP3 | AT-E04, AT-E05 |
-| WKT-009 | Add sound/vibration best-effort feedback | 03 | CP3 | AT-D02, AT-E05 |
-| WKT-010 | Add wake lock progressive enhancement | 03 | CP3 | AT-D02, AT-E05 |
-| WKT-011 | Pause/resume workout | 03 | CP3 | AT-E06 |
-| WKT-012 | Finish and summarize session | 03 | CP3 | AT-E07 |
-| WKT-013 | Add refresh/browser-close recovery | 03 | CP3 | AT-E06 |
-| WKT-014 | Add workout error boundary and recovery diagnostics | 03 | CP3 | AT-E03, AT-J04 |
-| PWA-020 | Defer update while workout active | 03 | CP3 | AT-C03 |
-| PWA-021 | Offline workout end-to-end test | 03 | CP3 | AT-C02, AT-E06 |
+| WKT-001 | Define workout repository/application-service boundary | 03 | CP3 | AT-E01–AT-E10; current-state audit |
+| WKT-002 | Create/resume active session transactionally | 03 | CP3 | AT-E01, AT-E06; repository tests |
+| WKT-003 | Render current exercise and sets | 03 | CP3 | AT-E01, AT-K01; active-workout screenshot |
+| WKT-004 | Enter actual load, repetitions, effort | 03 | CP3 | AT-E02, AT-E03, AT-K01, AT-K02; browser journey |
+| WKT-005 | Complete set idempotently | 03 | CP3 | AT-E02, AT-E03; replay test |
+| WKT-006 | Undo recent set action | 03 | CP3 | AT-E08; undo test |
+| WKT-007 | Persist/restore active position | 03 | CP3 | AT-E06; refresh browser evidence |
+| WKT-008 | Implement timestamp rest timer | 03 | CP3 | AT-E04, AT-E05; fake-clock test |
+| WKT-009 | Add sound/vibration best-effort feedback | 03 | CP3 | AT-D02, AT-E05; reliability audit |
+| WKT-010 | Add wake lock progressive enhancement | 03 | CP3 | AT-D02, AT-E05; reliability audit |
+| WKT-011 | Pause/resume workout | 03 | CP3 | AT-E06; repository/service path |
+| WKT-012 | Finish and summarize session | 03 | CP3 | AT-E07; summary screenshot and retry test |
+| WKT-013 | Add refresh/browser-close recovery | 03 | CP3 | AT-E06; refresh browser evidence |
+| WKT-014 | Add workout error boundary and recovery diagnostics | 03 | CP3 | AT-E03, AT-J04; diagnostic service tests |
+| PWA-020 | Defer update while workout active | 03 | CP3 | AT-C03; active marker test |
+| PWA-021 | Offline workout end-to-end test | 03 | CP3 | AT-C02, AT-E06; offline service journey |
 | EXR-001 | Pin upstream dataset revision | 04 | CP4 | AT-F05 |
 | EXR-002 | Define exercise/metadata/media schema | 04 | CP4 | AT-F01, AT-F05 |
 | EXR-003 | Build allowlist/override curation pipeline | 04 | CP4 | AT-F01, AT-F05 |

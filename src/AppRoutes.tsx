@@ -32,6 +32,8 @@ import EOLPage from "./pages/eol";
 import DiagnosticsPage, {IntentionalRouteError} from './pages/diagnostics/DiagnosticsPage';
 import ErrorBoundary from './components/errorBoundary';
 import {HomeShellPage, ProgramsShellPage, ProgressShellPage, TrainShellPage} from './pages/shell/ShellPages';
+import {ActiveWorkoutPage} from './pages/workout-active/ActiveWorkoutPage';
+import {WorkoutSummaryPage} from './pages/workout-active/WorkoutSummaryPage';
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><Routes>
@@ -61,6 +63,8 @@ const AppRoutes = () => {
         <Route path="/settings/system"
                element={<SystemSettingsPage/>}/>
         <Route path="/workout" element={<WorkoutPage/>}/>
+        <Route path="/workout/active" element={<ActiveWorkoutPage/>}/>
+        <Route path="/workout/summary/:sessionId" element={<WorkoutSummaryPage/>}/>
         <Route path="/workout/postworkout"
                element={<PostWorkout/>}/>
         <Route path="/workout/:workoutId"

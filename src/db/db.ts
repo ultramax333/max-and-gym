@@ -18,6 +18,7 @@ import Dexie, {Table} from 'dexie';
 import {Exercise} from "../models/exercise";
 import {ExerciseSet, Plan, Workout, WorkoutExercise} from "../models/workout";
 import {UserMetric} from "../models/user";
+import {PerformedSetRecord, RestTimerRecord, SessionExerciseRecord, WorkoutOperationRecord, WorkoutSessionRecord} from '../workout/types';
 
 export class DexieDB extends Dexie {
     exercise!: Table<Exercise>;
@@ -26,6 +27,11 @@ export class DexieDB extends Dexie {
     exerciseSet!: Table<ExerciseSet>;
     userMetric!: Table<UserMetric>;
     plan!: Table<Plan>;
+    workoutSession!: Table<WorkoutSessionRecord, string>;
+    sessionExercise!: Table<SessionExerciseRecord, string>;
+    performedSet!: Table<PerformedSetRecord, string>;
+    restTimer!: Table<RestTimerRecord, string>;
+    workoutOperation!: Table<WorkoutOperationRecord, string>;
     constructor() {
         const maybeUser = localStorage.getItem("userName");
         super(maybeUser && maybeUser !== "Default User" ? `weightlog-${maybeUser}` : 'weightlog');
@@ -48,6 +54,21 @@ export class DexieDB extends Dexie {
             user: "++name",
             userMetric: "++id, metric",
             plan: "++id, workoutId, name"
+        });
+        this.version(4).stores({
+            exercise: "++id, name, type, *tags",
+            workout: "++id, name",
+            workoutHistory: "++id, userName, date, workoutExerciseIds",
+            workoutExercise: "++id, exerciseId, setIds",
+            exerciseSet: "++id, exerciseId, type",
+            user: "++name",
+            userMetric: "++id, metric",
+            plan: "++id, workoutId, name",
+            workoutSession: "&id, status, startedAt, updatedAt, creationOperationId, finishOperationId",
+            sessionExercise: "&id, sessionId, [sessionId+sequenceIndex], status",
+            performedSet: "&id, sessionId, sessionExerciseId, [sessionExerciseId+sequenceIndex], completionOperationId, undoOperationId, status",
+            restTimer: "&id, sessionId, status, endsAt",
+            workoutOperation: "&operationId, kind, status, sessionId, startedAt"
         });
     }
 }

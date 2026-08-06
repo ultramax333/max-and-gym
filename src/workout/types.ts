@@ -1,0 +1,94 @@
+export type WorkoutSessionStatus = 'active' | 'paused' | 'completed' | 'abandoned';
+export type PerformedSetStatus = 'planned' | 'completed' | 'undone';
+export type RestTimerStatus = 'running' | 'paused' | 'completed' | 'cancelled';
+
+export interface WorkoutSessionRecord {
+    id: string;
+    creationOperationId: string;
+    finishOperationId?: string;
+    nameSnapshot: string;
+    status: WorkoutSessionStatus;
+    startedAt: string;
+    endedAt?: string;
+    pausedAt?: string;
+    pausedDurationSeconds: number;
+    elapsedSeconds?: number;
+    currentSessionExerciseId: string;
+    currentSetId: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface SessionExerciseRecord {
+    id: string;
+    sessionId: string;
+    exerciseId: string;
+    exerciseNameSnapshot: string;
+    prescriptionSnapshot: string;
+    sequenceIndex: number;
+    status: 'pending' | 'active' | 'completed' | 'skipped';
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PerformedSetRecord {
+    id: string;
+    sessionId: string;
+    sessionExerciseId: string;
+    sequenceIndex: number;
+    status: PerformedSetStatus;
+    targetRepsMin: number;
+    targetRepsMax: number;
+    actualReps?: number;
+    targetLoadKg: number;
+    actualLoadKg?: number;
+    targetRir: number;
+    actualRir?: number;
+    restSeconds: number;
+    completionOperationId?: string;
+    undoOperationId?: string;
+    completedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface RestTimerRecord {
+    id: string;
+    sessionId: string;
+    performedSetId: string;
+    startedAt: string;
+    endsAt: string;
+    pausedAt?: string;
+    remainingWhenPausedSeconds?: number;
+    status: RestTimerStatus;
+    signalDeliveredAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface WorkoutOperationRecord {
+    operationId: string;
+    kind: 'start' | 'complete-set' | 'undo-set' | 'finish';
+    status: 'started' | 'committed' | 'failed';
+    sessionId?: string;
+    entityId?: string;
+    startedAt: string;
+    finishedAt?: string;
+    safeErrorCode?: string;
+}
+
+export interface ActiveWorkoutSnapshot {
+    session: WorkoutSessionRecord;
+    exercises: SessionExerciseRecord[];
+    sets: PerformedSetRecord[];
+    timer?: RestTimerRecord;
+}
+
+export interface CompleteSetInput {
+    sessionId: string;
+    setId: string;
+    operationId: string;
+    actualLoadKg: number;
+    actualReps: number;
+    actualRir?: number;
+}

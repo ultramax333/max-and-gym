@@ -7,5 +7,5 @@
 | forbidden packages | pass | none |
 | GitHub Pages base | pass | /max-and-gym/ |
 | prompted PWA update | pass | prompt |
-| error code uniqueness | pass | 53 registered |
-| legacy direct database access | warning | 14 files; replacement staged in later domain tasks |
+| error code uniqueness | pass | 56 registered |
+| legacy direct database access | warning | 16 files; replacement staged in later domain tasks |

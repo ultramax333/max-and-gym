@@ -351,3 +351,14 @@ Controls:
 - route-boundary visual check at 1440 × 900.
 
 CP1 status: reproduced during Diagnostics verification and removed before checkpoint evidence was captured.
+
+## CP3 control status
+
+- FM-03: durable active-workout marker now defers an update.
+- FM-08 and FM-09: operation IDs, transactional commits, busy UI and rollback tests
+  cover duplicate or uncertain set writes.
+- FM-10: rest truth is a persisted end timestamp and is reconciled on focus/boot.
+- FM-11: best-effort vibration/wake lock is implemented; physical Android
+  background-kill evidence remains deferred.
+- FM-12 and FM-13: schema-backed recovery and the one-active invariant are tested.
+- FM-32: the CP3 session stores exercise name and prescription snapshots.

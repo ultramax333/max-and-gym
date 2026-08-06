@@ -1,4 +1,4 @@
-export const DATABASE_SCHEMA_VERSION = 3;
+export const DATABASE_SCHEMA_VERSION = 4;
 export const EXPORT_FORMAT_VERSION = 1;
 export const EXERCISE_SEED_VERSION = 'legacy-1';
 export const PROGRAM_SEED_VERSION = 'legacy-1';

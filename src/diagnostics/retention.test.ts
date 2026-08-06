@@ -22,6 +22,6 @@ describe('diagnostic retention and identity', () => {
         const event = createDiagnosticEvent({level: 'error', subsystem: 'UI', code: 'UI_ROUTE_RENDER_FAILED', safeMessage: 'Protected route failed'});
         expect(event.code).toBe('UI_ROUTE_RENDER_FAILED');
         expect(event.buildId).toBe(buildIdentity.buildId);
-        expect(event.databaseSchemaVersion).toBe(3);
+        expect(event.databaseSchemaVersion).toBe(4);
     });
 });
