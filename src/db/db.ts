@@ -20,6 +20,7 @@ import {ExerciseSet, Plan, Workout, WorkoutExercise} from "../models/workout";
 import {UserMetric} from "../models/user";
 import {PerformedSetRecord, RestTimerRecord, SessionExerciseRecord, WorkoutOperationRecord, WorkoutSessionRecord} from '../workout/types';
 import {CustomExerciseRecord, ExercisePreference, ReviewedExercise} from '../exerciseCatalog/types';
+import {ExercisePrescriptionRecord, ProgramDayRecord, ProgramExerciseRecord, ProgressionRuleRecord, TrainingProgramRecord} from '../programs/types';
 
 export class DexieDB extends Dexie {
     exercise!: Table<Exercise>;
@@ -36,6 +37,11 @@ export class DexieDB extends Dexie {
     exerciseCatalog!: Table<ReviewedExercise, string>;
     exercisePreference!: Table<ExercisePreference, string>;
     customExercise!: Table<CustomExerciseRecord, string>;
+    trainingProgram!: Table<TrainingProgramRecord, string>;
+    programDay!: Table<ProgramDayRecord, string>;
+    programExercise!: Table<ProgramExerciseRecord, string>;
+    exercisePrescription!: Table<ExercisePrescriptionRecord, string>;
+    progressionRule!: Table<ProgressionRuleRecord, string>;
     constructor() {
         const maybeUser = localStorage.getItem("userName");
         super(maybeUser && maybeUser !== "Default User" ? `weightlog-${maybeUser}` : 'weightlog');
@@ -91,6 +97,13 @@ export class DexieDB extends Dexie {
             exerciseCatalog: "&id, sourceId, sourceRevision, name, contentStatus, generatorEligible, *equipmentTags, *primaryMuscles, *positionTags",
             exercisePreference: "&exerciseId, favourite, neverSuggest, updatedAt",
             customExercise: "&id, name, contentStatus, generatorEligible, *equipmentTags, *primaryMuscles"
+        });
+        this.version(6).stores({
+            trainingProgram: "&id, status, updatedAt",
+            programDay: "&id, programId, [programId+sequenceIndex]",
+            programExercise: "&id, programDayId, [programDayId+sequenceIndex], exerciseId, groupId",
+            exercisePrescription: "&id",
+            progressionRule: "&id"
         });
     }
 }

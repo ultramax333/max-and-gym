@@ -7,6 +7,8 @@ export interface WorkoutSessionRecord {
     creationOperationId: string;
     finishOperationId?: string;
     nameSnapshot: string;
+    programId?: string;
+    programDayId?: string;
     status: WorkoutSessionStatus;
     startedAt: string;
     endedAt?: string;
@@ -19,12 +21,33 @@ export interface WorkoutSessionRecord {
     updatedAt: string;
 }
 
+export interface StartWorkoutInput {
+    name: string;
+    programId?: string;
+    programDayId?: string;
+    exercises: Array<{
+        exerciseId: string;
+        exerciseName: string;
+        prescriptionSnapshot: string;
+        workingSets: number;
+        repsMin: number;
+        repsMax: number;
+        targetLoadKg: number;
+        targetRir: number;
+        restSeconds: number;
+        locked?: boolean;
+        alternativeExerciseIds?: string[];
+    }>;
+}
+
 export interface SessionExerciseRecord {
     id: string;
     sessionId: string;
     exerciseId: string;
     exerciseNameSnapshot: string;
     prescriptionSnapshot: string;
+    lockedSnapshot: boolean;
+    alternativeExerciseIdsSnapshot: string[];
     sequenceIndex: number;
     status: 'pending' | 'active' | 'completed' | 'skipped';
     createdAt: string;

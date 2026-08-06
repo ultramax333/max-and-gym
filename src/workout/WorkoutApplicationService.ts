@@ -1,7 +1,7 @@
 import {recordDiagnostic, writeOperationJournal} from '../diagnostics/service';
 import {ErrorCode} from '../diagnostics/types';
 import {DexieWorkoutRepository, WorkoutDomainError} from './DexieWorkoutRepository';
-import {ActiveWorkoutSnapshot, CompleteSetInput} from './types';
+import {ActiveWorkoutSnapshot, CompleteSetInput, StartWorkoutInput} from './types';
 
 export const ACTIVE_WORKOUT_STORAGE_KEY = 'maxgym.activeWorkoutId';
 
@@ -58,6 +58,12 @@ export class WorkoutApplicationService {
 
     async start(operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
         const result = await this.runCritical('workout-start', operationId, 'WORKOUT_START_FAILED', () => this.repository.startSample(operationId));
+        localStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, result.session.id);
+        return result;
+    }
+
+    async startProgramDay(input: StartWorkoutInput, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        const result = await this.runCritical('program-workout-start', operationId, 'WORKOUT_START_FAILED', () => this.repository.startProgramDay(input, operationId));
         localStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, result.session.id);
         return result;
     }

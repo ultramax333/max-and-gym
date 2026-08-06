@@ -1,8 +1,9 @@
-import {ActiveWorkoutSnapshot, CompleteSetInput} from './types';
+import {ActiveWorkoutSnapshot, CompleteSetInput, StartWorkoutInput} from './types';
 
 export interface WorkoutRepository {
     findActive(): Promise<ActiveWorkoutSnapshot | undefined>;
     startSample(operationId: string): Promise<ActiveWorkoutSnapshot>;
+    startProgramDay(input: StartWorkoutInput, operationId: string): Promise<ActiveWorkoutSnapshot>;
     completeSet(input: CompleteSetInput): Promise<ActiveWorkoutSnapshot>;
     undoSet(sessionId: string, setId: string, operationId: string): Promise<ActiveWorkoutSnapshot>;
     pause(sessionId: string): Promise<ActiveWorkoutSnapshot>;
