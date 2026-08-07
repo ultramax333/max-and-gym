@@ -49,6 +49,19 @@ describe('DexieWorkoutRepository', () => {
         expect(await db.restTimer.count()).toBe(1);
     });
 
+    it('repairs a stale pointer to a completed set without losing progress', async () => {
+        const started = await repository.startSample('start');
+        const completed = await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'complete', actualLoadKg: 16, actualReps: 10});
+        await db.workoutSession.update(started.session.id, {currentSetId: started.sets[0].id, currentSessionExerciseId: started.exercises[0].id});
+
+        const repaired = await repository.repairPosition(started.session.id);
+
+        expect(repaired.session.currentSetId).toBe(completed.sets[1].id);
+        expect(repaired.session.currentSessionExerciseId).toBe(started.exercises[0].id);
+        expect(repaired.sets.filter((entry) => entry.status === 'completed')).toHaveLength(1);
+        expect(repaired.sets.find((entry) => entry.id === repaired.session.currentSetId)?.status).toBe('planned');
+    });
+
     it('rolls back all writes when set ownership validation fails', async () => {
         const started = await repository.startSample('start');
         await expect(repository.completeSet({sessionId: started.session.id, setId: 'missing', operationId: 'bad-complete', actualLoadKg: 1, actualReps: 1})).rejects.toBeInstanceOf(WorkoutDomainError);

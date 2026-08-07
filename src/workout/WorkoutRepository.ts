@@ -2,6 +2,7 @@ import {ActiveWorkoutSnapshot, CompleteSetInput, StartWorkoutInput} from './type
 
 export interface WorkoutRepository {
     findActive(): Promise<ActiveWorkoutSnapshot | undefined>;
+    repairPosition(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     startSample(operationId: string): Promise<ActiveWorkoutSnapshot>;
     startProgramDay(input: StartWorkoutInput, operationId: string): Promise<ActiveWorkoutSnapshot>;
     completeSet(input: CompleteSetInput): Promise<ActiveWorkoutSnapshot>;

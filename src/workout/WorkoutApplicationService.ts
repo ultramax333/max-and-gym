@@ -38,6 +38,11 @@ export class WorkoutApplicationService {
     async recover(): Promise<ActiveWorkoutSnapshot | undefined> {
         try {
             let active = await this.repository.findActive();
+            if (active) {
+                const previousSetId = active.session.currentSetId;
+                active = await this.repository.repairPosition(active.session.id);
+                if (active.session.currentSetId !== previousSetId) recordDiagnostic({level: 'info', subsystem: 'WORKOUT', code: 'WORKOUT_RECOVERY_REPAIRED', safeMessage: 'Workout recovery advanced a stale completed-set pointer.'});
+            }
             if (active?.timer && !active.sets.some((entry) => entry.id === active?.timer?.performedSetId)) {
                 active = await this.repository.skipTimer(active.session.id);
                 recordDiagnostic({level: 'warning', subsystem: 'TIMER', code: 'TIMER_OWNER_MISMATCH', safeMessage: 'An invalid rest timer owner was cancelled during recovery.'});
@@ -68,8 +73,9 @@ export class WorkoutApplicationService {
         return result;
     }
 
-    completeSet(input: Omit<CompleteSetInput, 'operationId'>, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
-        return this.runCritical('workout-complete-set', operationId, 'WORKOUT_SET_SAVE_FAILED', () => this.repository.completeSet({...input, operationId}));
+    async completeSet(input: Omit<CompleteSetInput, 'operationId'>, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        const result = await this.runCritical('workout-complete-set', operationId, 'WORKOUT_SET_SAVE_FAILED', () => this.repository.completeSet({...input, operationId}));
+        return this.repository.repairPosition(result.session.id);
     }
 
     undoSet(sessionId: string, setId: string, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {

@@ -49,6 +49,28 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         return sessions[0] ? this.snapshot(sessions[0]) : undefined;
     }
 
+    async repairPosition(sessionId: string): Promise<ActiveWorkoutSnapshot> {
+        await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.restTimer], async () => {
+            const session = await this.db.workoutSession.get(sessionId);
+            if (!session || (session.status !== 'active' && session.status !== 'paused')) return;
+            const snapshot = await this.snapshot(session);
+            const current = snapshot.sets.find((entry) => entry.id === session.currentSetId && entry.status !== 'completed');
+            if (current || snapshot.sets.every((entry) => entry.status === 'completed')) return;
+            const next = snapshot.sets.find((entry) => entry.status !== 'completed');
+            if (!next) return;
+            const now = this.iso();
+            await this.db.workoutSession.update(session.id, {currentSetId: next.id, currentSessionExerciseId: next.sessionExerciseId, updatedAt: now});
+            for (const exercise of snapshot.exercises) {
+                const exerciseSets = snapshot.sets.filter((entry) => entry.sessionExerciseId === exercise.id);
+                const status = exercise.id === next.sessionExerciseId ? 'active' : exerciseSets.every((entry) => entry.status === 'completed') ? 'completed' : 'pending';
+                if (exercise.status !== status) await this.db.sessionExercise.update(exercise.id, {status, updatedAt: now});
+            }
+        });
+        const repaired = await this.get(sessionId);
+        if (!repaired) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The repaired session could not be loaded.');
+        return repaired;
+    }
+
     async startSample(operationId: string): Promise<ActiveWorkoutSnapshot> {
         return this.startProgramDay({name: 'Essential workout', exercises: [
             {exerciseId: 'fedb:Goblet_Squat', exerciseName: 'Goblet Squat', prescriptionSnapshot: '3 × 8–10 · rest 75 s', workingSets: 3, repsMin: 8, repsMax: 10, targetLoadKg: 16, targetRir: 2, restSeconds: 75},

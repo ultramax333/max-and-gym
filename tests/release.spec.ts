@@ -89,6 +89,42 @@ test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local
     await expect(page.getByRole('button', {name: 'Finish workout'})).toBeVisible();
 });
 
+test('a stale completed-set pointer recovers to the next set after reload', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name: 'Start'}).click();
+    await page.getByRole('button', {name: 'Complete set'}).click();
+    await expect(page.getByText('1/6 sets completed')).toBeVisible();
+    await expect(page.getByRole('heading', {name: 'Set 2'})).toBeVisible();
+
+    await page.evaluate(async () => {
+        const request = <T,>(value: IDBRequest<T>) => new Promise<T>((resolve, reject) => {
+            value.onsuccess = () => resolve(value.result);
+            value.onerror = () => reject(value.error);
+        });
+        const database = await request(indexedDB.open('weightlog'));
+        const read = database.transaction(['workoutSession', 'performedSet'], 'readonly');
+        const sessions = await request(read.objectStore('workoutSession').getAll()) as Array<{id: string; status: string; currentSetId: string}>;
+        const sets = await request(read.objectStore('performedSet').getAll()) as Array<{id: string; sessionId: string; status: string}>;
+        const session = sessions.find((entry) => entry.status === 'active');
+        const completed = sets.find((entry) => entry.sessionId === session?.id && entry.status === 'completed');
+        if (!session || !completed) throw new Error('The stale-pointer fixture could not be created.');
+        const write = database.transaction('workoutSession', 'readwrite');
+        write.objectStore('workoutSession').put({...session, currentSetId: completed.id});
+        await new Promise<void>((resolve, reject) => {
+            write.oncomplete = () => resolve();
+            write.onerror = () => reject(write.error);
+            write.onabort = () => reject(write.error);
+        });
+        database.close();
+    });
+
+    await page.reload();
+    await expect(page.getByText('1/6 sets completed')).toBeVisible();
+    await expect(page.getByRole('heading', {name: 'Set 2'})).toBeVisible();
+    await expect(page.getByRole('button', {name: 'Complete set'})).toBeVisible();
+});
+
 test('@offline shell, workout and diagnostics reopen without network', async ({page, context}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
