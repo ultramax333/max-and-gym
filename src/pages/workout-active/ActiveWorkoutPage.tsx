@@ -183,6 +183,20 @@ export function ActiveWorkoutPage() {
                     <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Resume' : 'Pause'}</Button>
                 </Stack>
                 <LinearProgress variant="determinate" value={(completed.length / snapshot.sets.length) * 100} aria-label="Workout progress"/>
+                <Paper component="section" aria-labelledby="workout-plan-title" sx={{p: 2}}>
+                    <Typography id="workout-plan-title" component="h2" variant="h6">Workout plan · {snapshot.exercises.length} exercises</Typography>
+                    <Stack divider={<Divider flexItem/>} sx={{mt: 1}}>
+                        {snapshot.exercises.map((exercise) => {
+                            const exerciseSets = snapshot.sets.filter((entry) => entry.sessionExerciseId === exercise.id);
+                            const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
+                            const isCurrent = exercise.id === currentExercise?.id && !allSetsDone;
+                            return <Stack key={exercise.id} direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{py: 1}}>
+                                <Stack minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Stack>
+                                <Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>
+                            </Stack>;
+                        })}
+                    </Stack>
+                </Paper>
                 {!allSetsDone && currentExercise && currentSet && <>
                     <Card>{exerciseMedia.length ? <Box sx={{display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={media.kind} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: {xs: 180, sm: 260}, objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}<CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
                     <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography><Typography color="text.secondary">No history for this local workout.</Typography></Paper>

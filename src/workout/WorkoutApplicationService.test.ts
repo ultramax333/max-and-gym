@@ -43,6 +43,14 @@ describe('WorkoutApplicationService recovery', () => {
         expect(recovered?.session.currentSetId).toBe(started.sets[1].id);
     });
 
+    it('clears the active marker when a workout is replaced', async () => {
+        const started = await service.start('start-replaced');
+        const replaced = await service.abandon(started.session.id, 'abandon-replaced');
+        expect(replaced.session.status).toBe('abandoned');
+        expect(hasActiveWorkoutMarker()).toBe(false);
+        expect(await service.recover()).toBeUndefined();
+    });
+
     it('completes a full offline journey without any network dependency', async () => {
         window.dispatchEvent(new Event('offline'));
         let snapshot = await service.start('offline-start');

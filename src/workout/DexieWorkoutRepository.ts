@@ -193,6 +193,25 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         return (await this.get(sessionId))!;
     }
 
+    async abandon(sessionId: string, operationId: string): Promise<ActiveWorkoutSnapshot> {
+        const now = this.iso();
+        await this.db.transaction('rw', [this.db.workoutSession, this.db.restTimer, this.db.workoutOperation], async () => {
+            if ((await this.db.workoutOperation.get(operationId))?.status === 'committed') return;
+            const session = await this.db.workoutSession.get(sessionId);
+            if (!session) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session does not exist.');
+            if (session.status === 'abandoned') return;
+            if (session.status !== 'active' && session.status !== 'paused') throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'Only an active workout can be replaced.');
+            await this.db.workoutOperation.put({operationId, kind: 'abandon', status: 'started', sessionId, startedAt: now});
+            const elapsedSeconds = Math.max(0, Math.floor((this.clock.now().getTime() - new Date(session.startedAt).getTime()) / 1000) - session.pausedDurationSeconds);
+            await this.db.workoutSession.update(sessionId, {status: 'abandoned', endedAt: now, elapsedSeconds, updatedAt: now});
+            await this.db.restTimer.where('sessionId').equals(sessionId).modify({status: 'cancelled', updatedAt: now});
+            await this.db.workoutOperation.put({operationId, kind: 'abandon', status: 'committed', sessionId, startedAt: now, finishedAt: now});
+        });
+        const result = await this.get(sessionId);
+        if (!result) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The replaced session could not be loaded.');
+        return result;
+    }
+
     async finish(sessionId: string, operationId: string): Promise<ActiveWorkoutSnapshot> {
         const now = this.iso();
         await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.restTimer, this.db.workoutOperation, this.db.trainingProgram, this.db.programExercise, this.db.exercisePrescription, this.db.progressionRule, this.db.progressionProposal], async () => {

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Alert, Card, CardActionArea, CardContent, Chip, Stack, Typography} from '@mui/material';
+import {Alert, Button, Card, CardActionArea, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography} from '@mui/material';
 import {Add, Bolt, CalendarMonth, FitnessCenter, PlayArrow, Timeline} from '@mui/icons-material';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {useNavigate} from 'react-router-dom';
@@ -29,8 +29,7 @@ async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>): Pr
 }
 
 async function startQuickWorkout(definition: QuickWorkoutDefinition, navigate: ReturnType<typeof useNavigate>): Promise<void> {
-    const active = await workout.recover();
-    if (!active) await workout.startProgramDay({name: definition.name, exercises: definition.exercises});
+    await workout.startProgramDay({name: definition.name, exercises: definition.exercises});
     navigate('/workout/active');
 }
 
@@ -50,17 +49,42 @@ export function HomeShellPage() {
 export function TrainShellPage() {
     const navigate = useNavigate();
     const [error, setError] = useState<string>();
+    const [workoutToReplace, setWorkoutToReplace] = useState<{id: string; name: string}>();
+    const [replacing, setReplacing] = useState(false);
     const active = useActiveProgram();
     const next = active?.days[active.currentDayIndex % active.days.length];
+    const chooseArmWorkout = async () => {
+        try {
+            const current = await workout.recover();
+            if (current?.session.nameSnapshot === ARM_WORKOUT_45.name) { navigate('/workout/active'); return; }
+            if (current) { setWorkoutToReplace({id: current.session.id, name: current.session.nameSnapshot}); return; }
+            await startQuickWorkout(ARM_WORKOUT_45, navigate);
+        } catch {
+            setError('The arm workout could not be started. Your existing workout data was not changed.');
+        }
+    };
+    const replaceWithArmWorkout = async () => {
+        if (!workoutToReplace) return;
+        setReplacing(true);
+        try {
+            await workout.abandon(workoutToReplace.id);
+            await startQuickWorkout(ARM_WORKOUT_45, navigate);
+        } catch {
+            setError('The arm workout could not be started. Completed sets from the previous workout are still saved.');
+            setWorkoutToReplace(undefined);
+        } finally {
+            setReplacing(false);
+        }
+    };
     return <Layout title="Training" hideBack><ScreenContainer><SectionHeader eyebrow="TRAINING" title="Choose your workout"/><Stack spacing={2}>
         {error && <Alert severity="error">{error}</Alert>}
         {active && next && <ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · prescription is fixed when you start.`} icon={<CalendarMonth/>} onClick={() => startNextProgramDay(navigate)}/>}
-        <ShellCard title={ARM_WORKOUT_45.name} text={ARM_WORKOUT_45.summary} icon={<FitnessCenter/>} onClick={() => void startQuickWorkout(ARM_WORKOUT_45, navigate).catch(() => setError('The arm workout could not be started. Your existing workout data was not changed.'))}/>
+        <ShellCard title={ARM_WORKOUT_45.name} text={ARM_WORKOUT_45.summary} icon={<FitnessCenter/>} onClick={() => void chooseArmWorkout()}/>
         <ShellCard title="Essential workout" text="Start or resume a reliable local workout." icon={<FitnessCenter/>} onClick={() => navigate('/workout/active')}/>
         <ShellCard title="Previous workouts" text="Open the editor and your existing RepQuest workouts." icon={<FitnessCenter/>} onClick={() => navigate('/workouts')}/>
         {!active && <ShellCard title="Create a planned workout" text="Activate a program with two or three days." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
         <ShellCard title="Warm-up and core" text="Detailed flows arrive with the workout engine." icon={<Bolt/>}/>
-    </Stack></ScreenContainer></Layout>;
+    </Stack></ScreenContainer><Dialog open={Boolean(workoutToReplace)} onClose={() => !replacing && setWorkoutToReplace(undefined)}><DialogTitle>Start {ARM_WORKOUT_45.name}?</DialogTitle><DialogContent><Typography>Your workout “{workoutToReplace?.name}” is still active. Replace it with the complete 5-exercise arm workout? Completed sets stay saved on this device.</Typography></DialogContent><DialogActions><Button onClick={() => setWorkoutToReplace(undefined)} disabled={replacing}>Keep current workout</Button><Button variant="contained" onClick={() => void replaceWithArmWorkout()} disabled={replacing}>Start arm workout</Button></DialogActions></Dialog></Layout>;
 }
 
 export function ProgressShellPage() {
