@@ -1,8 +1,10 @@
 import seed from './reviewed-exercises.json';
 import {DexieDB} from '../db/db';
+import {EXERCISE_SEED_VERSION} from '../config/buildIdentity';
 import {CustomExerciseRecord, ExercisePreference, LibraryExercise, LibraryFilters, ReviewedExercise} from './types';
 
 const MAX_CUSTOM_IMAGE_BYTES = 5 * 1024 * 1024;
+const EXERCISE_SEED_META_KEY = 'exerciseCatalogSeedVersion';
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function normalize(value: string): string {
@@ -17,10 +19,21 @@ export class ExerciseCatalogRepository {
     constructor(private readonly db: DexieDB) {}
 
     async ensureSeed(): Promise<void> {
-        const ids = (seed as ReviewedExercise[]).map((entry) => entry.id);
-        const existing = await this.db.exerciseCatalog.bulkGet(ids);
-        const missing = (seed as ReviewedExercise[]).filter((entry, index) => !existing[index]);
-        if (missing.length) await this.db.exerciseCatalog.bulkAdd(missing);
+        const reviewedSeed = seed as ReviewedExercise[];
+        const installedVersion = await this.db.appMeta.get(EXERCISE_SEED_META_KEY);
+        if (installedVersion?.value === EXERCISE_SEED_VERSION) {
+            const existing = await this.db.exerciseCatalog.bulkGet(reviewedSeed.map((entry) => entry.id));
+            if (existing.every(Boolean)) return;
+        }
+
+        const updatedAt = new Date().toISOString();
+        await this.db.transaction('rw', [this.db.exerciseCatalog, this.db.appMeta], async () => {
+            // Preferences and custom exercises live in separate tables. Replacing the
+            // reviewed records therefore refreshes stale local media without touching
+            // any personal training data.
+            await this.db.exerciseCatalog.bulkPut(reviewedSeed);
+            await this.db.appMeta.put({key: EXERCISE_SEED_META_KEY, value: EXERCISE_SEED_VERSION, updatedAt});
+        });
     }
 
     async list(filters: LibraryFilters = {}): Promise<LibraryExercise[]> {
