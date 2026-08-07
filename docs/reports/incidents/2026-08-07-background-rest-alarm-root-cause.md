@@ -191,7 +191,7 @@ The second option remains 100% local but changes the distribution surface from p
 | GitHub Pages production build and subpath smoke | Pass |
 | Capacitor Android web build and sync | Pass |
 | Browser active-workout boot recovery | Pass on isolated production preview |
-| Native Java compilation | Pending CI for the post-scan correction |
+| Native Java compilation | Pass, GitHub Actions run `31222735215` |
 | Pixel 9a background/lock-screen acceptance | Pending installation of the CI-produced APK |
 
 ## Final verdict

@@ -42,9 +42,9 @@ On launch or process recreation, the application recovers the active session and
 | Android web build / no-service-worker smoke | Pass |
 | Capacitor Android sync | Pass |
 | Browser active-session route recovery | Pass |
-| Android debug APK compile and native unit task | Pending CI for the post-scan correction |
+| Android debug APK compile and native unit task | Pass, workflow run `31222735215` |
 | Pixel 9a app switch, screen lock, battery saver and process recreation | Pending physical device |
 
 ## Release decision
 
-The post-scan correction is ready for Android CI. The debug artifact is suitable for Pixel 9a acceptance only; production updates additionally require the stable signing secrets documented in `docs/spec/RELEASE_PROCESS.md`. The checkpoint must not be called physically accepted until the Pixel 9a matrix confirms sound, vibration, notification, Stop action, timer rescheduling and workout recovery.
+The post-scan correction compiled successfully at commit `d7cfba2`. CI published `max-and-gym-v1.2.0-120000004-debug-apk` with SHA-256 `71a97e74052908816b0c7152fbb80508a5ef0d3bbf9ac1414fd0780c9a69dfbb`. The debug artifact is suitable for Pixel 9a acceptance only; production updates additionally require the stable signing secrets documented in `docs/spec/RELEASE_PROCESS.md`. The checkpoint must not be called physically accepted until the Pixel 9a matrix confirms sound, vibration, notification, Stop action, timer rescheduling and workout recovery.

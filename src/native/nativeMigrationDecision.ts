@@ -1,19 +1,18 @@
 export const NATIVE_MIGRATION_DECISION_KEY = 'maxgym.nativeMigrationDecision.v1';
-const LEGACY_MIGRATION_DISMISSED_KEY = 'maxgym.nativeMigrationPromptDismissed';
 
-export type NativeMigrationDecision = 'continue-local' | 'import-selected' | 'import-completed';
+export type NativeMigrationDecision = 'continue-local' | 'import-completed';
 
 type MigrationStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
-const validDecisions = new Set<NativeMigrationDecision>(['continue-local', 'import-selected', 'import-completed']);
+const validDecisions = new Set<NativeMigrationDecision>(['continue-local', 'import-completed']);
 
 export function hasNativeMigrationDecision(storage: MigrationStorage): boolean {
     try {
         const decision = storage.getItem(NATIVE_MIGRATION_DECISION_KEY);
         if (decision && validDecisions.has(decision as NativeMigrationDecision)) return true;
-
-        // Preserve the choice made by users of the first Android build.
-        return storage.getItem(LEGACY_MIGRATION_DISMISSED_KEY) === 'true';
+        // The legacy dismissal marker is intentionally ignored: it did not
+        // distinguish a completed choice from an abandoned import attempt.
+        return false;
     } catch {
         // If storage cannot be read, offering a non-destructive import is safer than
         // silently assuming that migration was already handled.

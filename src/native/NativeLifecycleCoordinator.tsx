@@ -86,9 +86,16 @@ export function NativeLifecycleCoordinator() {
         setShowMigrationPrompt(true);
     }, [db]);
 
-    const dismissMigrationPrompt = (decision: 'continue-local' | 'import-selected') => {
-        recordNativeMigrationDecision(localStorage, decision);
+    const continueWithoutImport = () => {
+        recordNativeMigrationDecision(localStorage, 'continue-local');
         setShowMigrationPrompt(false);
+    };
+
+    const openImport = () => {
+        // Selecting the import screen is not a completed migration decision. If
+        // the user cancels or import validation fails, offer the choice again.
+        setShowMigrationPrompt(false);
+        navigate('/backup');
     };
 
     return <Dialog open={showMigrationPrompt} aria-labelledby="native-migration-title">
@@ -98,8 +105,8 @@ export function NativeLifecycleCoordinator() {
             <Typography>Export a personal .maxgym backup from the web app, then import it here to keep workouts, programs and photos.</Typography>
         </DialogContent>
         <DialogActions sx={{p: 2, flexDirection: {xs: 'column-reverse', sm: 'row'}, alignItems: 'stretch'}}>
-            <Button onClick={() => dismissMigrationPrompt('continue-local')}>Continue without import</Button>
-            <Button variant="contained" onClick={() => { dismissMigrationPrompt('import-selected'); navigate('/backup'); }}>Import .maxgym backup</Button>
+            <Button onClick={continueWithoutImport}>Continue without import</Button>
+            <Button variant="contained" onClick={openImport}>Import .maxgym backup</Button>
         </DialogActions>
     </Dialog>;
 }

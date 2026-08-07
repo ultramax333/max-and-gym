@@ -16,15 +16,20 @@ describe('native migration decision', () => {
         expect(hasNativeMigrationDecision(storage)).toBe(false);
     });
 
-    it.each(['continue-local', 'import-selected', 'import-completed'] as const)('does not offer migration again after %s', (decision) => {
+    it.each(['continue-local', 'import-completed'] as const)('does not offer migration again after %s', (decision) => {
         const storage = memoryStorage();
         expect(recordNativeMigrationDecision(storage, decision)).toBe(true);
         expect(storage.values.get(NATIVE_MIGRATION_DECISION_KEY)).toBe(decision);
         expect(hasNativeMigrationDecision(storage)).toBe(true);
     });
 
-    it('honours the dismissal marker written by the initial Android release', () => {
-        expect(hasNativeMigrationDecision(memoryStorage({'maxgym.nativeMigrationPromptDismissed': 'true'}))).toBe(true);
+    it('keeps offering migration until an import actually completes', () => {
+        const storage = memoryStorage({[NATIVE_MIGRATION_DECISION_KEY]: 'import-selected'});
+        expect(hasNativeMigrationDecision(storage)).toBe(false);
+    });
+
+    it('re-offers migration for the ambiguous marker written by the initial Android build', () => {
+        expect(hasNativeMigrationDecision(memoryStorage({'maxgym.nativeMigrationPromptDismissed': 'true'}))).toBe(false);
     });
 
     it('does not treat corrupt or unavailable storage as a decision', () => {
