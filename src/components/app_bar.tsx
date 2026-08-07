@@ -26,6 +26,7 @@ import {UserContext} from "../context/userContext";
 import {Avatar, IconButton, Popover, Tooltip} from "@mui/material";
 import SettingsIcon from '@mui/icons-material/Settings';
 import {AccountMenuList} from '../pages/profile/accountMenu';
+import {buildIdentity} from '../config/buildIdentity';
 
 export interface WLAppBarProps {
     title: string;
@@ -59,10 +60,11 @@ export const WLAppBar = (props: WLAppBarProps) => {
                 >
                     <BackIcon/>
                 </IconButton>}
-                <Typography variant="h6" component="div" sx={{flexGrow: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>
-                    {title}
-                </Typography>
-                <Box sx={{flexShrink: 1, whiteSpace: "nowrap"}}>{toolItems}<Tooltip title="Settings"><IconButton aria-label="Open settings" onClick={() => navigate('/settings')}><SettingsIcon/></IconButton></Tooltip>{showAccountMenu && <IconButton aria-label="Open account" onClick={(ev) => setAccountMenuAnchor(accountMenuAnchor ? undefined : ev.currentTarget)}><Avatar sx={{width: 32, height: 32}} src={user?.picture} /></IconButton>}</Box>
+                <Box sx={{flexGrow: 1, minWidth: 0}}>
+                    <Typography variant="h6" component="div" sx={{whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>{title}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{display: 'block', lineHeight: 1}}>v{buildIdentity.appVersion} · build {buildIdentity.buildNumber}</Typography>
+                </Box>
+                <Box sx={{flexShrink: 0, whiteSpace: "nowrap"}}>{toolItems}<Tooltip title="Settings"><IconButton aria-label="Open settings" onClick={() => navigate('/settings')}><SettingsIcon/></IconButton></Tooltip>{showAccountMenu && <IconButton aria-label="Open account" onClick={(ev) => setAccountMenuAnchor(accountMenuAnchor ? undefined : ev.currentTarget)}><Avatar sx={{width: 32, height: 32}} src={user?.picture} /></IconButton>}</Box>
             </Toolbar>
             <Popover
                 open={accountMenuAnchor !== undefined}

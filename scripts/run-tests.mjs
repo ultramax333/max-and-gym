@@ -17,6 +17,7 @@ await startVitest('test', filters, {
     configFile: false,
     define: {
         __APP_VERSION__: JSON.stringify('1.0.0-test'),
+        __BUILD_NUMBER__: JSON.stringify('test-build'),
         __GIT_SHA__: JSON.stringify('test-sha'),
         __BUILD_TIMESTAMP__: JSON.stringify('2026-08-06T00:00:00.000Z'),
         __BUILD_ENVIRONMENT__: JSON.stringify('test'),

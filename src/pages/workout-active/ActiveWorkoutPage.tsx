@@ -9,6 +9,7 @@ import {ActiveWorkoutSnapshot} from '../../workout/types';
 import {useWorkoutService} from '../../workout/useWorkoutService';
 import {ExerciseMediaAsset} from '../../exerciseCatalog/types';
 import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
+import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -141,8 +142,8 @@ export function ActiveWorkoutPage() {
         let cancelled = false;
         setExerciseMedia([]);
         if (!catalog || !currentExercise) return () => { cancelled = true; };
-        void catalog.get(currentExercise.exerciseId).then((exercise) => {
-            if (!cancelled) setExerciseMedia(exercise?.media.filter((entry) => entry.kind === 'start-image' || entry.kind === 'end-image') ?? []);
+        void resolveWorkoutExerciseMedia(catalog, currentExercise.exerciseId, currentExercise.exerciseNameSnapshot).then((media) => {
+            if (!cancelled) setExerciseMedia(media);
         });
         return () => { cancelled = true; };
     }, [catalog, currentExercise]);
