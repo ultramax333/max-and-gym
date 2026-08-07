@@ -5,11 +5,11 @@ describe('PWA update policy', () => {
     const viteConfig = readFileSync('vite.config.ts', 'utf8');
     const provider = readFileSync('src/pwa/PwaContext.tsx', 'utf8');
 
-    it('waits for explicit user confirmation rather than auto-updating', () => {
-        expect(viteConfig).toContain("registerType: 'prompt'");
-        expect(viteConfig).not.toContain("registerType: 'autoUpdate'");
-        expect(provider).toContain('onNeedRefresh');
-        expect(provider).not.toContain('onNeedRefresh() {\n                void updateServiceWorker');
+    it('activates verified updates automatically and lets the persisted workout recover', () => {
+        expect(viteConfig).toContain("registerType: 'autoUpdate'");
+        expect(viteConfig).toContain('skipWaiting: true');
+        expect(viteConfig).toContain('clientsClaim: true');
+        expect(provider).not.toContain('hasActiveWorkoutMarker');
     });
 
     it('uses only a bounded cache for local reviewed exercise media', () => {

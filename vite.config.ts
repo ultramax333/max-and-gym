@@ -15,12 +15,14 @@
     along with RepQuest.  If not, see <https://www.gnu.org/licenses/>.
  */
 import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import {VitePWA} from "vite-plugin-pwa";
 
-const appVersion = process.env.npm_package_version ?? '1.0.0';
-const cacheVersion = '2';
+const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {version: string};
+const appVersion = process.env.npm_package_version ?? packageJson.version;
+const cacheVersion = '3';
 const gitSha = process.env.GITHUB_SHA ?? (() => {
     try {
         return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {encoding: 'utf8'}).trim();
@@ -34,6 +36,7 @@ export default defineConfig({
     base: '/max-and-gym/',
     define: {
         __APP_VERSION__: JSON.stringify(appVersion),
+        __BUILD_NUMBER__: JSON.stringify(process.env.GITHUB_RUN_NUMBER ?? 'local'),
         __GIT_SHA__: JSON.stringify(gitSha),
         __BUILD_TIMESTAMP__: JSON.stringify(buildTimestamp),
         __BUILD_ENVIRONMENT__: JSON.stringify(process.env.GITHUB_ACTIONS ? 'github-pages' : 'local'),
@@ -42,9 +45,11 @@ export default defineConfig({
         outDir: "build"
     },
     plugins: [react(), VitePWA({
-        registerType: 'prompt',
+        registerType: 'autoUpdate',
         injectRegister: false,
         workbox: {
+            skipWaiting: true,
+            clientsClaim: true,
             maximumFileSizeToCacheInBytes: 3000000,
             globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
             cleanupOutdatedCaches: true,

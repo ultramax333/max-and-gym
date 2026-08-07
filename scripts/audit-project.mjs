@@ -21,7 +21,7 @@ const checks = [
     {check: 'single lockfile', status: 'pass', detail: 'package-lock.json'},
     {check: 'forbidden packages', status: forbiddenPresent.length ? 'fail' : 'pass', detail: forbiddenPresent.join(', ') || 'none'},
     {check: 'GitHub Pages base', status: vite.includes("base: '/max-and-gym/'") ? 'pass' : 'fail', detail: '/max-and-gym/'},
-    {check: 'prompted PWA update', status: vite.includes("registerType: 'prompt'") && !vite.includes("registerType: 'autoUpdate'") ? 'pass' : 'fail', detail: 'prompt'},
+    {check: 'automatic PWA update', status: vite.includes("registerType: 'autoUpdate'") && vite.includes('skipWaiting: true') && vite.includes('clientsClaim: true') ? 'pass' : 'fail', detail: 'auto-update with immediate activation'},
     {check: 'error code uniqueness', status: new Set(codeValues).size === codeValues.length ? 'pass' : 'fail', detail: `${codeValues.length} registered`},
     {check: 'legacy direct database access', status: 'warning', detail: `${dexieUiAccesses} files; replacement staged in later domain tasks`},
 ];

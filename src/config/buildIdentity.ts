@@ -3,10 +3,11 @@ export const EXPORT_FORMAT_VERSION = 2;
 export const EXERCISE_SEED_VERSION = 'fedb-b0eed061e1c8-reviewed-1';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 export const GENERATOR_VERSION = 'deterministic-v1';
-export const CACHE_VERSION = '2';
+export const CACHE_VERSION = '3';
 
 export interface BuildIdentity {
     appVersion: string;
+    buildNumber: string;
     gitSha: string;
     buildTimestamp: string;
     environment: string;
@@ -21,6 +22,7 @@ export interface BuildIdentity {
 
 export const buildIdentity: BuildIdentity = {
     appVersion: __APP_VERSION__,
+    buildNumber: __BUILD_NUMBER__,
     gitSha: __GIT_SHA__,
     buildTimestamp: __BUILD_TIMESTAMP__,
     environment: __BUILD_ENVIRONMENT__,
@@ -30,5 +32,5 @@ export const buildIdentity: BuildIdentity = {
     programSeedVersion: PROGRAM_SEED_VERSION,
     generatorVersion: GENERATOR_VERSION,
     cacheVersion: CACHE_VERSION,
-    buildId: `${__APP_VERSION__}+${__GIT_SHA__}`,
+    buildId: `${__APP_VERSION__}+${__BUILD_NUMBER__}.${__GIT_SHA__}`,
 };

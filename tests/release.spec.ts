@@ -1,4 +1,7 @@
 import {expect, Page, test} from '@playwright/test';
+import {readFileSync} from 'node:fs';
+
+const packageVersion = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {version: string}).version;
 
 async function bootstrapAnonymousProfile(page: Page): Promise<void> {
     await page.goto('./');
@@ -20,9 +23,9 @@ async function assertNoHorizontalOverflow(page: Page): Promise<void> {
 test('release identity and subpath routes are available', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/diagnostics');
-    await expect(page.getByText('1.0.0', {exact: true})).toBeVisible();
+    await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v1 / 2', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v1 / 3', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -53,6 +56,7 @@ test('@a11y primary workout controls meet the 48px target', async ({page}) => {
 test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local photos', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/train');
+    await expect(page.getByText(/^v\d+\.\d+\.\d+ · build (?:\d+|local)$/)).toBeVisible();
     const main = page.locator('main');
     const dimensions = await main.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
     expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight);
@@ -67,6 +71,13 @@ test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local
     await expect(page.getByRole('heading', {name: 'Dumbbell Bicep Curl'})).toBeVisible();
     await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl starting position'})).toBeVisible();
     await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl finishing position'})).toBeVisible();
+    const activeMain = page.locator('main');
+    const activeDimensions = await activeMain.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
+    expect(activeDimensions.scrollHeight).toBeGreaterThan(activeDimensions.clientHeight);
+    await activeMain.hover();
+    await page.mouse.wheel(0, 1600);
+    await expect.poll(() => activeMain.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    await expect(page.getByRole('button', {name: 'Finish workout'})).toBeVisible();
 });
 
 test('@offline shell, workout and diagnostics reopen without network', async ({page, context}) => {
