@@ -1,4 +1,5 @@
 import {expect, Page, test} from '@playwright/test';
+import packageJson from '../package.json';
 
 async function bootstrapAnonymousProfile(page: Page): Promise<void> {
     await page.goto('./');
@@ -20,9 +21,9 @@ async function assertNoHorizontalOverflow(page: Page): Promise<void> {
 test('release identity and subpath routes are available', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/diagnostics');
-    await expect(page.getByText('1.0.0', {exact: true})).toBeVisible();
+    await expect(page.getByText(packageJson.version, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v1 / 2', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v1 / 3', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
