@@ -125,6 +125,54 @@ test('a stale completed-set pointer recovers to the next set after reload', asyn
     await expect(page.getByRole('button', {name: 'Complete set'})).toBeVisible();
 });
 
+test('rest timer expires while another app screen is open', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name: 'Start'}).click();
+    await page.getByRole('button', {name: 'Complete set'}).click();
+    await expect(page.getByText('1/6 sets completed')).toBeVisible();
+
+    await page.evaluate(async () => {
+        const request = <T,>(value: IDBRequest<T>) => new Promise<T>((resolve, reject) => {
+            value.onsuccess = () => resolve(value.result);
+            value.onerror = () => reject(value.error);
+        });
+        const database = await request(indexedDB.open('weightlog'));
+        const read = database.transaction('restTimer', 'readonly');
+        const timers = await request(read.objectStore('restTimer').getAll()) as Array<{id: string; status: string}>;
+        const timer = timers.find((entry) => entry.status === 'running');
+        if (!timer) throw new Error('The running rest timer fixture is missing.');
+        const write = database.transaction('restTimer', 'readwrite');
+        write.objectStore('restTimer').put({...timer, endsAt: new Date(Date.now() + 300).toISOString()});
+        await new Promise<void>((resolve, reject) => {
+            write.oncomplete = () => resolve();
+            write.onerror = () => reject(write.error);
+            write.onabort = () => reject(write.error);
+        });
+        database.close();
+    });
+
+    await page.goto('./#/');
+    await page.reload();
+    await expect(page.getByRole('heading', {name: 'Ready to train'})).toBeVisible();
+    await expect.poll(() => page.evaluate(async () => {
+        const request = <T,>(value: IDBRequest<T>) => new Promise<T>((resolve, reject) => {
+            value.onsuccess = () => resolve(value.result);
+            value.onerror = () => reject(value.error);
+        });
+        const database = await request(indexedDB.open('weightlog'));
+        const read = database.transaction('restTimer', 'readonly');
+        const timers = await request(read.objectStore('restTimer').getAll()) as Array<{status: string}>;
+        database.close();
+        return timers.at(-1)?.status;
+    })).toBe('completed');
+
+    await page.goto('./#/workout/active');
+    await expect(page.getByRole('heading', {name: 'Set 2'})).toBeVisible();
+    await expect(page.getByText('REST', {exact: true})).toHaveCount(0);
+    await assertNoHorizontalOverflow(page);
+});
+
 test('@offline shell, workout and diagnostics reopen without network', async ({page, context}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');

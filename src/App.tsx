@@ -36,6 +36,7 @@ import {PwaProvider} from './pwa/PwaContext';
 import {UpdatePrompt} from './pwa/UpdatePrompt';
 import {maxGymTheme} from './theme/maxGymTheme';
 import {recordException} from './diagnostics/service';
+import {RestTimerNotifier} from './pwa/restTimerNotifications';
 
 const DBGuard = ({children}: { children: ReactElement }) => {
     const {db} = useContext(DBContext);
@@ -95,6 +96,7 @@ function App() {
                                                 <CalendarProvider>
                                                     <WorkoutContextProvider>
                                                         <Box sx={{minHeight: '100dvh', bgcolor: 'background.default'}}>
+                                                            <RestTimerNotifier/>
                                                             <AppRoutes />
                                                             <UpdatePrompt/>
                                                         </Box>
