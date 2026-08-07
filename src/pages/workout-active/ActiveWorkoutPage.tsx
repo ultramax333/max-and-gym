@@ -1,6 +1,6 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Alert, Box, Button, Card, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, Paper, Stack, TextField, Typography} from '@mui/material';
-import {Add, FitnessCenter, Flag, Pause, PlayArrow, Remove, SkipNext, Undo} from '@mui/icons-material';
+import {Add, FitnessCenter, Flag, NotificationsActive, Pause, PlayArrow, Remove, SkipNext, Undo} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../../components/ui/UiPrimitives';
@@ -10,28 +10,11 @@ import {useWorkoutService} from '../../workout/useWorkoutService';
 import {ExerciseMediaAsset} from '../../exerciseCatalog/types';
 import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
 import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
+import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
     return `${Math.floor(safe / 60).toString().padStart(2, '0')}:${(safe % 60).toString().padStart(2, '0')}`;
-}
-
-function signalRestComplete(): void {
-    if ('vibrate' in navigator) navigator.vibrate([150, 80, 150]);
-    try {
-        const context = new AudioContext();
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        oscillator.frequency.value = 660;
-        gain.gain.value = 0.08;
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.start();
-        oscillator.stop(context.currentTime + 0.18);
-        oscillator.addEventListener('ended', () => void context.close());
-    } catch {
-        recordDiagnostic({level: 'warning', subsystem: 'TIMER', code: 'TIMER_SIGNAL_UNAVAILABLE', safeMessage: 'Rest timer audio feedback was unavailable.'});
-    }
 }
 
 function useRestSeconds(snapshot: ActiveWorkoutSnapshot | undefined): number {
@@ -49,16 +32,6 @@ function useRestSeconds(snapshot: ActiveWorkoutSnapshot | undefined): number {
 function WorkoutRestBar({snapshot, onChange}: {snapshot: ActiveWorkoutSnapshot; onChange: (next: ActiveWorkoutSnapshot) => void}) {
     const service = useWorkoutService();
     const remaining = useRestSeconds(snapshot);
-    const signalled = useRef(false);
-    useEffect(() => {
-        if (!service || !snapshot.timer || snapshot.timer.status !== 'running' || remaining > 0 || signalled.current) return;
-        signalled.current = true;
-        signalRestComplete();
-        void service.skipTimer(snapshot.session.id).then(onChange);
-    }, [onChange, remaining, service, snapshot]);
-    useEffect(() => {
-        signalled.current = false;
-    }, [snapshot.timer?.id]);
     if (!snapshot.timer) return null;
     const paused = snapshot.timer.status === 'paused';
     return <Paper sx={{position: 'sticky', bottom: 0, zIndex: 10, p: 1.5, borderRadius: 0, borderLeft: 0, borderRight: 0}}>
@@ -71,7 +44,7 @@ function WorkoutRestBar({snapshot, onChange}: {snapshot: ActiveWorkoutSnapshot; 
                 <Button startIcon={<SkipNext/>} onClick={() => void service?.skipTimer(snapshot.session.id).then(onChange)}>Passer</Button>
             </Stack>
         </Stack>
-        <Typography variant="caption" color="text.secondary">The signal is best effort: Android may block it when the app is closed.</Typography>
+        <Typography variant="caption" color="text.secondary">Alarm and notification work across app screens and while the app remains open in the background. Android may delay them if it stops Chrome completely.</Typography>
     </Paper>;
 }
 
@@ -88,6 +61,7 @@ export function ActiveWorkoutPage() {
     const [reps, setReps] = useState(0);
     const [rir, setRir] = useState(2);
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
+    const [notificationPermission, setNotificationPermission] = useState<RestNotificationPermission>(() => getRestNotificationPermission());
 
     const refresh = useCallback(async () => {
         if (!service) return;
@@ -103,6 +77,11 @@ export function ActiveWorkoutPage() {
     }, [service]);
 
     useEffect(() => { void refresh(); }, [refresh]);
+    useEffect(() => {
+        const handleTimerComplete = () => void refresh();
+        window.addEventListener(REST_TIMER_COMPLETE_EVENT, handleTimerComplete);
+        return () => window.removeEventListener(REST_TIMER_COMPLETE_EVENT, handleTimerComplete);
+    }, [refresh]);
     useEffect(() => {
         const reconcile = () => { if (document.visibilityState === 'visible') void refresh(); };
         document.addEventListener('visibilitychange', reconcile);
@@ -178,6 +157,7 @@ export function ActiveWorkoutPage() {
         <ScreenContainer>
             <Stack spacing={2}>
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
+                {notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography color="text.secondary">{completed.length}/{snapshot.sets.length} sets completed</Typography>
                     <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Resume' : 'Pause'}</Button>
@@ -206,7 +186,7 @@ export function ActiveWorkoutPage() {
                             <TextField fullWidth label="Actual repetitions" type="number" value={reps} onChange={(event) => setReps(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, step: 1}}/>
                             <TextField fullWidth label="RIR (optionnel)" type="number" value={rir} onChange={(event) => setRir(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, max: 10, step: 1}}/>
                         </Stack>
-                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir}))}>Complete set</PrimaryButton>
+                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => { void prepareRestTimerAudio(); void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir})); }}>Complete set</PrimaryButton>
                     </Stack></Paper>
                 </>}
                 {allSetsDone && <StatePanel title="All sets are complete" description="Review the summary, then finish the workout. This action is safe to retry without creating duplicates." icon={<Flag/>}/>}
