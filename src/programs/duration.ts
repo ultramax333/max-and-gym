@@ -34,8 +34,8 @@ export function weeklyBalance(days: ProgramDayDetail[]): {patterns: Record<strin
         for (const muscle of exercise.primaryMusclesSnapshot) muscles[muscle] = (muscles[muscle] ?? 0) + exercise.prescription.workingSets;
     }
     const warnings: string[] = [];
-    if (!Object.keys(patterns).length) warnings.push('Ajoute des exercices pour analyser l’équilibre hebdomadaire.');
-    if ((patterns.push ?? 0) > (patterns.pull ?? 0) * 2 && (patterns.push ?? 0) >= 6) warnings.push('Le volume de poussée dépasse nettement le volume de tirage.');
-    if ((patterns['squat'] ?? 0) + (patterns['knee-dominant'] ?? 0) === 0 && Object.keys(patterns).length) warnings.push('Aucun mouvement dominant genou cette semaine.');
+    if (!Object.keys(patterns).length) warnings.push('Add exercises to analyse weekly balance.');
+    if ((patterns.push ?? 0) > (patterns.pull ?? 0) * 2 && (patterns.push ?? 0) >= 6) warnings.push('Push volume is substantially higher than pull volume.');
+    if ((patterns['squat'] ?? 0) + (patterns['knee-dominant'] ?? 0) === 0 && Object.keys(patterns).length) warnings.push('No knee-dominant movement this week.');
     return {patterns, muscles, warnings};
 }

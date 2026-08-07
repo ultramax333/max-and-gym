@@ -23,17 +23,17 @@ import {initReactI18next} from "react-i18next";
 import enJson from "./i18n/en.json";
 import caJson from "./i18n/ca.json";
 import esJson from "./i18n/es.json";
-import LanguageDetector from 'i18next-browser-languagedetector';
 import {installGlobalDiagnosticCapture} from './diagnostics/globalCapture';
 import {installProductionConsoleGuard} from './diagnostics/consoleGuard';
+import {RELEASE_DEFAULTS} from './config/releaseDefaults';
 
 if (import.meta.env.PROD) installProductionConsoleGuard();
 installGlobalDiagnosticCapture();
 
 i18n
-    .use(LanguageDetector)
     .use(initReactI18next) // passes i18n down to react-i18next
     .init({
+        lng: localStorage.getItem('lang') || RELEASE_DEFAULTS.language,
         resources: {
             en: {
                 translation: enJson
@@ -61,7 +61,13 @@ root.render(
     </React.StrictMode>
 );
 
-declare let window: any;
-window.addEventListener('beforeinstallprompt', (e: any) => {
-    window.deferredPrompt = e;
+declare global {
+    interface BeforeInstallPromptEvent extends Event {
+        prompt: () => Promise<void>;
+        userChoice: Promise<{outcome: 'accepted' | 'dismissed'}>;
+    }
+    interface Window { deferredPrompt?: BeforeInstallPromptEvent }
+}
+window.addEventListener('beforeinstallprompt', (event: Event) => {
+    window.deferredPrompt = event as BeforeInstallPromptEvent;
 });

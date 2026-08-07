@@ -29,14 +29,14 @@ export class PhotoRepository {
             await this.db.transaction('rw', [this.db.mediaBlob, this.db.progressPhoto], async () => { await this.db.mediaBlob.bulkAdd([image, thumbnail]); await this.db.progressPhoto.add(photo); });
         } catch (error) {
             const errorName = error && typeof error === 'object' && 'name' in error ? String(error.name) : '';
-            if (errorName === 'QuotaExceededError') throw new PhotoStorageError('STORAGE_QUOTA_EXCEEDED', 'Stockage insuffisant. Exporte une sauvegarde puis supprime des photos inutiles.');
+            if (errorName === 'QuotaExceededError') throw new PhotoStorageError('STORAGE_QUOTA_EXCEEDED', 'Insufficient storage. Export a backup, then delete unneeded photos.');
             throw error;
         }
         return photo;
     }
 
     async update(id: string, change: Partial<Pick<ProgressPhotoRecord, 'recordedAt' | 'pose' | 'weightKg' | 'note' | 'blurThumbnail'>>): Promise<void> {
-        if (!(await this.db.progressPhoto.update(id, {...change, updatedAt: this.clock.now().toISOString()}))) throw new PhotoStorageError('MEDIA_REFERENCE_MISSING', 'Photo introuvable.');
+        if (!(await this.db.progressPhoto.update(id, {...change, updatedAt: this.clock.now().toISOString()}))) throw new PhotoStorageError('MEDIA_REFERENCE_MISSING', 'Photo not found.');
     }
 
     async delete(id: string): Promise<void> {
@@ -47,7 +47,7 @@ export class PhotoRepository {
 
     async objectUrls(photo: ProgressPhotoRecord): Promise<{imageUrl: string; thumbnailUrl: string; release: () => void}> {
         const [image, thumbnail] = await Promise.all([this.db.mediaBlob.get(photo.imageBlobId), this.db.mediaBlob.get(photo.thumbnailBlobId)]);
-        if (!image || !thumbnail) throw new PhotoStorageError('MEDIA_REFERENCE_MISSING', 'Image ou miniature manquante.');
+        if (!image || !thumbnail) throw new PhotoStorageError('MEDIA_REFERENCE_MISSING', 'Image or thumbnail is missing.');
         const imageUrl = URL.createObjectURL(image.blob);
         const thumbnailUrl = URL.createObjectURL(thumbnail.blob);
         return {imageUrl, thumbnailUrl, release: () => { URL.revokeObjectURL(imageUrl); URL.revokeObjectURL(thumbnailUrl); }};

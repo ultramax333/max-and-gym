@@ -26,16 +26,15 @@ import {DBContext} from "../../context/dbContext";
 import {DialogContext} from "../../context/dialogContext";
 import defer from "../../utils/defer";
 
-declare let window: any;
 export const SystemSettingsPage = () => {
     const {t} = useTranslation();
     const {db} = useContext(DBContext);
     const install = async () => {
-        if (window.deferredPrompt !== null) {
-            window.deferredPrompt.prompt();
-            const {outcome} = await (window.deferredPrompt.userChoice as Promise<{ outcome: string }>);
+        if (window.deferredPrompt) {
+            await window.deferredPrompt.prompt();
+            const {outcome} = await window.deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                window.deferredPrompt = null;
+                window.deferredPrompt = undefined;
             }
         }
     }
@@ -67,7 +66,7 @@ export const SystemSettingsPage = () => {
                         <MonitorHeart/>
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary="Diagnostics" secondary="Build, base locale, PWA et erreurs redacted" />
+                <ListItemText primary="Diagnostics" secondary="Build, local database, PWA and redacted errors" />
             </ListItemButton>
             <ListItemButton component="a" onClick={() => window.location.href = window.location.origin}>
                 <ListItemAvatar>

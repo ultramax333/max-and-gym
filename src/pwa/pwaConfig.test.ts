@@ -13,7 +13,7 @@ describe('PWA update policy', () => {
     });
 
     it('uses only a bounded cache for local reviewed exercise media', () => {
-        expect(viteConfig).toContain('max-gym-exercise-media-v1');
+        expect(viteConfig).toContain('max-gym-exercise-media-v${cacheVersion}');
         expect(viteConfig).toContain('maxEntries: 48');
         expect(viteConfig).not.toContain('progress-photo');
     });

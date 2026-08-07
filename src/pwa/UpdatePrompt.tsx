@@ -6,10 +6,10 @@ export function UpdatePrompt() {
     const {updateWaiting, applyUpdate, deferUpdate} = usePwa();
     return <Snackbar
         open={updateWaiting}
-        message="Une mise à jour est prête. Appliquez-la quand aucune séance n’est active."
+        message="An update is ready. Apply it when no workout is active."
         action={<>
-            <Button color="inherit" onClick={deferUpdate}>Plus tard</Button>
-            <Button color="secondary" variant="contained" onClick={() => void applyUpdate()}>Mettre à jour</Button>
+            <Button color="inherit" onClick={deferUpdate}>Later</Button>
+            <Button color="secondary" variant="contained" onClick={() => void applyUpdate()}>Update</Button>
         </>}
     />;
 }

@@ -7,14 +7,14 @@ function excludes(role: GeneratorRole | 'core', candidate: GeneratorCandidate, r
 }
 
 export function evaluateHardConstraints(candidate: GeneratorCandidate, input: GeneratorInput, role: GeneratorRole | 'core'): ConstraintResult {
-    if (!candidate.generatorEligible || candidate.archived || !['reviewed', 'custom'].includes(candidate.contentStatus)) return excludes(role, candidate, 'NOT_REVIEWED_ELIGIBLE', 'Exercice non revu ou non éligible.');
-    if (candidate.neverSuggest || candidate.effectiveNeverSuggest || input.neverSuggestExerciseIds.includes(candidate.id)) return excludes(role, candidate, 'NEVER_SUGGEST', 'Marqué « Jamais proposer ».');
-    if (input.blockedExerciseIds.includes(candidate.id)) return excludes(role, candidate, 'EXERCISE_BLOCKED', 'Exercice bloqué explicitement.');
+    if (!candidate.generatorEligible || candidate.archived || !['reviewed', 'custom'].includes(candidate.contentStatus)) return excludes(role, candidate, 'NOT_REVIEWED_ELIGIBLE', 'Exercise is not reviewed or eligible.');
+    if (candidate.neverSuggest || candidate.effectiveNeverSuggest || input.neverSuggestExerciseIds.includes(candidate.id)) return excludes(role, candidate, 'NEVER_SUGGEST', 'Marked Never Suggest.');
+    if (input.blockedExerciseIds.includes(candidate.id)) return excludes(role, candidate, 'EXERCISE_BLOCKED', 'Exercise is explicitly blocked.');
     const tags = [...candidate.impactTags, ...candidate.positionTags, ...candidate.transitionTags, ...candidate.setupTags];
     const blockedTag = tags.find((tag) => input.blockedTags.includes(tag));
     if (blockedTag) return excludes(role, candidate, 'TAG_BLOCKED', `Contrainte bloquante : ${blockedTag}.`);
     const hasEquipment = candidate.equipmentTags.includes('body only') || candidate.equipmentTags.some((tag) => input.equipment.includes(tag));
-    if (!hasEquipment) return excludes(role, candidate, 'EQUIPMENT_UNAVAILABLE', 'Équipement indisponible.');
+    if (!hasEquipment) return excludes(role, candidate, 'EQUIPMENT_UNAVAILABLE', 'Equipment is unavailable.');
     return {allowed: true};
 }
 

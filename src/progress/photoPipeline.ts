@@ -20,8 +20,8 @@ export interface ProcessedPhoto {
 }
 
 export function validatePhotoFile(file: Blob): void {
-    if (!PHOTO_MIME_TYPES.includes(file.type as typeof PHOTO_MIME_TYPES[number])) throw new PhotoPipelineError('MEDIA_TYPE_INVALID', 'Format image non pris en charge.');
-    if (file.size <= 0 || file.size > MAX_PHOTO_INPUT_BYTES) throw new PhotoPipelineError('MEDIA_SIZE_INVALID', 'Image vide ou supérieure à 20 Mo.');
+    if (!PHOTO_MIME_TYPES.includes(file.type as typeof PHOTO_MIME_TYPES[number])) throw new PhotoPipelineError('MEDIA_TYPE_INVALID', 'Unsupported image format.');
+    if (file.size <= 0 || file.size > MAX_PHOTO_INPUT_BYTES) throw new PhotoPipelineError('MEDIA_SIZE_INVALID', 'Image is empty or larger than 20 MB.');
 }
 
 export async function checksumBlob(blob: Blob): Promise<string> {
@@ -42,7 +42,7 @@ async function canvasBlob(canvas: HTMLCanvasElement, type: string, quality: numb
 async function defaultDecode(file: Blob): Promise<DecodedPhoto> {
     let bitmap: ImageBitmap;
     try { bitmap = await createImageBitmap(file, {imageOrientation: 'from-image'} as unknown as ImageBitmapOptions); }
-    catch { throw new PhotoPipelineError('MEDIA_DECODE_FAILED', 'Impossible de décoder cette image.'); }
+    catch { throw new PhotoPipelineError('MEDIA_DECODE_FAILED', 'Could not decode this image.'); }
     return {
         width: bitmap.width,
         height: bitmap.height,
@@ -53,10 +53,10 @@ async function defaultDecode(file: Blob): Promise<DecodedPhoto> {
             const canvas = document.createElement('canvas');
             canvas.width = width; canvas.height = height;
             const context = canvas.getContext('2d');
-            if (!context) throw new PhotoPipelineError('MEDIA_COMPRESSION_FAILED', 'Canvas image indisponible.');
+            if (!context) throw new PhotoPipelineError('MEDIA_COMPRESSION_FAILED', 'Canvas image is unavailable.');
             context.drawImage(bitmap, 0, 0, width, height);
             const encoded = await canvasBlob(canvas, mimeType, quality);
-            if (!encoded?.size) throw new PhotoPipelineError('MEDIA_COMPRESSION_FAILED', 'Réencodage image impossible.');
+            if (!encoded?.size) throw new PhotoPipelineError('MEDIA_COMPRESSION_FAILED', 'Could not re-encode this image.');
             return {blob: encoded, width, height};
         },
         close: () => bitmap.close(),

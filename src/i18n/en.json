@@ -139,7 +139,7 @@
     "hips": "Hips"
   },
   "comingSoon": "Coming soon...",
-  "backFacup": {
+  "backup": {
     "title": "Backup & Import",
     "description": "Backup your training data or import data into the app",
     "doBackup": "Perform backup",

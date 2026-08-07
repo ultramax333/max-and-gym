@@ -3,7 +3,7 @@ import {Box, Button, Paper, Stack, Typography} from '@mui/material';
 import {ArrowDownward, ArrowUpward, Inbox} from '@mui/icons-material';
 
 export function ScreenContainer({children}: {children: ReactNode}) {
-    return <Box component="main" sx={{width: '100%', maxWidth: 1100, mx: 'auto', px: {xs: 2, sm: 3}, py: {xs: 2, sm: 3}, pb: {xs: 'calc(96px + env(safe-area-inset-bottom))', md: 4}}}>{children}</Box>;
+    return <Box sx={{width: '100%', maxWidth: 1100, mx: 'auto', px: {xs: 2, sm: 3}, py: {xs: 2, sm: 3}, pb: {xs: 'calc(96px + env(safe-area-inset-bottom))', md: 4}}}>{children}</Box>;
 }
 
 export function SectionHeader({eyebrow, title, action}: {eyebrow?: string; title: string; action?: ReactNode}) {
@@ -18,5 +18,5 @@ export function PrimaryButton(props: React.ComponentProps<typeof Button>) { retu
 export function SecondaryButton(props: React.ComponentProps<typeof Button>) { return <Button {...props} variant="outlined" color="primary"/>; }
 
 export function ReorderControls({onMoveUp, onMoveDown}: {onMoveUp: () => void; onMoveDown: () => void}) {
-    return <Stack direction="row" gap={1}><Button aria-label="Déplacer vers le haut" onClick={onMoveUp} startIcon={<ArrowUpward/>}>Monter</Button><Button aria-label="Déplacer vers le bas" onClick={onMoveDown} startIcon={<ArrowDownward/>}>Descendre</Button></Stack>;
+    return <Stack direction="row" gap={1}><Button aria-label="Move up" onClick={onMoveUp} startIcon={<ArrowUpward/>}>Up</Button><Button aria-label="Move down" onClick={onMoveDown} startIcon={<ArrowDownward/>}>Down</Button></Stack>;
 }

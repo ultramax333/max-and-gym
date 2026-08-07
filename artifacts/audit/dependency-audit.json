@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-08-06T23:13:49.658Z",
+  "checks": [
+    {
+      "check": "lockfile version",
+      "status": "pass",
+      "detail": "3"
+    },
+    {
+      "check": "application version parity",
+      "status": "pass",
+      "detail": "1.0.0 / 1.0.0 / 1.0.0"
+    },
+    {
+      "check": "root dependencies locked",
+      "status": "pass",
+      "detail": "42 dependencies"
+    },
+    {
+      "check": "registry integrity hashes",
+      "status": "pass",
+      "detail": "complete"
+    },
+    {
+      "check": "forbidden network dependencies",
+      "status": "pass",
+      "detail": "none"
+    },
+    {
+      "check": "supported runtime",
+      "status": "pass",
+      "detail": ">=24.0.0 <25"
+    },
+    {
+      "check": "browser acceptance runner",
+      "status": "pass",
+      "detail": "1.61.1"
+    }
+  ],
+  "packageCount": 777,
+  "externalAdvisoryGate": "npm audit --omit=dev --audit-level=high in GitHub Actions"
+}

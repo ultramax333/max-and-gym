@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-08-06T22:17:39.327Z",
+  "registryMetadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 2,
+      "critical": 0,
+      "total": 2
+    },
+    "dependencies": {
+      "prod": 120,
+      "dev": 648,
+      "optional": 66,
+      "peer": 23,
+      "peerOptional": 0,
+      "total": 777
+    }
+  },
+  "findings": [
+    {
+      "packageName": "react-router",
+      "advisoryId": "GHSA-qwww-vcr4-c8h2",
+      "severity": "high",
+      "title": "React Router: RSC Mode CSRF Bypass Allows Action Execution Before 400 Response",
+      "accepted": true,
+      "rationale": "User-approved on 2026-08-07. The advisory is limited to React Router RSC/server action processing. max&gym is a static declarative HashRouter SPA and ships no React Router server, RSC, action, loader, SSR or framework runtime."
+    }
+  ],
+  "blocked": [],
+  "serverSurfaceDetected": false
+}

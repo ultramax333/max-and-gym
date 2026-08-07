@@ -38,39 +38,40 @@ export default function DiagnosticsPage() {
 
     return <Layout title="Diagnostics" hideNav scroll>
         <Stack spacing={2} sx={{p: 2, pb: 4, maxWidth: 820, mx: 'auto'}}>
-            <Alert severity="info">Les diagnostics restent sur cet appareil et excluent les notes, charges, répétitions et mesures.</Alert>
-            <Card><CardContent><Typography variant="h6" gutterBottom>Identité du build</Typography>
+            <Typography component="h1" variant="h4">Diagnostics</Typography>
+            <Alert severity="info">Diagnostics remain on this device and exclude notes, loads, repetitions and measurements.</Alert>
+            <Card><CardContent><Typography variant="h6" gutterBottom>Build identity</Typography>
                 <IdentityRow label="Version" value={buildIdentity.appVersion}/><IdentityRow label="Git SHA" value={buildIdentity.gitSha}/>
-                <IdentityRow label="Build" value={buildIdentity.buildTimestamp}/><IdentityRow label="Environnement" value={buildIdentity.environment}/>
+                <IdentityRow label="Build" value={buildIdentity.buildTimestamp}/><IdentityRow label="Environment" value={buildIdentity.environment}/>
                 <IdentityRow label="Base / export" value={`${buildIdentity.databaseSchemaVersion} / ${buildIdentity.exportFormatVersion}`}/>
-                <IdentityRow label="Seeds exercice / programme" value={`${buildIdentity.exerciseSeedVersion} / ${buildIdentity.programSeedVersion}`}/>
-                <IdentityRow label="Générateur / cache" value={`${buildIdentity.generatorVersion} / ${buildIdentity.cacheVersion}`}/>
+                <IdentityRow label="Exercise / program seeds" value={`${buildIdentity.exerciseSeedVersion} / ${buildIdentity.programSeedVersion}`}/>
+                <IdentityRow label="Generator / cache" value={`${buildIdentity.generatorVersion} / ${buildIdentity.cacheVersion}`}/>
             </CardContent></Card>
-            <Card sx={{minWidth: 0}}><CardContent><Typography variant="h6" gutterBottom>PWA et stockage</Typography>
-                <IdentityRow label="Service worker" value={pwa.registered ? 'enregistré' : 'non enregistré'}/>
-                <IdentityRow label="Contrôle la page" value={pwa.controlling ? 'oui' : 'non'}/>
-                <IdentityRow label="Mise à jour en attente" value={pwa.updateWaiting ? 'oui' : 'non'}/>
-                <IdentityRow label="Hors-ligne prêt" value={pwa.offlineReady ? 'oui' : 'non'}/>
-                <IdentityRow label="Stockage" value={`${storage.usage ?? 0} / ${storage.quota ?? 0} octets`}/>
-                <Button sx={{mt: 1, whiteSpace: 'normal', textAlign: 'left'}} startIcon={<Refresh/>} onClick={() => void pwa.recheck()}>Revérifier le service worker</Button>
-                <Button sx={{mt: 1, whiteSpace: 'normal', textAlign: 'left'}} startIcon={<Storage/>} onClick={() => void navigator.storage?.persist?.().then(refresh)}>Demander le stockage persistant</Button>
+            <Card sx={{minWidth: 0}}><CardContent><Typography variant="h6" gutterBottom>PWA and storage</Typography>
+                <IdentityRow label="Service worker" value={pwa.registered ? 'registered' : 'not registered'}/>
+                <IdentityRow label="Controls page" value={pwa.controlling ? 'yes' : 'no'}/>
+                <IdentityRow label="Update waiting" value={pwa.updateWaiting ? 'yes' : 'no'}/>
+                <IdentityRow label="Offline ready" value={pwa.offlineReady ? 'yes' : 'no'}/>
+                <IdentityRow label="Storage" value={`${storage.usage ?? 0} / ${storage.quota ?? 0} bytes`}/>
+                <Button sx={{mt: 1, whiteSpace: 'normal', textAlign: 'left'}} startIcon={<Refresh/>} onClick={() => void pwa.recheck()}>Recheck service worker</Button>
+                <Button sx={{mt: 1, whiteSpace: 'normal', textAlign: 'left'}} startIcon={<Storage/>} onClick={() => void navigator.storage?.persist?.().then(refresh)}>Request persistent storage</Button>
             </CardContent></Card>
-            <Card><CardContent><Typography variant="h6" gutterBottom>Base et récupération séance</Typography><IdentityRow label="Base ouverte" value={db?.isOpen() ? 'oui' : 'non'}/><IdentityRow label="Schéma / tables" value={`${db?.verno ?? 0} / ${databaseHealth.tableCount}`}/><IdentityRow label="Séances actives" value={databaseHealth.activeWorkouts}/><IdentityRow label="Timers actifs" value={databaseHealth.activeTimers}/><IdentityRow label="Photos et miniatures" value={`${databaseHealth.photoBytes} octets`}/></CardContent></Card>
-            <Card><CardContent><Typography variant="h6" gutterBottom>Capacités</Typography><IdentityRow label="Wake lock" value={'wakeLock' in navigator ? 'oui' : 'non'}/><IdentityRow label="Vibration" value={'vibrate' in navigator ? 'oui' : 'non'}/><IdentityRow label="Notifications" value={'Notification' in globalThis ? 'oui' : 'non'}/><IdentityRow label="Estimation stockage" value={'storage' in navigator ? 'oui' : 'non'}/><IdentityRow label="Partage / téléchargement" value={`${'share' in navigator ? 'partage' : 'sans partage'} / oui`}/></CardContent></Card>
-            <Card><CardContent><Typography variant="h6" gutterBottom>Auto-test non destructif</Typography>
-                <Button variant="contained" startIcon={<HealthAndSafety/>} onClick={async () => setSelfTest(await runSelfTest(db))}>Lancer l’auto-test</Button>
+            <Card><CardContent><Typography variant="h6" gutterBottom>Database and workout recovery</Typography><IdentityRow label="Database open" value={db?.isOpen() ? 'yes' : 'no'}/><IdentityRow label="Schema / tables" value={`${db?.verno ?? 0} / ${databaseHealth.tableCount}`}/><IdentityRow label="Active workouts" value={databaseHealth.activeWorkouts}/><IdentityRow label="Active timers" value={databaseHealth.activeTimers}/><IdentityRow label="Photos and thumbnails" value={`${databaseHealth.photoBytes} bytes`}/></CardContent></Card>
+            <Card><CardContent><Typography variant="h6" gutterBottom>Capabilities</Typography><IdentityRow label="Wake lock" value={'wakeLock' in navigator ? 'yes' : 'no'}/><IdentityRow label="Vibration" value={'vibrate' in navigator ? 'yes' : 'no'}/><IdentityRow label="Notifications" value={'Notification' in globalThis ? 'yes' : 'no'}/><IdentityRow label="Storage estimate" value={'storage' in navigator ? 'yes' : 'no'}/><IdentityRow label="Share / download" value={`${'share' in navigator ? 'share' : 'unavailable'} / yes`}/></CardContent></Card>
+            <Card><CardContent><Typography variant="h6" gutterBottom>Non-destructive self-test</Typography>
+                <Button variant="contained" startIcon={<HealthAndSafety/>} onClick={async () => setSelfTest(await runSelfTest(db))}>Run self-test</Button>
                 {selfTest && <Stack spacing={1} sx={{mt: 2}}>{selfTest.checks.map((check) => <Stack key={check.id} direction="row" gap={1} alignItems="flex-start" sx={{minWidth: 0}}><Chip size="small" label={check.level} color={check.level === 'pass' ? 'success' : check.level === 'fail' ? 'error' : 'warning'}/><Typography sx={{overflowWrap: 'anywhere'}}>{check.message}</Typography></Stack>)}</Stack>}
             </CardContent></Card>
-            <Card><CardContent><Typography variant="h6" gutterBottom>Export diagnostic séparé</Typography><Alert severity="success" sx={{mb: 1}}>Catégories exactes : {diagnosticCategories.join(' · ')}.</Alert><Typography color="text.secondary" sx={{mb: 2}}>Aucune valeur d’entraînement, mesure, note, nom personnalisé, photo ou donnée binaire.</Typography><Button variant="contained" startIcon={<Download/>} onClick={async () => { if (!db) return; const result = await buildDiagnosticExport(db, selfTest); const url = URL.createObjectURL(result.blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = result.filename; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 0); }}>Exporter les diagnostics</Button><Button sx={{ml: 1}} startIcon={<Backup/>} onClick={() => navigate('/backup')}>Ouvrir la sauvegarde</Button></CardContent></Card>
-            <Card><CardContent><Stack direction="row" justifyContent="space-between" alignItems="center"><Typography variant="h6">Événements récents ({events.length})</Typography>
-                <Button color="error" startIcon={<DeleteOutline/>} onClick={async () => { await clearDiagnosticEvents(); await refresh(); }}>Effacer</Button></Stack>
-                <Divider sx={{my: 1}}/>{events.length === 0 && <Typography color="text.secondary">Aucun événement enregistré.</Typography>}
+            <Card><CardContent><Typography variant="h6" gutterBottom>Separate diagnostic export</Typography><Alert severity="success" sx={{mb: 1}}>Exact categories: {diagnosticCategories.join(' · ')}.</Alert><Typography color="text.secondary" sx={{mb: 2}}>No workout value, measurement, note, custom name, photo or binary data.</Typography><Button variant="contained" startIcon={<Download/>} onClick={async () => { if (!db) return; const result = await buildDiagnosticExport(db, selfTest); const url = URL.createObjectURL(result.blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = result.filename; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 0); }}>Export diagnostics</Button><Button sx={{ml: 1}} startIcon={<Backup/>} onClick={() => navigate('/backup')}>Open backup</Button></CardContent></Card>
+            <Card><CardContent><Stack direction="row" justifyContent="space-between" alignItems="center"><Typography variant="h6">Recent events ({events.length})</Typography>
+                <Button color="error" startIcon={<DeleteOutline/>} onClick={async () => { await clearDiagnosticEvents(); await refresh(); }}>Clear</Button></Stack>
+                <Divider sx={{my: 1}}/>{events.length === 0 && <Typography color="text.secondary">No recorded event.</Typography>}
                 <Stack spacing={1}>{events.slice(0, 20).map((event) => <Box key={event.id} sx={{p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1}}>
                     <Stack direction="row" justifyContent="space-between" gap={1}><Chip size="small" label={`${event.subsystem} · ${event.code}`} color={event.level === 'error' ? 'error' : 'default'}/><Typography variant="caption">{new Date(event.timestamp).toLocaleString()}</Typography></Stack>
-                    <Typography sx={{my: .5}}>{event.safeMessage}</Typography><Stack direction="row" alignItems="center" gap={1}><Typography variant="caption" sx={{fontFamily: 'monospace'}}>{event.id}</Typography><Button size="small" startIcon={<ContentCopy/>} onClick={() => void navigator.clipboard?.writeText(event.id)}>Copier</Button></Stack>
+                    <Typography sx={{my: .5}}>{event.safeMessage}</Typography><Stack direction="row" alignItems="center" gap={1}><Typography variant="caption" sx={{fontFamily: 'monospace'}}>{event.id}</Typography><Button size="small" startIcon={<ContentCopy/>} onClick={() => void navigator.clipboard?.writeText(event.id)}>Copy</Button></Stack>
                 </Box>)}</Stack>
             </CardContent></Card>
-            <Button color="warning" variant="outlined" startIcon={<BugReport/>} onClick={() => navigate('/diagnostics/error-test')}>Tester la barrière de route</Button>
+            <Button color="warning" variant="outlined" startIcon={<BugReport/>} onClick={() => navigate('/diagnostics/error-test')}>Test route boundary</Button>
         </Stack>
     </Layout>;
 }

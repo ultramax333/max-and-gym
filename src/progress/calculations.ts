@@ -69,7 +69,7 @@ export function calculateExerciseProgress(exerciseId: string, sessions: WorkoutS
     const byDate = new Map<string, number>();
     for (const entry of rawSets) byDate.set(entry.performedAt.slice(0, 10), Math.max(byDate.get(entry.performedAt.slice(0, 10)) ?? 0, entry.estimatedOneRepMaxKg));
     const estimatedMaxTrend = [...byDate].map(([recordedAt, valueKg]) => ({recordedAt, valueKg}));
-    const textSummary = rawSets.length ? `${rawSets.length} séries terminées. Meilleure charge ${records.maxLoadKg} kg ; maximum estimé ${records.estimatedOneRepMaxKg} kg.` : 'Aucune série terminée pour cet exercice.';
+    const textSummary = rawSets.length ? `${rawSets.length} completed sets. Best load ${records.maxLoadKg} kg ; estimated maximum ${records.estimatedOneRepMaxKg} kg.` : 'No completed set for this exercise.';
     return {rawSets, records, estimatedMaxTrend, textSummary};
 }
 
@@ -83,7 +83,7 @@ export function calculateProgressOverview(sessions: WorkoutSessionRecord[], exer
     for (const set of completedSets) {
         const exercise = exerciseById.get(set.sessionExerciseId);
         const tags = exercise ? taxonomy[exercise.exerciseId] : undefined;
-        const movement = tags?.movement ?? 'non classé';
+        const movement = tags?.movement ?? 'uncategorized';
         movementDistribution[movement] = (movementDistribution[movement] ?? 0) + 1;
         for (const muscle of tags?.muscles ?? []) muscleDistribution[muscle] = (muscleDistribution[muscle] ?? 0) + 1;
     }
@@ -98,6 +98,6 @@ export function calculateProgressOverview(sessions: WorkoutSessionRecord[], exer
         monthlyFrequency: frequency(completed, (iso) => iso.slice(0, 7)),
         movementDistribution,
         muscleDistribution,
-        textSummary: completed.length ? `${completed.length} séances terminées, ${completedSets.length} séries et ${Math.round(totalDurationSeconds / 60)} minutes enregistrées.` : 'Aucune séance terminée pour calculer une tendance.',
+        textSummary: completed.length ? `${completed.length} completed workouts, ${completedSets.length} sets and ${Math.round(totalDurationSeconds / 60)} recorded minutes.` : 'No completed workout to calculate a trend.',
     };
 }

@@ -19,7 +19,8 @@ import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import {VitePWA} from "vite-plugin-pwa";
 
-const appVersion = process.env.npm_package_version ?? '0.4.0';
+const appVersion = process.env.npm_package_version ?? '1.0.0';
+const cacheVersion = '2';
 const gitSha = process.env.GITHUB_SHA ?? (() => {
     try {
         return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {encoding: 'utf8'}).trim();
@@ -47,12 +48,12 @@ export default defineConfig({
             maximumFileSizeToCacheInBytes: 3000000,
             globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
             cleanupOutdatedCaches: true,
-            cacheId: 'max-and-gym-cache-v1',
+            cacheId: `max-and-gym-cache-v${cacheVersion}`,
             runtimeCaching: [{
                 urlPattern: /\/media\/exercises\/.*\.jpg$/,
                 handler: 'CacheFirst',
                 options: {
-                    cacheName: 'max-gym-exercise-media-v1',
+                    cacheName: `max-gym-exercise-media-v${cacheVersion}`,
                     expiration: {maxEntries: 48, maxAgeSeconds: 60 * 60 * 24 * 30},
                     cacheableResponse: {statuses: [0, 200]},
                 },

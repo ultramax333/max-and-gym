@@ -4,13 +4,13 @@ export interface WeeklyRoleDay {name: string; emphasis: string; roles: Generator
 
 export const WEEKLY_ROLE_TEMPLATES: Record<2 | 3, WeeklyRoleDay[]> = {
     2: [
-        {name: 'Full Body A', emphasis: 'Squat et poussée horizontale', roles: ['knee-dominant', 'horizontal-push', 'supported-pull', 'posterior-assistance', 'accessory']},
-        {name: 'Full Body B', emphasis: 'Extension de hanche et travail vertical', roles: ['hinge', 'vertical-push', 'vertical-pull', 'leg-assistance', 'accessory']},
+        {name: 'Full Body A', emphasis: 'Squat and horizontal push', roles: ['knee-dominant', 'horizontal-push', 'supported-pull', 'posterior-assistance', 'accessory']},
+        {name: 'Full Body B', emphasis: 'Hip extension and vertical work', roles: ['hinge', 'vertical-push', 'vertical-pull', 'leg-assistance', 'accessory']},
     ],
     3: [
-        {name: 'Full Body A', emphasis: 'Force : squat et poussée horizontale', roles: ['knee-dominant', 'horizontal-push', 'supported-pull', 'posterior-assistance', 'accessory']},
-        {name: 'Full Body B', emphasis: 'Force : extension de hanche et vertical', roles: ['hinge', 'vertical-push', 'vertical-pull', 'leg-assistance', 'accessory']},
-        {name: 'Full Body C', emphasis: 'Hypertrophie équilibrée et conditionnement', roles: ['leg-assistance', 'horizontal-push', 'supported-pull', 'posterior-assistance', 'accessory']},
+        {name: 'Full Body A', emphasis: 'Strength: squat and horizontal push', roles: ['knee-dominant', 'horizontal-push', 'supported-pull', 'posterior-assistance', 'accessory']},
+        {name: 'Full Body B', emphasis: 'Strength: hip extension and vertical work', roles: ['hinge', 'vertical-push', 'vertical-pull', 'leg-assistance', 'accessory']},
+        {name: 'Full Body C', emphasis: 'Balanced hypertrophy and conditioning', roles: ['leg-assistance', 'horizontal-push', 'supported-pull', 'posterior-assistance', 'accessory']},
     ],
 };
 

@@ -50,9 +50,9 @@ export class DexieWorkoutRepository implements WorkoutRepository {
     }
 
     async startSample(operationId: string): Promise<ActiveWorkoutSnapshot> {
-        return this.startProgramDay({name: 'Séance essentielle', exercises: [
-            {exerciseId: 'fixture-goblet-squat', exerciseName: 'Goblet squat', prescriptionSnapshot: '3 × 8–10 · repos 75 s', workingSets: 3, repsMin: 8, repsMax: 10, targetLoadKg: 16, targetRir: 2, restSeconds: 75},
-            {exerciseId: 'fixture-row', exerciseName: 'Rowing haltère', prescriptionSnapshot: '3 × 10–12 · repos 60 s', workingSets: 3, repsMin: 10, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 60},
+        return this.startProgramDay({name: 'Essential workout', exercises: [
+            {exerciseId: 'fixture-goblet-squat', exerciseName: 'Goblet squat', prescriptionSnapshot: '3 × 8–10 · rest 75 s', workingSets: 3, repsMin: 8, repsMax: 10, targetLoadKg: 16, targetRir: 2, restSeconds: 75},
+            {exerciseId: 'fixture-row', exerciseName: 'Dumbbell row', prescriptionSnapshot: '3 × 10–12 · rest 60 s', workingSets: 3, repsMin: 10, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 60},
         ]}, operationId);
     }
 

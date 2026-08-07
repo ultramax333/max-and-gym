@@ -17,7 +17,7 @@ describe('safe ZIP codec', () => {
         for (let offset = 0; offset <= replaced.length - safe.length; offset++) {
             if (safe.every((value, index) => replaced[offset + index] === value)) replaced.set(unsafe, offset);
         }
-        expect(() => decodeZip(replaced)).toThrow('Chemin');
-        expect(() => decodeZip(encodeZip([{path: 'safe.bin', bytes: new Uint8Array([1, 2])}]), {maxFiles: 1, maxBytes: 1})).toThrow('grande');
+        expect(() => decodeZip(replaced)).toThrow('Unsafe archive path');
+        expect(() => decodeZip(encodeZip([{path: 'safe.bin', bytes: new Uint8Array([1, 2])}]), {maxFiles: 1, maxBytes: 1})).toThrow('too large');
     });
 });

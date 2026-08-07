@@ -62,7 +62,7 @@ describe('personal backup', () => {
         const value = JSON.parse(new TextDecoder().decode(manifest.bytes));
         value.exportFormatVersion = 999;
         manifest.bytes = new TextEncoder().encode(JSON.stringify(value));
-        const future = new Blob([encodeZip(entries)]);
+        const future = new Blob([Uint8Array.from(encodeZip(entries)).buffer]);
         await expect(importPersonalBackup(db, future, {mode: 'replace'})).rejects.toMatchObject({code: 'IMPORT_UNSUPPORTED_VERSION'});
         expect(await db.bodyMeasurement.count()).toBe(1);
         expect(await db.safetySnapshot.count()).toBe(0);
@@ -78,7 +78,7 @@ describe('personal backup', () => {
             reader.readAsArrayBuffer(backup);
         });
         bytes[Math.floor(bytes.length / 3)] ^= 0xff;
-        await expect(importPersonalBackup(db, new Blob([bytes]), {mode: 'replace'})).rejects.toBeInstanceOf(BackupError);
+        await expect(importPersonalBackup(db, new Blob([Uint8Array.from(bytes).buffer]), {mode: 'replace'})).rejects.toBeInstanceOf(BackupError);
         expect(await db.bodyMeasurement.count()).toBe(1);
         expect(await db.safetySnapshot.count()).toBe(0);
     });

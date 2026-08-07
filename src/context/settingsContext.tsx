@@ -20,6 +20,7 @@ import {TimerContext} from "./timerContext";
 import {UserContext} from "./userContext";
 import {DBContext} from "./dbContext";
 import i18n from "i18next";
+import {RELEASE_DEFAULTS} from '../config/releaseDefaults';
 
 export type FeatureLevel = "easy" | "advanced";
 export type AppTheme = "light" | "dark";
@@ -67,20 +68,20 @@ export const DEFAULT_EMOJIS = ["1f44d", "1f44e", "1f4aa", "1f615", "1f915", "1f4
 
 export const SettingsContextProvider = (props: { children: ReactElement, theme: AppTheme, setTheme: (theme: AppTheme) => void }) => {
     const {children, theme, setTheme} = props;
-    const [lbs, setLbs] = useState(localStorage.getItem("useLbs") === "true");
+    const [lbs, setLbs] = useState(localStorage.getItem("useLbs") ? localStorage.getItem("useLbs") === "true" : RELEASE_DEFAULTS.useLbs);
     const [onboardingCompleted, setOnboardingCompleted] = useState(localStorage.getItem("onboardingCompleted") === "true");
     const [sound, setSound] = useState(localStorage.getItem("sound") === "true");
     const [autostop, setAutostop] = useState(localStorage.getItem("autostopDisabled") !== "true");
     const [wakeLock, setWakeLock] = useState(localStorage.getItem("wakeLock") === "true");
     const [errorWakeLock, setErrorWakeLock] = useState(false);
     const [fullname, setFullname] = useState(localStorage.getItem("fullname") || "");
-    const [featureLevel, setFeatureLevel] = useState<FeatureLevel>(localStorage.getItem("featureLevel") as FeatureLevel || (localStorage.getItem("showRpe") === "true" ? "advanced" : "easy"));
+    const [featureLevel, setFeatureLevel] = useState<FeatureLevel>(localStorage.getItem("featureLevel") as FeatureLevel || (localStorage.getItem("showRpe") === "true" ? "advanced" : RELEASE_DEFAULTS.featureLevel));
     const [oneRm, setOneRm] = useState(parseInt(localStorage.getItem("oneRm") || "0"));
     const [emojis, setEmojis] = useState<string[]>(localStorage.getItem("emojis")?.split(";") || DEFAULT_EMOJIS);
     const [wakeLockSentinel, setWakeLockSentinel] = useState<WakeLockSentinel | null>(null);
     const {time} = useContext(TimerContext);
     const { user, userName} = useContext(UserContext);
-    const [lang, setLang] = useState<string | undefined>(user?.lang || localStorage.getItem("lang") || "");
+    const [lang, setLang] = useState<string | undefined>(user?.lang || localStorage.getItem("lang") || RELEASE_DEFAULTS.language);
     const {masterDb} = useContext(DBContext);
     const toggleWakeLock = () => {
         setWakeLock((prev) => {
@@ -108,13 +109,14 @@ export const SettingsContextProvider = (props: { children: ReactElement, theme: 
         else if (!!(user?.showRpe)) setFeatureLevel("advanced");
         if (user?.theme !== undefined) setTheme(user.theme);
         if (user?.onboardingCompleted !== undefined) setOnboardingCompleted(user.onboardingCompleted);
-    }, [user]);
+    }, [setTheme, user]);
 
     const requestWakeLock = useCallback(async () => {
         if (!("wakeLock" in navigator)) return;
         if (wakeLock && !wakeLockSentinel) {
                 try {
-                    const sentinel: WakeLockSentinel = await (navigator as any).wakeLock.request("screen");
+                    const manager = (navigator as Navigator & {wakeLock: {request: (type: 'screen') => Promise<WakeLockSentinel>}}).wakeLock;
+                    const sentinel = await manager.request("screen");
                     sentinel.addEventListener("release", () => {
                         setWakeLockSentinel(null);
                     });
@@ -135,52 +137,52 @@ export const SettingsContextProvider = (props: { children: ReactElement, theme: 
         if (userName === "Default User") localStorage.setItem("autostopDisabled", value ? "false" : "true");
         else masterDb?.user.update(userName, {autostop: value});
         setAutostop(value);
-    }, []);
+    }, [masterDb, userName]);
     const saveLbs = useCallback((value: boolean) => {
         if (userName === "Default User") localStorage.setItem("useLbs", value ? "true" : "false");
         else masterDb?.user.update(userName, {useLbs: value});
         setLbs(value);
-    }, []);
+    }, [masterDb, userName]);
     const saveFullname = useCallback((value: string) => {
         if (userName === "Default User") localStorage.setItem("fullname", value);
         else masterDb?.user.update(userName, {fullname: value});
         setFullname(value);
-    }, []);
+    }, [masterDb, userName]);
     const saveOneRm = useCallback((value: OneRm) => {
         if (userName === "Default User") localStorage.setItem("oneRm", value.toString(10));
         else masterDb?.user.update(userName, {oneRm: value});
         setOneRm(value);
-    }, []);
+    }, [masterDb, userName]);
     const saveSound = useCallback((value: boolean) => {
         if (userName === "Default User") localStorage.setItem("sound", value ? "true" : "false");
         else masterDb?.user.update(userName, {sound: value});
         setSound(value);
-    }, []);
+    }, [masterDb, userName]);
     const saveLang = useCallback((value: string) => {
         if (userName === "Default User") localStorage.setItem("lang", value);
         else masterDb?.user.update(userName, {lang: value});
         setLang(value);
-    }, [])
+    }, [masterDb, userName])
     const saveEmojis = useCallback((value: string[]) => {
         if (userName === "Default User") localStorage.setItem("emojis", value.join(";"));
         else masterDb?.user.update(userName, {emojis: value});
         setEmojis(value);
-    }, [])
+    }, [masterDb, userName])
     const saveFeatureLevel = useCallback((value: FeatureLevel) => {
         if (userName === "Default User") localStorage.setItem("featureLevel", value);
         else masterDb?.user.update(userName, {featureLevel: value});
         setFeatureLevel(value);
-    }, [])
+    }, [masterDb, userName])
     const saveTheme = useCallback((value: AppTheme) => {
         if (userName === "Default User") localStorage.setItem("theme", value);
         else masterDb?.user.update(userName, {theme: value});
         setTheme(value);
-    }, [])
+    }, [masterDb, setTheme, userName])
     const saveOnboardingCompleted = useCallback((value: boolean) => {
         if (userName === "Default User") localStorage.setItem("onboardingCompleted", value ? "true" : "false");
         else masterDb?.user.update(userName, {onboardingCompleted: value});
         setOnboardingCompleted(value);
-    }, []);
+    }, [masterDb, userName]);
     const settings = {
         useLbs: lbs,
         oneRm: oneRm,

@@ -50,7 +50,7 @@ export const WLAppBar = (props: WLAppBarProps) => {
                     size="large"
                     edge="start"
                     color="inherit"
-                    aria-label="Retour"
+                    aria-label="Back"
                     sx={{mr: 2}}
                     onClick={() => {
                         if (!onBack) navigate(-1);
@@ -62,7 +62,7 @@ export const WLAppBar = (props: WLAppBarProps) => {
                 <Typography variant="h6" component="div" sx={{flexGrow: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"}}>
                     {title}
                 </Typography>
-                <Box sx={{flexShrink: 1, whiteSpace: "nowrap"}}>{toolItems}<Tooltip title="Réglages"><IconButton aria-label="Ouvrir les réglages" onClick={() => navigate('/settings')}><SettingsIcon/></IconButton></Tooltip>{showAccountMenu && <IconButton aria-label="Ouvrir le compte" onClick={(ev) => setAccountMenuAnchor(accountMenuAnchor ? undefined : ev.currentTarget)}><Avatar sx={{width: 32, height: 32}} src={user?.picture} /></IconButton>}</Box>
+                <Box sx={{flexShrink: 1, whiteSpace: "nowrap"}}>{toolItems}<Tooltip title="Settings"><IconButton aria-label="Open settings" onClick={() => navigate('/settings')}><SettingsIcon/></IconButton></Tooltip>{showAccountMenu && <IconButton aria-label="Open account" onClick={(ev) => setAccountMenuAnchor(accountMenuAnchor ? undefined : ev.currentTarget)}><Avatar sx={{width: 32, height: 32}} src={user?.picture} /></IconButton>}</Box>
             </Toolbar>
             <Popover
                 open={accountMenuAnchor !== undefined}
