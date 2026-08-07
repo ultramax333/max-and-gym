@@ -1,5 +1,5 @@
-import React from 'react';
-import {Card, CardActionArea, CardContent, Chip, Stack, Typography} from '@mui/material';
+import React, {useState} from 'react';
+import {Alert, Card, CardActionArea, CardContent, Chip, Stack, Typography} from '@mui/material';
 import {Add, Bolt, CalendarMonth, FitnessCenter, PlayArrow, Timeline} from '@mui/icons-material';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {useNavigate} from 'react-router-dom';
@@ -9,6 +9,7 @@ import {db} from '../../db/db';
 import {ProgramRepository} from '../../programs/ProgramRepository';
 import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
 import {WorkoutApplicationService} from '../../workout/WorkoutApplicationService';
+import {ARM_WORKOUT_45, QuickWorkoutDefinition} from '../../workout/quickWorkouts';
 
 const programs = new ProgramRepository(db);
 const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
@@ -27,6 +28,12 @@ async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>): Pr
     navigate('/workout/active');
 }
 
+async function startQuickWorkout(definition: QuickWorkoutDefinition, navigate: ReturnType<typeof useNavigate>): Promise<void> {
+    const active = await workout.recover();
+    if (!active) await workout.startProgramDay({name: definition.name, exercises: definition.exercises});
+    navigate('/workout/active');
+}
+
 export function HomeShellPage() {
     const navigate = useNavigate();
     const active = useActiveProgram();
@@ -42,10 +49,13 @@ export function HomeShellPage() {
 
 export function TrainShellPage() {
     const navigate = useNavigate();
+    const [error, setError] = useState<string>();
     const active = useActiveProgram();
     const next = active?.days[active.currentDayIndex % active.days.length];
     return <Layout title="Training" hideBack><ScreenContainer><SectionHeader eyebrow="TRAINING" title="Choose your workout"/><Stack spacing={2}>
+        {error && <Alert severity="error">{error}</Alert>}
         {active && next && <ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · prescription is fixed when you start.`} icon={<CalendarMonth/>} onClick={() => startNextProgramDay(navigate)}/>}
+        <ShellCard title={ARM_WORKOUT_45.name} text={ARM_WORKOUT_45.summary} icon={<FitnessCenter/>} onClick={() => void startQuickWorkout(ARM_WORKOUT_45, navigate).catch(() => setError('The arm workout could not be started. Your existing workout data was not changed.'))}/>
         <ShellCard title="Essential workout" text="Start or resume a reliable local workout." icon={<FitnessCenter/>} onClick={() => navigate('/workout/active')}/>
         <ShellCard title="Previous workouts" text="Open the editor and your existing RepQuest workouts." icon={<FitnessCenter/>} onClick={() => navigate('/workouts')}/>
         {!active && <ShellCard title="Create a planned workout" text="Activate a program with two or three days." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
