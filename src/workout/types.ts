@@ -93,7 +93,7 @@ export interface RestTimerRecord {
 
 export interface WorkoutOperationRecord {
     operationId: string;
-    kind: 'start' | 'complete-set' | 'undo-set' | 'finish';
+    kind: 'start' | 'complete-set' | 'undo-set' | 'finish' | 'abandon';
     status: 'started' | 'committed' | 'failed';
     sessionId?: string;
     entityId?: string;

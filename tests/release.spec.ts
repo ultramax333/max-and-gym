@@ -55,6 +55,8 @@ test('@a11y primary workout controls meet the 48px target', async ({page}) => {
 
 test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local photos', async ({page}) => {
     await bootstrapAnonymousProfile(page);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name: 'Start'}).click();
     await page.goto('./#/train');
     await expect(page.getByText(/^v\d+\.\d+\.\d+ · build (?:\d+|local)$/)).toBeVisible();
     const main = page.locator('main');
@@ -68,6 +70,13 @@ test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local
     await expect(lastCard).toBeVisible();
 
     await page.getByRole('heading', {name: 'Arms · 45 min'}).click();
+    await expect(page.getByRole('dialog', {name: 'Start Arms · 45 min?'})).toBeVisible();
+    await page.getByRole('button', {name: 'Start arm workout'}).click();
+    await expect(page.getByText('0/15 sets completed')).toBeVisible();
+    const workoutPlan = page.getByRole('heading', {name: 'Workout plan · 5 exercises'}).locator('..');
+    for (const exerciseName of ['Dumbbell Bicep Curl', 'Dumbbell One-Arm Triceps Extension', 'Hammer Curls', 'Decline Dumbbell Triceps Extension', 'Concentration Curls']) {
+        await expect(workoutPlan.getByText(exerciseName, {exact: true})).toBeVisible();
+    }
     await expect(page.getByRole('heading', {name: 'Dumbbell Bicep Curl'})).toBeVisible();
     await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl starting position'})).toBeVisible();
     await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl finishing position'})).toBeVisible();

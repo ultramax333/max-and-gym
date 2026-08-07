@@ -12,6 +12,7 @@ export interface WorkoutRepository {
     pauseTimer(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     resumeTimer(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     skipTimer(sessionId: string): Promise<ActiveWorkoutSnapshot>;
+    abandon(sessionId: string, operationId: string): Promise<ActiveWorkoutSnapshot>;
     finish(sessionId: string, operationId: string): Promise<ActiveWorkoutSnapshot>;
     get(sessionId: string): Promise<ActiveWorkoutSnapshot | undefined>;
 }

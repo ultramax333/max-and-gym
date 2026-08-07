@@ -102,4 +102,18 @@ describe('DexieWorkoutRepository', () => {
         expect(replay.session.elapsedSeconds).toBe(120);
         expect(await repository.findActive()).toBeUndefined();
     });
+
+    it('abandons a replaced workout without deleting its completed sets', async () => {
+        const started = await repository.startSample('start');
+        await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'complete', actualLoadKg: 16, actualReps: 10});
+        nowMs += 120_000;
+
+        const abandoned = await repository.abandon(started.session.id, 'abandon');
+
+        expect(abandoned.session.status).toBe('abandoned');
+        expect(abandoned.session.elapsedSeconds).toBe(120);
+        expect(abandoned.sets.filter((entry) => entry.status === 'completed')).toHaveLength(1);
+        expect(abandoned.timer).toBeUndefined();
+        expect(await repository.findActive()).toBeUndefined();
+    });
 });

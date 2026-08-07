@@ -117,6 +117,12 @@ export class WorkoutApplicationService {
         return result;
     }
 
+    async abandon(sessionId: string, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        const result = await this.runCritical('workout-abandon', operationId, 'WORKOUT_ABANDON_FAILED', () => this.repository.abandon(sessionId, operationId));
+        localStorage.removeItem(ACTIVE_WORKOUT_STORAGE_KEY);
+        return result;
+    }
+
     get(sessionId: string): Promise<ActiveWorkoutSnapshot | undefined> {
         return this.repository.get(sessionId);
     }
