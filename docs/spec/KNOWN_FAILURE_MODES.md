@@ -112,14 +112,18 @@ Controls:
 
 ## FM-11 — Timer alarm does not fire after Android kills process
 
-This is a platform limitation for a normal PWA.
+This is a platform limitation for a normal PWA. The Android APK corrects it with a native alarm projection; the web build remains best-effort.
 
 Controls:
 
 - do not promise guaranteed background alarms;
 - recover correct timer on reopen;
 - best-effort audio/vibration/notification;
-- clear UI copy.
+- clear UI copy;
+- APK schedules the persisted deadline with Android `AlarmManager` after the database commit;
+- exact-alarm and notification permission states remain visible and non-blocking;
+- native cancellation mirrors pause, skip, undo, finish and abandon;
+- physical Pixel acceptance covers background, lock-screen and process-recreation behavior.
 
 ## FM-12 — Active workout is lost on reload
 

@@ -3,7 +3,7 @@ import Dexie from 'dexie';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {DexieDB} from '../db/db';
 import {RestTimerRecord} from '../workout/types';
-import {RestTimerAlarmRepository, showRestNotification} from './restTimerNotifications';
+import {reconcileRestTimerExpiry, RestTimerAlarmRepository, showRestNotification} from './restTimerNotifications';
 
 describe('rest timer notifications', () => {
     let db: DexieDB;
@@ -46,6 +46,32 @@ describe('rest timer notifications', () => {
         const stored = await db.restTimer.get(timer.id);
         expect(stored).toMatchObject({status: 'running'});
         expect(stored).not.toHaveProperty('signalDeliveredAt');
+    });
+
+    it('acknowledges a native delivery exactly once before recovery can cancel it', async () => {
+        const deliveredAt = new Date('2026-08-07T18:01:15.500Z');
+        const acknowledged = await repository.acknowledgeNativeDelivery(timer.id, deliveredAt);
+        expect(acknowledged).toMatchObject({id: timer.id, status: 'completed', signalDeliveredAt: deliveredAt.toISOString()});
+        await expect(repository.acknowledgeNativeDelivery(timer.id, new Date('2026-08-07T18:01:16.000Z'))).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'completed', signalDeliveredAt: deliveredAt.toISOString()});
+    });
+
+    it('reconciles a foreground native expiry without starting a second web alarm', async () => {
+        const received = vi.fn();
+        const vibrate = vi.fn();
+        const originalVibrate = Object.getOwnPropertyDescriptor(navigator, 'vibrate');
+        Object.defineProperty(navigator, 'vibrate', {configurable: true, value: vibrate});
+        window.addEventListener('max-gym-rest-timer-complete', received);
+        try {
+            const completed = await reconcileRestTimerExpiry(repository, timer, {nativeDelivery: true, now: new Date('2026-08-07T18:01:16.000Z')});
+            expect(completed).toMatchObject({status: 'completed', signalDeliveredAt: '2026-08-07T18:01:16.000Z'});
+            expect(received).toHaveBeenCalledOnce();
+            expect(vibrate).not.toHaveBeenCalled();
+        } finally {
+            window.removeEventListener('max-gym-rest-timer-complete', received);
+            if (originalVibrate) Object.defineProperty(navigator, 'vibrate', originalVibrate);
+            else delete (navigator as unknown as {vibrate?: unknown}).vibrate;
+        }
     });
 
     it('uses the local service worker when notification permission is granted', async () => {

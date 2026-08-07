@@ -1,9 +1,11 @@
 {
   "name": "max-and-gym",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "8.5.0",
+    "@capacitor/core": "8.5.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fontsource/roboto": "^5.1.0",
@@ -31,7 +33,7 @@
     "preview": "node scripts/preview.mjs",
     "serve": "node scripts/preview.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint vite.config.ts playwright.config.ts tests src/App.tsx src/AppRoutes.tsx src/index.tsx src/config src/context/settingsContext.tsx src/diagnostics src/backup src/progress src/pwa src/pages/diagnostics src/pages/backup src/pages/progress src/pages/shell src/pages/workout-active src/pages/library src/pages/programs src/pages/progression src/programs src/generator src/progression src/workout src/exerciseCatalog src/theme src/components/ui src/components/errorBoundary.tsx src/components/nav.tsx src/components/layout.tsx src/components/app_bar.tsx --ext .ts,.tsx --max-warnings 0",
+    "lint": "eslint vite.config.ts capacitor.config.ts playwright.config.ts tests src/App.tsx src/AppRoutes.tsx src/index.tsx src/config src/context/settingsContext.tsx src/diagnostics src/backup src/progress src/pwa src/native src/pages/diagnostics src/pages/backup src/pages/progress src/pages/shell src/pages/workout-active src/pages/library src/pages/programs src/pages/progression src/programs src/generator src/progression src/workout src/exerciseCatalog src/theme src/components/ui src/components/errorBoundary.tsx src/components/nav.tsx src/components/layout.tsx src/components/app_bar.tsx --ext .ts,.tsx --max-warnings 0",
     "test": "node scripts/run-tests.mjs",
     "test:unit": "node scripts/run-tests.mjs src/diagnostics",
     "test:components": "node scripts/run-tests.mjs src/components",
@@ -43,6 +45,8 @@
     "test:release": "playwright test",
     "build": "tsc --noEmit && node scripts/build.mjs && node scripts/bundle-report.mjs && node scripts/smoke-pages.mjs",
     "build:pages": "npm run build",
+    "build:android:web": "tsc --noEmit && node scripts/build-android.mjs && node scripts/smoke-android.mjs",
+    "android:sync": "npm run build:android:web && cap sync android",
     "doctor": "node scripts/doctor.mjs",
     "audit:project": "node scripts/audit-project.mjs",
     "audit:architecture": "node scripts/audit-architecture.mjs",
@@ -73,6 +77,7 @@
     ]
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.0",
     "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",

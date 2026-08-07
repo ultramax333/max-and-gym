@@ -4,6 +4,7 @@ import {DBContext} from '../context/dbContext';
 import {DexieDB} from '../db/db';
 import {recordDiagnostic} from '../diagnostics/service';
 import {RestTimerRecord} from '../workout/types';
+import {restAlarmGateway} from '../native/restAlarmGateway';
 
 export const REST_TIMER_COMPLETE_EVENT = 'max-gym-rest-timer-complete';
 export type RestNotificationPermission = NotificationPermission | 'unsupported';
@@ -48,7 +49,7 @@ export async function requestRestNotificationPermission(): Promise<RestNotificat
 }
 
 async function playRestAlarm(): Promise<void> {
-    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200, 100, 300]);
+    if ('vibrate' in navigator) navigator.vibrate(Array.from({length: 20}, (_, index) => index % 2 === 0 ? 350 : 150));
     try {
         const context = createAudioContext();
         if (!context) return;
@@ -56,14 +57,15 @@ async function playRestAlarm(): Promise<void> {
         const gain = context.createGain();
         gain.gain.value = 0.1;
         gain.connect(context.destination);
-        for (const [index, frequency] of [660, 880, 660].entries()) {
+        const frequencies = Array.from({length: 20}, (_, index) => index % 2 === 0 ? 660 : 880);
+        for (const [index, frequency] of frequencies.entries()) {
             const oscillator = context.createOscillator();
             oscillator.frequency.value = frequency;
             oscillator.connect(gain);
-            oscillator.start(context.currentTime + index * 0.24);
-            oscillator.stop(context.currentTime + index * 0.24 + 0.16);
+            oscillator.start(context.currentTime + index * 0.5);
+            oscillator.stop(context.currentTime + index * 0.5 + 0.35);
         }
-        window.setTimeout(() => void context.close(), 900);
+        window.setTimeout(() => void context.close(), 10_200);
     } catch {
         recordDiagnostic({level: 'warning', subsystem: 'TIMER', code: 'TIMER_SIGNAL_UNAVAILABLE', safeMessage: 'Rest timer audio feedback was unavailable.'});
     }
@@ -107,6 +109,25 @@ export class RestTimerAlarmRepository {
             return completed;
         });
     }
+
+    async acknowledgeNativeDelivery(timerId: string, deliveredAt: Date): Promise<RestTimerRecord | undefined> {
+        return this.db.transaction('rw', this.db.restTimer, async () => {
+            const timer = await this.db.restTimer.get(timerId);
+            if (!timer || timer.status !== 'running' || timer.signalDeliveredAt) return undefined;
+            const deliveredAtIso = deliveredAt.toISOString();
+            const completed = {...timer, status: 'completed' as const, signalDeliveredAt: deliveredAtIso, updatedAt: deliveredAtIso};
+            await this.db.restTimer.put(completed);
+            return completed;
+        });
+    }
+}
+
+export async function reconcileRestTimerExpiry(repository: RestTimerAlarmRepository, timer: RestTimerRecord, options: {nativeDelivery?: boolean; now?: Date} = {}): Promise<RestTimerRecord | undefined> {
+    const completed = await repository.claimExpired(timer.id, options.now);
+    if (!completed) return undefined;
+    window.dispatchEvent(new CustomEvent(REST_TIMER_COMPLETE_EVENT, {detail: {sessionId: completed.sessionId, timerId: completed.id}}));
+    if (!options.nativeDelivery) void Promise.allSettled([playRestAlarm(), showRestNotification(completed)]);
+    return completed;
 }
 
 export function RestTimerNotifier() {
@@ -119,13 +140,10 @@ export function RestTimerNotifier() {
         return repository.observeRunning(setTimer, () => recordDiagnostic({level: 'warning', subsystem: 'TIMER', code: 'TIMER_SIGNAL_UNAVAILABLE', safeMessage: 'The background rest timer monitor stopped.'}));
     }, [repository]);
 
-    const deliver = useCallback(async () => {
+    const deliver = useCallback(async (nativeDelivery = false) => {
         if (!repository || !timer) return;
         try {
-            const completed = await repository.claimExpired(timer.id);
-            if (!completed) return;
-            window.dispatchEvent(new CustomEvent(REST_TIMER_COMPLETE_EVENT, {detail: {sessionId: completed.sessionId, timerId: completed.id}}));
-            void Promise.allSettled([playRestAlarm(), showRestNotification(completed)]);
+            await reconcileRestTimerExpiry(repository, timer, {nativeDelivery});
         } catch {
             recordDiagnostic({level: 'warning', subsystem: 'TIMER', code: 'TIMER_STATE_INVALID', safeMessage: 'The expired rest timer could not be reconciled.'});
         }
@@ -133,9 +151,10 @@ export function RestTimerNotifier() {
 
     useEffect(() => {
         if (!timer) return;
+        const nativeDelivery = restAlarmGateway.isNativeAndroid();
         const remaining = Math.max(0, new Date(timer.endsAt).getTime() - Date.now());
-        const timeout = window.setTimeout(() => void deliver(), Math.min(remaining, 2_147_483_647));
-        const reconcile = () => { if (new Date(timer.endsAt).getTime() <= Date.now()) void deliver(); };
+        const timeout = window.setTimeout(() => void deliver(nativeDelivery), Math.min(remaining, 2_147_483_647));
+        const reconcile = () => { if (new Date(timer.endsAt).getTime() <= Date.now()) void deliver(nativeDelivery); };
         document.addEventListener('visibilitychange', reconcile);
         window.addEventListener('focus', reconcile);
         return () => {
