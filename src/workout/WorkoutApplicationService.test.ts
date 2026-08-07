@@ -43,6 +43,17 @@ describe('WorkoutApplicationService recovery', () => {
         expect(recovered?.session.currentSetId).toBe(started.sets[1].id);
     });
 
+    it('repairs a completed-set pointer during app recovery', async () => {
+        const started = await service.start('start-stale-pointer');
+        const completed = await service.completeSet({sessionId: started.session.id, setId: started.sets[0].id, actualLoadKg: 16, actualReps: 8}, 'complete-stale-pointer');
+        await db.workoutSession.update(started.session.id, {currentSetId: started.sets[0].id});
+
+        const recovered = await service.recover();
+
+        expect(recovered?.session.currentSetId).toBe(completed.sets[1].id);
+        expect(recovered?.sets.filter((entry) => entry.status === 'completed')).toHaveLength(1);
+    });
+
     it('clears the active marker when a workout is replaced', async () => {
         const started = await service.start('start-replaced');
         const replaced = await service.abandon(started.session.id, 'abandon-replaced');
