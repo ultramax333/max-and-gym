@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import React from 'react';
 import Dexie from 'dexie';
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
-import {render, screen} from '@testing-library/react';
+import {cleanup, render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter, Route, Routes} from 'react-router-dom';
 import {db} from '../../db/db';
@@ -17,6 +17,8 @@ describe('ProgramDetailPage', () => {
     });
 
     afterEach(async () => {
+        cleanup();
+        await new Promise((resolve) => setTimeout(resolve, 0));
         db.close();
         await Dexie.delete('weightlog');
     });
