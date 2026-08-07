@@ -10,7 +10,7 @@
 - Affected environment: Pixel 9a, Android Chrome; installed-PWA versus browser-tab state remains to be confirmed.
 - Visible error ID: none.
 - Severity: medium; missed alert, no workout-data loss.
-- Status: root cause proven; Android correction implemented on `fix/android-native-runtime`, pending CI compilation and physical Pixel 9a acceptance.
+- Status: root cause proven; Android correction implemented and compiled on `fix/android-native-runtime`, pending physical Pixel 9a acceptance.
 
 ## User-visible symptom
 
@@ -188,7 +188,7 @@ The second option remains 100% local but changes the distribution surface from p
 | GitHub Pages production build and subpath smoke | Pass |
 | Capacitor Android web build and sync | Pass |
 | Browser active-workout boot recovery | Pass on isolated production preview |
-| Native Java compilation | Pending GitHub Actions (local machine has no Android SDK/JDK) |
+| Native Java compilation | Pass, GitHub Actions run `31221094614` |
 | Pixel 9a background/lock-screen acceptance | Pending installation of the CI-produced APK |
 
 ## Final verdict
