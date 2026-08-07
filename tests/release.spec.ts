@@ -50,6 +50,25 @@ test('@a11y primary workout controls meet the 48px target', async ({page}) => {
     await assertNoHorizontalOverflow(page);
 });
 
+test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local photos', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/train');
+    const main = page.locator('main');
+    const dimensions = await main.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
+    expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight);
+    await main.hover();
+    await page.mouse.wheel(0, 1200);
+    await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    const lastCard = page.getByRole('heading', {name: 'Warm-up and core'});
+    await lastCard.scrollIntoViewIfNeeded();
+    await expect(lastCard).toBeVisible();
+
+    await page.getByRole('heading', {name: 'Arms · 45 min'}).click();
+    await expect(page.getByRole('heading', {name: 'Dumbbell Bicep Curl'})).toBeVisible();
+    await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl starting position'})).toBeVisible();
+    await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl finishing position'})).toBeVisible();
+});
+
 test('@offline shell, workout and diagnostics reopen without network', async ({page, context}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');

@@ -35,12 +35,12 @@ const Layout = (props: {
     nogrow?: boolean
 }) => {
     const {children, title, nogrow, showAccountMenu, hideAppBar, hideNav, toolItems, leftToolItems, hideBack, onBack, sx, scroll} = props;
-    return <Box sx={{display: 'flex', minHeight: '100dvh', bgcolor: 'background.default'}}>
+    return <Box sx={{display: 'flex', height: '100dvh', minHeight: 0, overflow: 'hidden', bgcolor: 'background.default'}}>
         <ConnectivityBanner/>
         {!hideNav && <WLNav desktop/>}
-        <Box sx={{display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, ...(hideNav ? {} : {ml: {md: '88px'}})}}>
+        <Box sx={{display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, height: '100dvh', minHeight: 0, ...(hideNav ? {} : {ml: {md: '88px'}})}}>
         {!hideAppBar && <WLAppBar title={title} showAccountMenu={showAccountMenu} leftToolItems={leftToolItems} toolItems={toolItems} hideBack={hideBack} onBack={onBack}/>}
-        <Box component="main" sx={{flexGrow: nogrow ? undefined : 1, mt: hideAppBar ? 0 : '72px', ...(scroll ? {overflowY: 'auto'} : {minHeight: 0}), ...sx}}>{children}</Box>
+        <Box component="main" sx={{flexGrow: nogrow ? undefined : 1, minHeight: 0, mt: hideAppBar ? 0 : '72px', overflowY: scroll === false ? 'visible' : 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain', ...sx}}>{children}</Box>
         {!hideNav && <WLNav/>}
         </Box>
     </Box>;

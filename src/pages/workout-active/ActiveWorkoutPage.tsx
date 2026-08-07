@@ -7,6 +7,8 @@ import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../..
 import {recordDiagnostic} from '../../diagnostics/service';
 import {ActiveWorkoutSnapshot} from '../../workout/types';
 import {useWorkoutService} from '../../workout/useWorkoutService';
+import {ExerciseMediaAsset} from '../../exerciseCatalog/types';
+import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -74,6 +76,7 @@ function WorkoutRestBar({snapshot, onChange}: {snapshot: ActiveWorkoutSnapshot; 
 
 export function ActiveWorkoutPage() {
     const service = useWorkoutService();
+    const catalog = useExerciseCatalog();
     const navigate = useNavigate();
     const [snapshot, setSnapshot] = useState<ActiveWorkoutSnapshot>();
     const [loading, setLoading] = useState(true);
@@ -83,6 +86,7 @@ export function ActiveWorkoutPage() {
     const [load, setLoad] = useState(0);
     const [reps, setReps] = useState(0);
     const [rir, setRir] = useState(2);
+    const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
 
     const refresh = useCallback(async () => {
         if (!service) return;
@@ -134,6 +138,15 @@ export function ActiveWorkoutPage() {
     const latestCompleted = [...completed].sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))[0];
     const allSetsDone = Boolean(snapshot && snapshot.sets.every((entry) => entry.status === 'completed'));
     useEffect(() => {
+        let cancelled = false;
+        setExerciseMedia([]);
+        if (!catalog || !currentExercise) return () => { cancelled = true; };
+        void catalog.get(currentExercise.exerciseId).then((exercise) => {
+            if (!cancelled) setExerciseMedia(exercise?.media.filter((entry) => entry.kind === 'start-image' || entry.kind === 'end-image') ?? []);
+        });
+        return () => { cancelled = true; };
+    }, [catalog, currentExercise]);
+    useEffect(() => {
         if (!currentSet) return;
         setLoad(currentSet.targetLoadKg);
         setReps(currentSet.targetRepsMin);
@@ -170,7 +183,7 @@ export function ActiveWorkoutPage() {
                 </Stack>
                 <LinearProgress variant="determinate" value={(completed.length / snapshot.sets.length) * 100} aria-label="Workout progress"/>
                 {!allSetsDone && currentExercise && currentSet && <>
-                    <Card><Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">Local media coming soon</Typography></Stack></Box><CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
+                    <Card>{exerciseMedia.length ? <Box sx={{display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={media.kind} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: {xs: 180, sm: 260}, objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}<CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
                     <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography><Typography color="text.secondary">No history for this local workout.</Typography></Paper>
                     <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between"><Typography component="h2" variant="h6">Set {currentSet.sequenceIndex + 1}</Typography><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
