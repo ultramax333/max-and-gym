@@ -6,9 +6,7 @@ import {recordDiagnostic} from '../diagnostics/service';
 import {REST_TIMER_COMPLETE_EVENT, RestTimerAlarmRepository} from '../pwa/restTimerNotifications';
 import {useWorkoutService} from '../workout/useWorkoutService';
 import {restAlarmGateway, RestAlarmActionResult} from './restAlarmGateway';
-import {hasPortablePersonalData} from '../backup/PersonalBackupService';
-
-const NATIVE_MIGRATION_PROMPT_KEY = 'maxgym.nativeMigrationPromptDismissed';
+import {hasNativeMigrationDecision, recordNativeMigrationDecision} from './nativeMigrationDecision';
 
 export function NativeLifecycleCoordinator() {
     const service = useWorkoutService();
@@ -31,7 +29,11 @@ export function NativeLifecycleCoordinator() {
         const reconcile = async (action?: RestAlarmActionResult) => {
             try {
                 const delivered = action?.action && action.timerId
-                    ? await new RestTimerAlarmRepository(db).acknowledgeNativeDelivery(action.timerId, new Date(action.occurredAtEpochMs ?? Date.now()))
+                    ? await new RestTimerAlarmRepository(db).acknowledgeNativeDelivery(
+                        action.timerId,
+                        new Date(action.occurredAtEpochMs ?? Date.now()),
+                        action.endsAtEpochMs,
+                    )
                     : undefined;
                 const snapshot = await service.recover();
                 if (!active) return;
@@ -78,16 +80,14 @@ export function NativeLifecycleCoordinator() {
     }, [db, navigate, service]);
 
     useEffect(() => {
-        if (!db || !restAlarmGateway.isNativeAndroid() || localStorage.getItem(NATIVE_MIGRATION_PROMPT_KEY)) return;
-        let active = true;
-        void hasPortablePersonalData(db).then((hasData) => {
-            if (active && !hasData) setShowMigrationPrompt(true);
-        }).catch(() => undefined);
-        return () => { active = false; };
+        if (!db || !restAlarmGateway.isNativeAndroid() || hasNativeMigrationDecision(localStorage)) return;
+        // This decision deliberately does not inspect IndexedDB: DBGuard may have
+        // already seeded plans or exercises before the first native render.
+        setShowMigrationPrompt(true);
     }, [db]);
 
-    const dismissMigrationPrompt = () => {
-        localStorage.setItem(NATIVE_MIGRATION_PROMPT_KEY, 'true');
+    const dismissMigrationPrompt = (decision: 'continue-local' | 'import-selected') => {
+        recordNativeMigrationDecision(localStorage, decision);
         setShowMigrationPrompt(false);
     };
 
@@ -98,8 +98,8 @@ export function NativeLifecycleCoordinator() {
             <Typography>Export a personal .maxgym backup from the web app, then import it here to keep workouts, programs and photos.</Typography>
         </DialogContent>
         <DialogActions sx={{p: 2, flexDirection: {xs: 'column-reverse', sm: 'row'}, alignItems: 'stretch'}}>
-            <Button onClick={dismissMigrationPrompt}>Start fresh</Button>
-            <Button variant="contained" onClick={() => { dismissMigrationPrompt(); navigate('/backup'); }}>Import .maxgym backup</Button>
+            <Button onClick={() => dismissMigrationPrompt('continue-local')}>Continue without import</Button>
+            <Button variant="contained" onClick={() => { dismissMigrationPrompt('import-selected'); navigate('/backup'); }}>Import .maxgym backup</Button>
         </DialogActions>
     </Dialog>;
 }

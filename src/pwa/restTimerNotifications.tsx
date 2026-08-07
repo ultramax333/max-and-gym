@@ -9,6 +9,10 @@ import {restAlarmGateway} from '../native/restAlarmGateway';
 export const REST_TIMER_COMPLETE_EVENT = 'max-gym-rest-timer-complete';
 export type RestNotificationPermission = NotificationPermission | 'unsupported';
 
+export function shouldMonitorRestTimerExpiryInPage(nativeAndroid = restAlarmGateway.isNativeAndroid()): boolean {
+    return !nativeAndroid;
+}
+
 export function getRestNotificationPermission(): RestNotificationPermission {
     return 'Notification' in globalThis ? Notification.permission : 'unsupported';
 }
@@ -110,10 +114,14 @@ export class RestTimerAlarmRepository {
         });
     }
 
-    async acknowledgeNativeDelivery(timerId: string, deliveredAt: Date): Promise<RestTimerRecord | undefined> {
+    async acknowledgeNativeDelivery(timerId: string, deliveredAt: Date, expectedEndsAtEpochMs?: number): Promise<RestTimerRecord | undefined> {
         return this.db.transaction('rw', this.db.restTimer, async () => {
             const timer = await this.db.restTimer.get(timerId);
             if (!timer || timer.status !== 'running' || timer.signalDeliveredAt) return undefined;
+            const currentEndsAtEpochMs = new Date(timer.endsAt).getTime();
+            const deliveredAtEpochMs = deliveredAt.getTime();
+            if (!Number.isFinite(deliveredAtEpochMs) || deliveredAtEpochMs < currentEndsAtEpochMs) return undefined;
+            if (expectedEndsAtEpochMs !== undefined && expectedEndsAtEpochMs !== currentEndsAtEpochMs) return undefined;
             const deliveredAtIso = deliveredAt.toISOString();
             const completed = {...timer, status: 'completed' as const, signalDeliveredAt: deliveredAtIso, updatedAt: deliveredAtIso};
             await this.db.restTimer.put(completed);
@@ -151,10 +159,10 @@ export function RestTimerNotifier() {
 
     useEffect(() => {
         if (!timer) return;
-        const nativeDelivery = restAlarmGateway.isNativeAndroid();
+        if (!shouldMonitorRestTimerExpiryInPage()) return;
         const remaining = Math.max(0, new Date(timer.endsAt).getTime() - Date.now());
-        const timeout = window.setTimeout(() => void deliver(nativeDelivery), Math.min(remaining, 2_147_483_647));
-        const reconcile = () => { if (new Date(timer.endsAt).getTime() <= Date.now()) void deliver(nativeDelivery); };
+        const timeout = window.setTimeout(() => void deliver(false), Math.min(remaining, 2_147_483_647));
+        const reconcile = () => { if (new Date(timer.endsAt).getTime() <= Date.now()) void deliver(false); };
         document.addEventListener('visibilitychange', reconcile);
         window.addEventListener('focus', reconcile);
         return () => {

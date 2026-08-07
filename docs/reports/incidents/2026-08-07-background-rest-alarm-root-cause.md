@@ -170,11 +170,14 @@ The second option remains 100% local but changes the distribution surface from p
 
 - Capacitor Android application added without removing the GitHub Pages PWA.
 - The persisted rest deadline is mirrored to Android `AlarmManager` only after successful workout-state commits.
+- The native projection carries timer ID, committed deadline and generation; stale or early deliveries are rejected natively and transactionally in IndexedDB.
+- The APK no longer runs a competing WebView expiry timeout; Android emits the live foreground action while retaining it for cold-start recovery.
 - Alarm delivery uses a foreground media-playback service, a high-priority notification, vibration, a 10-second sound pattern and a Stop action.
 - Pause, resume, adjust, skip, undo, finish and abandon reschedule or cancel the single native alarm projection.
 - Reboot/package replacement restores a still-valid alarm; app relaunch recovers a persisted workout and routes to `#/workout/active`.
 - Native permission state is visible and actionable. Exact-alarm denial falls back to an inexact high-priority notification without blocking workout logging; reliable ten-second background sound requires exact-alarm access.
 - Existing PWA data can be transferred explicitly with the existing local `.maxgym` backup import; origins are not silently conflated.
+- First-launch migration choice is explicit and versioned, independent of the default records seeded before the application shell renders.
 - The web build retains honest best-effort foreground/background behavior and now emits the longer alert when execution remains available.
 
 ## Verification after correction
@@ -182,13 +185,13 @@ The second option remains 100% local but changes the distribution surface from p
 | Gate | Result |
 |---|---|
 | TypeScript / ESLint | Pass / zero warnings |
-| Unit and component suite | 31 files / 97 tests pass |
+| Unit and component suite | 32 files / 109 tests pass |
 | Database migrations | 7 tests pass |
 | Architecture, dependency, project, network, licence, asset, language, accessibility and performance audits | Pass |
 | GitHub Pages production build and subpath smoke | Pass |
 | Capacitor Android web build and sync | Pass |
 | Browser active-workout boot recovery | Pass on isolated production preview |
-| Native Java compilation | Pass, GitHub Actions run `31221094614` |
+| Native Java compilation | Pending CI for the post-scan correction |
 | Pixel 9a background/lock-screen acceptance | Pending installation of the CI-produced APK |
 
 ## Final verdict

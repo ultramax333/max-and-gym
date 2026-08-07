@@ -47,6 +47,7 @@
     "build:pages": "npm run build",
     "build:android:web": "tsc --noEmit && node scripts/build-android.mjs && node scripts/smoke-android.mjs",
     "android:sync": "npm run build:android:web && cap sync android",
+    "audit:android": "node scripts/audit-android-release.mjs",
     "doctor": "node scripts/doctor.mjs",
     "audit:project": "node scripts/audit-project.mjs",
     "audit:architecture": "node scripts/audit-architecture.mjs",
@@ -58,7 +59,7 @@
     "audit:assets": "node scripts/audit-assets.mjs",
     "audit:exercise-assets": "node scripts/audit-exercise-assets.mjs",
     "audit:language": "node scripts/audit-language.mjs",
-    "quality": "npm run typecheck && npm run lint && npm run test && npm run test:migrations && npm run audit:dependencies && npm run audit:architecture && npm run audit:project && npm run audit:network && npm run audit:licenses && npm run audit:assets && npm run audit:exercise-assets && npm run audit:language && npm run build && npm run audit:accessibility && npm run audit:performance"
+    "quality": "npm run typecheck && npm run lint && npm run test && npm run test:migrations && npm run audit:dependencies && npm run audit:architecture && npm run audit:android && npm run audit:project && npm run audit:network && npm run audit:licenses && npm run audit:assets && npm run audit:exercise-assets && npm run audit:language && npm run build && npm run audit:accessibility && npm run audit:performance"
   },
   "engines": {
     "node": ">=24.0.0 <25",

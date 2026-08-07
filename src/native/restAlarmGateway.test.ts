@@ -18,12 +18,19 @@ describe('native rest alarm synchronization', () => {
     it('cancels paused, cancelled and elapsed projections', async () => {
         const gateway = {isNativeAndroid: () => true, schedule: vi.fn(), cancel: vi.fn().mockResolvedValue(undefined), getCapabilities: vi.fn(), requestNotificationPermission: vi.fn(), requestExactAlarmPermission: vi.fn(), consumeLastAction: vi.fn(), addActionListener: vi.fn()};
         await syncNativeRestAlarm(timer('paused', new Date(Date.now() + 60_000).toISOString()), gateway);
-        await syncNativeRestAlarm(timer('running', new Date(Date.now() - 1).toISOString()), gateway);
+        await syncNativeRestAlarm(timer('cancelled', new Date(Date.now() - 1).toISOString()), gateway);
         await syncNativeRestAlarm(undefined, gateway, 'timer-old');
         expect(gateway.schedule).not.toHaveBeenCalled();
         expect(gateway.cancel).toHaveBeenNthCalledWith(1, 'timer-1');
         expect(gateway.cancel).toHaveBeenNthCalledWith(2, 'timer-1');
         expect(gateway.cancel).toHaveBeenNthCalledWith(3, 'timer-old');
+    });
+
+    it('schedules an already elapsed running timer for immediate native delivery', async () => {
+        const gateway = {isNativeAndroid: () => true, schedule: vi.fn().mockResolvedValue({scheduled: true, exactAlarmAllowed: true}), cancel: vi.fn(), getCapabilities: vi.fn(), requestNotificationPermission: vi.fn(), requestExactAlarmPermission: vi.fn(), consumeLastAction: vi.fn(), addActionListener: vi.fn()};
+        await syncNativeRestAlarm(timer('running', new Date(Date.now() - 1).toISOString()), gateway);
+        expect(gateway.schedule).toHaveBeenCalledOnce();
+        expect(gateway.cancel).not.toHaveBeenCalled();
     });
 
     it('does nothing in the browser', async () => {

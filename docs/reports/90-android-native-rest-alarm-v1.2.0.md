@@ -5,7 +5,7 @@
 - Task: 90 controlled post-CP8 fix.
 - Branch: `fix/android-native-runtime`.
 - Base: `1c3c636217bc333f36e90c09e77c4e26d4e05e22`.
-- Application version: `1.2.0`; Android version code: `10`.
+- Application version: `1.2.0`; Android version code: monotonic CI projection `120000000 + GITHUB_RUN_NUMBER`.
 - Target device: Pixel 9a.
 - Requirements: `AT-D02`, `AT-E04`, `AT-E05`, `PWA-090`, `FM-11`.
 
@@ -14,6 +14,8 @@
 The existing React application is now also packaged as a Capacitor Android application. The web/PWA release remains supported and keeps its GitHub Pages base path; Android receives a separate relative-path build with no service worker.
 
 The Android bridge schedules the committed rest deadline through `AlarmManager`. At expiry, a foreground service produces a ten-second audible/vibration alert and a high-priority notification with a Stop action. Every timer transition synchronizes only after the IndexedDB transaction succeeds, preserving the workout database as the source of truth. Reboot and package replacement restore still-valid alarms.
+
+Android is the sole expiry authority inside the APK. Every scheduled projection carries the timer ID, committed deadline and a generation derived from both. Stale or early broadcasts are rejected by Android and again during the transactional IndexedDB acknowledgement, so extending or resuming a timer cannot be completed by an older alarm.
 
 On launch or process recreation, the application recovers the active session and returns directly to the workout instead of the menu. Since browser and Capacitor WebView storage have different origins, existing PWA data is transferred explicitly through the established `.maxgym` backup/import format; the APK presents that choice on first launch.
 
@@ -26,21 +28,23 @@ On launch or process recreation, the application recovers the active session and
 - Android platform backup is disabled so private WebView/database state cannot leave the explicit `.maxgym` export path.
 - The PWA still works, with a documented best-effort alert because browsers cannot guarantee background execution.
 - Rollback is code/package-only; user data remains exportable with `.maxgym` backups.
+- FileProvider sharing is restricted to the private `files/shared/` and `cache/shared/` directories.
+- Debug APKs are test-only. Update-safe release APKs are built on `master` only with the complete external signing secret set and are verified with `apksigner`.
 
 ## Verification
 
 | Gate | Result |
 |---|---|
 | `npm run quality` | Pass |
-| Unit/component/domain tests | 31 files / 97 tests pass |
+| Unit/component/domain tests | 32 files / 109 tests pass |
 | Migration tests | 7 pass |
 | Web production build / Pages smoke | Pass |
 | Android web build / no-service-worker smoke | Pass |
 | Capacitor Android sync | Pass |
 | Browser active-session route recovery | Pass |
-| Android debug APK compile and native unit task | Pass, workflow run `31221094614` |
+| Android debug APK compile and native unit task | Pending CI for the post-scan correction |
 | Pixel 9a app switch, screen lock, battery saver and process recreation | Pending physical device |
 
 ## Release decision
 
-The Android debug APK compiled successfully at commit `eb49fb9` and was published as artifact `max-and-gym-v1.2.0-debug-apk` (SHA-256 `2db64ed315b09de26d5306f515ab0abad38f5d3935b161049b06d28114f69643`). The checkpoint must not be merged or called physically accepted until the Pixel 9a matrix confirms sound, vibration, notification, Stop action, timer rescheduling and workout recovery.
+The post-scan correction is ready for Android CI. The debug artifact is suitable for Pixel 9a acceptance only; production updates additionally require the stable signing secrets documented in `docs/spec/RELEASE_PROCESS.md`. The checkpoint must not be called physically accepted until the Pixel 9a matrix confirms sound, vibration, notification, Stop action, timer rescheduling and workout recovery.

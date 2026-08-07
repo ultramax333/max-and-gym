@@ -35,6 +35,7 @@ public class RestAlarmService extends Service {
     private PowerManager.WakeLock wakeLock;
     private long stopAt;
     private String activeTimerId;
+    private String activeGeneration;
     private final Runnable beep = new Runnable() {
         @Override public void run() {
             if (System.currentTimeMillis() >= stopAt || toneGenerator == null) {
@@ -55,9 +56,12 @@ public class RestAlarmService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String timerId = intent == null ? null : intent.getStringExtra(RestAlarmScheduler.EXTRA_TIMER_ID);
+        long endsAtEpochMs = intent == null ? 0L : intent.getLongExtra(RestAlarmScheduler.EXTRA_ENDS_AT, 0L);
+        String generation = intent == null ? null : intent.getStringExtra(RestAlarmScheduler.EXTRA_GENERATION);
         activeTimerId = timerId;
-        RestAlarmScheduler.preferences(this).edit().putString(RestAlarmScheduler.KEY_RINGING_TIMER_ID, timerId).apply();
-        Notification notification = buildNotification(timerId);
+        activeGeneration = generation;
+        RestAlarmScheduler.preferences(this).edit().putString(RestAlarmScheduler.KEY_RINGING_TIMER_ID, timerId).putString(RestAlarmScheduler.KEY_RINGING_GENERATION, generation).apply();
+        Notification notification = buildNotification(timerId, endsAtEpochMs, generation);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         } else {
@@ -86,15 +90,19 @@ public class RestAlarmService extends Service {
         handler.postDelayed(this::stopSelf, ALARM_DURATION_MS);
     }
 
-    private Notification buildNotification(String timerId) {
+    private Notification buildNotification(String timerId, long endsAtEpochMs, String generation) {
         Intent openIntent = new Intent(this, MainActivity.class)
             .setAction(RestAlarmScheduler.ACTION_OPEN)
             .putExtra(RestAlarmScheduler.EXTRA_TIMER_ID, timerId)
+            .putExtra(RestAlarmScheduler.EXTRA_ENDS_AT, endsAtEpochMs)
+            .putExtra(RestAlarmScheduler.EXTRA_GENERATION, generation)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(this, 42018, openIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Intent stopIntent = new Intent(this, RestAlarmActionReceiver.class)
             .setAction(RestAlarmScheduler.ACTION_STOP)
-            .putExtra(RestAlarmScheduler.EXTRA_TIMER_ID, timerId);
+            .putExtra(RestAlarmScheduler.EXTRA_TIMER_ID, timerId)
+            .putExtra(RestAlarmScheduler.EXTRA_ENDS_AT, endsAtEpochMs)
+            .putExtra(RestAlarmScheduler.EXTRA_GENERATION, generation);
         PendingIntent stop = PendingIntent.getBroadcast(this, 42019, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         return new NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_rest_alarm)
@@ -110,7 +118,7 @@ public class RestAlarmService extends Service {
             .build();
     }
 
-    static void showFallbackNotification(Context context, String timerId) {
+    static void showFallbackNotification(Context context, String timerId, long endsAtEpochMs, String generation) {
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager == null) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -123,6 +131,8 @@ public class RestAlarmService extends Service {
         Intent openIntent = new Intent(context, MainActivity.class)
             .setAction(RestAlarmScheduler.ACTION_OPEN)
             .putExtra(RestAlarmScheduler.EXTRA_TIMER_ID, timerId)
+            .putExtra(RestAlarmScheduler.EXTRA_ENDS_AT, endsAtEpochMs)
+            .putExtra(RestAlarmScheduler.EXTRA_GENERATION, generation)
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent open = PendingIntent.getActivity(context, 42018, openIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new NotificationCompat.Builder(context, FALLBACK_CHANNEL_ID)
@@ -177,8 +187,9 @@ public class RestAlarmService extends Service {
     public void onDestroy() {
         stopFeedback();
         String ringingTimerId = RestAlarmScheduler.preferences(this).getString(RestAlarmScheduler.KEY_RINGING_TIMER_ID, null);
-        if (activeTimerId != null && activeTimerId.equals(ringingTimerId)) {
-            RestAlarmScheduler.preferences(this).edit().remove(RestAlarmScheduler.KEY_RINGING_TIMER_ID).apply();
+        String ringingGeneration = RestAlarmScheduler.preferences(this).getString(RestAlarmScheduler.KEY_RINGING_GENERATION, null);
+        if (activeTimerId != null && activeTimerId.equals(ringingTimerId) && activeGeneration != null && activeGeneration.equals(ringingGeneration)) {
+            RestAlarmScheduler.preferences(this).edit().remove(RestAlarmScheduler.KEY_RINGING_TIMER_ID).remove(RestAlarmScheduler.KEY_RINGING_GENERATION).apply();
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) stopForeground(STOP_FOREGROUND_REMOVE);
         else stopForeground(true);

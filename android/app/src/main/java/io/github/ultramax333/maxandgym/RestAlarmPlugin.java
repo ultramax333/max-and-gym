@@ -24,6 +24,35 @@ import com.getcapacitor.annotation.PermissionCallback;
 })
 public class RestAlarmPlugin extends Plugin {
     private static final String KEY_NOTIFICATION_REQUESTED = "notificationPermissionRequested";
+    private static volatile RestAlarmPlugin activePlugin;
+
+    @Override
+    public void load() {
+        activePlugin = this;
+    }
+
+    @Override
+    protected void handleOnDestroy() {
+        if (activePlugin == this) activePlugin = null;
+        super.handleOnDestroy();
+    }
+
+    static void emitAction(String action, String timerId, long occurredAtEpochMs, long endsAtEpochMs, String generation) {
+        RestAlarmPlugin plugin = activePlugin;
+        if (plugin == null) return;
+        JSObject result = actionResult(action, timerId, occurredAtEpochMs, endsAtEpochMs, generation);
+        plugin.notifyListeners("restAlarmAction", result);
+    }
+
+    private static JSObject actionResult(String action, String timerId, long occurredAtEpochMs, long endsAtEpochMs, String generation) {
+        JSObject result = new JSObject();
+        if (action != null) result.put("action", action);
+        if (timerId != null) result.put("timerId", timerId);
+        if (occurredAtEpochMs > 0L) result.put("occurredAtEpochMs", occurredAtEpochMs);
+        if (endsAtEpochMs > 0L) result.put("endsAtEpochMs", endsAtEpochMs);
+        if (generation != null) result.put("generation", generation);
+        return result;
+    }
 
     @PluginMethod
     public void getCapabilities(PluginCall call) {
@@ -64,11 +93,12 @@ public class RestAlarmPlugin extends Plugin {
         String timerId = call.getString("timerId");
         String sessionId = call.getString("sessionId");
         Long endsAtEpochMs = call.getLong("endsAtEpochMs");
-        if (timerId == null || timerId.isBlank() || sessionId == null || sessionId.isBlank() || endsAtEpochMs == null || endsAtEpochMs <= 0L) {
-            call.reject("A valid timerId, sessionId and endsAtEpochMs are required.");
+        String generation = call.getString("generation");
+        if (timerId == null || timerId.isBlank() || sessionId == null || sessionId.isBlank() || endsAtEpochMs == null || endsAtEpochMs <= 0L || generation == null || generation.isBlank()) {
+            call.reject("A valid timerId, sessionId, endsAtEpochMs and generation are required.");
             return;
         }
-        boolean scheduled = RestAlarmScheduler.schedule(getContext(), timerId, sessionId, endsAtEpochMs);
+        boolean scheduled = RestAlarmScheduler.schedule(getContext(), timerId, sessionId, endsAtEpochMs, generation);
         JSObject result = new JSObject();
         result.put("scheduled", scheduled);
         result.put("exactAlarmAllowed", RestAlarmScheduler.canScheduleExact(getContext()));
@@ -87,11 +117,10 @@ public class RestAlarmPlugin extends Plugin {
         String action = preferences.getString(RestAlarmScheduler.KEY_LAST_ACTION, null);
         String timerId = preferences.getString(RestAlarmScheduler.KEY_LAST_ACTION_TIMER_ID, null);
         long occurredAt = preferences.getLong(RestAlarmScheduler.KEY_LAST_ACTION_AT, 0L);
-        JSObject result = new JSObject();
-        if (action != null) result.put("action", action);
-        if (timerId != null) result.put("timerId", timerId);
-        if (occurredAt > 0L) result.put("occurredAtEpochMs", occurredAt);
-        preferences.edit().remove(RestAlarmScheduler.KEY_LAST_ACTION).remove(RestAlarmScheduler.KEY_LAST_ACTION_TIMER_ID).remove(RestAlarmScheduler.KEY_LAST_ACTION_AT).apply();
+        long endsAt = preferences.getLong(RestAlarmScheduler.KEY_LAST_ACTION_ENDS_AT, 0L);
+        String generation = preferences.getString(RestAlarmScheduler.KEY_LAST_ACTION_GENERATION, null);
+        JSObject result = actionResult(action, timerId, occurredAt, endsAt, generation);
+        preferences.edit().remove(RestAlarmScheduler.KEY_LAST_ACTION).remove(RestAlarmScheduler.KEY_LAST_ACTION_TIMER_ID).remove(RestAlarmScheduler.KEY_LAST_ACTION_AT).remove(RestAlarmScheduler.KEY_LAST_ACTION_ENDS_AT).remove(RestAlarmScheduler.KEY_LAST_ACTION_GENERATION).apply();
         call.resolve(result);
     }
 

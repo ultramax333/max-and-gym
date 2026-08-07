@@ -16,12 +16,12 @@ if (/registerSW|service-worker|sw\.js/.test(html)) {
     throw new Error('Android build unexpectedly registers the PWA service worker.');
 }
 
-if (!gradle.includes(`versionName "${packageJson.version}"`)) {
-    throw new Error('Android versionName does not match package.json.');
+if (!gradle.includes("rootProject.file('../package.json')") || !gradle.includes('versionName appVersionName')) {
+    throw new Error('Android versionName must be derived from package.json.');
 }
 
-if (!/versionCode\s+[1-9]\d*/.test(gradle)) {
-    throw new Error('Android versionCode must be a positive integer.');
+if (!gradle.includes("System.getenv('ANDROID_VERSION_CODE')") || !gradle.includes('versionCode appVersionCode')) {
+    throw new Error('Android versionCode must be supplied by the controlled Gradle version projection.');
 }
 
 console.log(`Android bundle smoke passed: v${packageJson.version}, relative assets and no service worker registration.`);

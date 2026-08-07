@@ -3,7 +3,7 @@ import Dexie from 'dexie';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {DexieDB} from '../db/db';
 import {RestTimerRecord} from '../workout/types';
-import {reconcileRestTimerExpiry, RestTimerAlarmRepository, showRestNotification} from './restTimerNotifications';
+import {reconcileRestTimerExpiry, RestTimerAlarmRepository, shouldMonitorRestTimerExpiryInPage, showRestNotification} from './restTimerNotifications';
 
 describe('rest timer notifications', () => {
     let db: DexieDB;
@@ -56,6 +56,18 @@ describe('rest timer notifications', () => {
         await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'completed', signalDeliveredAt: deliveredAt.toISOString()});
     });
 
+    it('rejects a stale native delivery after the persisted deadline was extended', async () => {
+        const oldEndsAt = new Date(timer.endsAt).getTime();
+        await db.restTimer.update(timer.id, {endsAt: '2026-08-07T18:02:15.000Z'});
+        await expect(repository.acknowledgeNativeDelivery(timer.id, new Date('2026-08-07T18:01:15.500Z'), oldEndsAt)).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running', endsAt: '2026-08-07T18:02:15.000Z'});
+    });
+
+    it('rejects a native delivery timestamp before the current persisted deadline', async () => {
+        await expect(repository.acknowledgeNativeDelivery(timer.id, new Date('2026-08-07T18:01:14.999Z'))).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running'});
+    });
+
     it('reconciles a foreground native expiry without starting a second web alarm', async () => {
         const received = vi.fn();
         const vibrate = vi.fn();
@@ -72,6 +84,11 @@ describe('rest timer notifications', () => {
             if (originalVibrate) Object.defineProperty(navigator, 'vibrate', originalVibrate);
             else delete (navigator as unknown as {vibrate?: unknown}).vibrate;
         }
+    });
+
+    it('leaves expiry authority to Android instead of a page timeout in the native app', () => {
+        expect(shouldMonitorRestTimerExpiryInPage(true)).toBe(false);
+        expect(shouldMonitorRestTimerExpiryInPage(false)).toBe(true);
     });
 
     it('uses the local service worker when notification permission is granted', async () => {

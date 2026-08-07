@@ -22,7 +22,13 @@ public class MainActivity extends BridgeActivity {
 
     private void rememberAlarmAction(Intent intent) {
         if (intent == null || !RestAlarmScheduler.ACTION_OPEN.equals(intent.getAction())) return;
-        RestAlarmScheduler.markAction(this, "open", intent.getStringExtra(RestAlarmScheduler.EXTRA_TIMER_ID));
+        RestAlarmScheduler.markAction(
+            this,
+            "open",
+            intent.getStringExtra(RestAlarmScheduler.EXTRA_TIMER_ID),
+            intent.getLongExtra(RestAlarmScheduler.EXTRA_ENDS_AT, 0L),
+            intent.getStringExtra(RestAlarmScheduler.EXTRA_GENERATION)
+        );
         stopService(new Intent(this, RestAlarmService.class));
         NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (manager != null) manager.cancel(RestAlarmService.NOTIFICATION_ID);

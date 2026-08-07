@@ -13,13 +13,15 @@ export interface RestAlarmActionResult {
     action?: RestAlarmAction;
     timerId?: string;
     occurredAtEpochMs?: number;
+    endsAtEpochMs?: number;
+    generation?: string;
 }
 
 interface NativeRestAlarmPlugin {
     getCapabilities(): Promise<RestAlarmCapabilities>;
     requestNotificationPermission(): Promise<RestAlarmCapabilities>;
     requestExactAlarmPermission(): Promise<{opened: boolean; exactAlarmAllowed: boolean}>;
-    schedule(options: {timerId: string; sessionId: string; endsAtEpochMs: number}): Promise<{scheduled: boolean; exactAlarmAllowed: boolean}>;
+    schedule(options: {timerId: string; sessionId: string; endsAtEpochMs: number; generation: string}): Promise<{scheduled: boolean; exactAlarmAllowed: boolean}>;
     cancel(options: {timerId?: string}): Promise<void>;
     consumeLastAction(): Promise<RestAlarmActionResult>;
     addListener(eventName: 'restAlarmAction', listener: (event: RestAlarmActionResult) => void): Promise<PluginListenerHandle>;
@@ -57,7 +59,8 @@ export const restAlarmGateway: RestAlarmGateway = {
     },
     async schedule(timer) {
         if (!this.isNativeAndroid()) return {scheduled: false, exactAlarmAllowed: false};
-        return NativeRestAlarm.schedule({timerId: timer.id, sessionId: timer.sessionId, endsAtEpochMs: new Date(timer.endsAt).getTime()});
+        const endsAtEpochMs = new Date(timer.endsAt).getTime();
+        return NativeRestAlarm.schedule({timerId: timer.id, sessionId: timer.sessionId, endsAtEpochMs, generation: `${timer.id}:${endsAtEpochMs}`});
     },
     async cancel(timerId) {
         if (this.isNativeAndroid()) await NativeRestAlarm.cancel({timerId});
@@ -72,7 +75,7 @@ export const restAlarmGateway: RestAlarmGateway = {
 
 export async function syncNativeRestAlarm(timer: RestTimerRecord | undefined, gateway: RestAlarmGateway = restAlarmGateway, fallbackTimerId?: string): Promise<void> {
     if (!gateway.isNativeAndroid()) return;
-    if (timer?.status === 'running' && new Date(timer.endsAt).getTime() > Date.now()) {
+    if (timer?.status === 'running' && Number.isFinite(new Date(timer.endsAt).getTime())) {
         await gateway.schedule(timer);
         return;
     }
