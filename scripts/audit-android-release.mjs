@@ -67,6 +67,12 @@ if (!mainActivity.includes('registerPlugin(AndroidUpdatePlugin.class)') ||
     throw new Error('The Android update launcher is not registered or repository-scoped.');
 }
 
+if (!mainActivity.includes('getOnBackPressedDispatcher()') ||
+    !mainActivity.includes('webView.canGoBack()') ||
+    !mainActivity.includes('webView.goBack()')) {
+    throw new Error('Android back navigation must consume WebView history before exiting at the root.');
+}
+
 if (!viteConfig.includes("isAndroidBuild ? process.env.ANDROID_VERSION_CODE ?? '120000000'")) {
     throw new Error('The embedded Android build does not expose its installed versionCode for downgrade protection.');
 }

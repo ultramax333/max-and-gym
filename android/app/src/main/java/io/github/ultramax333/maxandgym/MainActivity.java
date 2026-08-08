@@ -3,6 +3,8 @@ package io.github.ultramax333.maxandgym;
 import android.content.Intent;
 import android.app.NotificationManager;
 import android.os.Bundle;
+import android.webkit.WebView;
+import androidx.activity.OnBackPressedCallback;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -11,7 +13,24 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(RestAlarmPlugin.class);
         registerPlugin(AndroidUpdatePlugin.class);
         super.onCreate(savedInstanceState);
+        configureBackNavigation();
         rememberAlarmAction(getIntent());
+    }
+
+    private void configureBackNavigation() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                WebView webView = getBridge() == null ? null : getBridge().getWebView();
+                if (webView != null && webView.canGoBack()) {
+                    webView.goBack();
+                    return;
+                }
+
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
     }
 
     @Override
