@@ -125,7 +125,7 @@ test('a stale completed-set pointer recovers to the next set after reload', asyn
     await expect(page.getByRole('button', {name: 'Complete set'})).toBeVisible();
 });
 
-test('rest timer expires while another app screen is open', async ({page}) => {
+test('active workout route and expired rest timer recover after a process-style root launch', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
     await page.getByRole('button', {name: 'Start'}).click();
@@ -154,7 +154,8 @@ test('rest timer expires while another app screen is open', async ({page}) => {
 
     await page.goto('./#/');
     await page.reload();
-    await expect(page.getByRole('heading', {name: 'Ready to train'})).toBeVisible();
+    await expect(page).toHaveURL(/#\/workout\/active/);
+    await expect(page.getByRole('heading', {name: 'Set 2'})).toBeVisible();
     await expect.poll(() => page.evaluate(async () => {
         const request = <T,>(value: IDBRequest<T>) => new Promise<T>((resolve, reject) => {
             value.onsuccess = () => resolve(value.result);
@@ -167,8 +168,6 @@ test('rest timer expires while another app screen is open', async ({page}) => {
         return timers.at(-1)?.status;
     })).toBe('completed');
 
-    await page.goto('./#/workout/active');
-    await expect(page.getByRole('heading', {name: 'Set 2'})).toBeVisible();
     await expect(page.getByText('REST', {exact: true})).toHaveCount(0);
     await assertNoHorizontalOverflow(page);
 });

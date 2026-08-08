@@ -37,6 +37,7 @@ import {UpdatePrompt} from './pwa/UpdatePrompt';
 import {maxGymTheme} from './theme/maxGymTheme';
 import {recordException} from './diagnostics/service';
 import {RestTimerNotifier} from './pwa/restTimerNotifications';
+import {NativeLifecycleCoordinator} from './native/NativeLifecycleCoordinator';
 
 const DBGuard = ({children}: { children: ReactElement }) => {
     const {db} = useContext(DBContext);
@@ -96,6 +97,7 @@ function App() {
                                                 <CalendarProvider>
                                                     <WorkoutContextProvider>
                                                         <Box sx={{minHeight: '100dvh', bgcolor: 'background.default'}}>
+                                                            <NativeLifecycleCoordinator/>
                                                             <RestTimerNotifier/>
                                                             <AppRoutes />
                                                             <UpdatePrompt/>

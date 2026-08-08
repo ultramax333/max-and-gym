@@ -1,0 +1,115 @@
+name: Android APK
+
+on:
+  push:
+    branches:
+      - master
+      - 'fix/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Keep this floor stable: GITHUB_RUN_NUMBER is monotonic for this workflow.
+  # Raising the floor is allowed; lowering it would break Android upgrades.
+  ANDROID_VERSION_CODE_FLOOR: '120000000'
+
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - run: npm ci
+      - name: Install Android 36 platform
+        run: '"$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - name: Project Android version
+        id: android-version
+        shell: bash
+        run: |
+          version_code=$((ANDROID_VERSION_CODE_FLOOR + GITHUB_RUN_NUMBER))
+          if (( version_code < 1 || version_code > 2100000000 )); then
+            echo "Projected Android versionCode is outside the supported range." >&2
+            exit 1
+          fi
+          version_name="$(node --input-type=module -e "import metadata from './package.json' with {type: 'json'}; process.stdout.write(metadata.version)")"
+          echo "ANDROID_VERSION_CODE=$version_code" >> "$GITHUB_ENV"
+          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
+          echo "Android build identity: $version_name ($version_code)" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm run audit:android
+      - run: npm run android:sync
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+      - name: Compile and test Android application
+        run: ./gradlew testDebugUnitTest assembleDebug --stacktrace
+        working-directory: android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: max-and-gym-v${{ steps.android-version.outputs.version_name }}-${{ steps.android-version.outputs.version_code }}-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Check release signing configuration
+        id: signing
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          configured=0
+          for value in "$ANDROID_KEYSTORE_BASE64" "$ANDROID_KEY_ALIAS" "$ANDROID_KEY_PASSWORD" "$ANDROID_STORE_PASSWORD"; do
+            if [[ -n "$value" ]]; then
+              configured=$((configured + 1))
+            fi
+          done
+          if [[ "$configured" == 0 ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Signed release skipped: repository signing secrets are not configured." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$configured" == 4 ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Android release signing secrets are only partially configured." >&2
+            exit 1
+          fi
+      - name: Materialize release keystore
+        if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          keystore_path="$RUNNER_TEMP/max-and-gym-release.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          chmod 600 "$keystore_path"
+          echo "ANDROID_KEYSTORE_PATH=$keystore_path" >> "$GITHUB_ENV"
+      - name: Build signed release APK
+        if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
+        working-directory: android
+        env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: ./gradlew assembleRelease --stacktrace
+      - name: Verify release APK signature
+        if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
+        run: '"$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/release/app-release.apk'
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
+        with:
+          name: max-and-gym-v${{ steps.android-version.outputs.version_name }}-${{ steps.android-version.outputs.version_code }}-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error

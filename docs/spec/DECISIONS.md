@@ -8,7 +8,7 @@ Codex must not reopen these decisions without a concrete blocker documented in a
 | Repository slug | `max-and-gym` |
 | Tagline | `Train with intent.` |
 | Interface language | English only |
-| Primary platform | Installable web application on Android Chrome |
+| Primary platform | Android APK through Capacitor; installable web application remains supported |
 | Hosting | GitHub Pages via GitHub Actions |
 | Technical foundation | RepQuest |
 | UI donor | Workout.cool, visual/reference role only |
@@ -52,4 +52,4 @@ Codex must not reopen these decisions without a concrete blocker documented in a
 | Social, nutrition, payments | Out of scope |
 | First internal release | Complete dependable workout vertical slice at Checkpoint 3 |
 | Diagnostic export | Separate from personal-data backup; redacted by default |
-| Timer guarantee | Accurate timestamp recovery on reopen; background alert is best-effort when Android suspends or kills the process |
+| Timer guarantee | Android APK uses a native exact-alarm projection; the web/PWA build retains accurate timestamp recovery and best-effort alerts |

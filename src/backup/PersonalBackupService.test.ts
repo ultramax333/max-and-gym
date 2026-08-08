@@ -4,7 +4,7 @@ import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {Blob as NodeBlob} from 'node:buffer';
 import {DexieDB} from '../db/db';
 import {CustomExerciseRecord} from '../exerciseCatalog/types';
-import {buildPersonalBackup, BackupError, importPersonalBackup, previewPersonalBackup} from './PersonalBackupService';
+import {buildPersonalBackup, BackupError, hasPortablePersonalData, importPersonalBackup, previewPersonalBackup} from './PersonalBackupService';
 
 describe('personal backup', () => {
     let db: DexieDB;
@@ -20,6 +20,12 @@ describe('personal backup', () => {
         await db.progressPhoto.add({id: 'photo-1', recordedAt: '2026-08-06', pose: 'front', imageBlobId: 'image-1', thumbnailBlobId: 'thumb-1', note: 'private', blurThumbnail: false, originalByteSize: 20, storedByteSize: 10, createdAt: '2026-08-06T00:00:00Z', updatedAt: '2026-08-06T00:00:00Z'});
         await db.customExercise.add({id: 'custom-1', name: 'Private custom', customImage: new NodeBlob(['custom'], {type: 'image/webp'}) as unknown as Blob, customImageMimeType: 'image/webp'} as unknown as CustomExerciseRecord);
     }
+
+    it('detects whether a first Android launch has portable personal data', async () => {
+        expect(await hasPortablePersonalData(db)).toBe(false);
+        await db.trainingProgram.add({id: 'personal-program'} as never);
+        expect(await hasPortablePersonalData(db)).toBe(true);
+    });
 
     it('survives export, clear and Replace restore with photo blobs', async () => {
         await seed();

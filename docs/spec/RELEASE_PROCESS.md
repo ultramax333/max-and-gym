@@ -107,3 +107,14 @@ Do not remove an import or migration reader until:
 - Max has a current complete backup;
 - replacement/recovery path is tested;
 - a release note announces removal.
+
+## 9. Android package identity and signing
+
+- `versionName` is read from the root `package.json`; it must remain identical to the displayed application version.
+- CI derives `versionCode` from the stable `ANDROID_VERSION_CODE_FLOOR` plus the Android workflow `GITHUB_RUN_NUMBER`. The floor must never be lowered and the workflow identity must not be replaced without first selecting a higher floor.
+- Pull requests and fix branches publish a debug APK for installation testing. Debug APKs are not production update artifacts.
+- A signed release APK is built only on `master`, and only when all four repository secrets exist: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, and `ANDROID_STORE_PASSWORD`.
+- The release keystore is decoded only into the ephemeral runner directory. Keystores and credentials must never enter Git or build artifacts.
+- CI verifies the release signature with Android `apksigner` before uploading the APK.
+- Preserve the signing key and credentials in an independently backed-up secret store. Losing or changing the key prevents in-place updates of an installed release.
+- A partially configured signing secret set fails the workflow; an entirely absent set safely skips the release APK while retaining the debug artifact.

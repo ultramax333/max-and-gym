@@ -44,6 +44,18 @@ export class BackupError extends Error {
     constructor(public readonly code: 'BACKUP_BUILD_FAILED' | 'BACKUP_CHECKSUM_MISMATCH' | 'IMPORT_UNSUPPORTED_VERSION' | 'IMPORT_SCHEMA_INVALID' | 'IMPORT_STORAGE_INSUFFICIENT' | 'IMPORT_TRANSACTION_ABORTED' | 'IMPORT_POSTCHECK_FAILED' | 'IMPORT_MERGE_CONFLICT', message: string) { super(message); this.name = 'BackupError'; }
 }
 
+export async function hasPortablePersonalData(db: DexieDB): Promise<boolean> {
+    const personalTableNames = new Set([
+        'workout', 'workoutExercise', 'exerciseSet', 'userMetric', 'plan',
+        'workoutSession', 'sessionExercise', 'performedSet', 'restTimer', 'workoutOperation',
+        'exercisePreference', 'customExercise', 'trainingProgram', 'programDay', 'programExercise',
+        'exercisePrescription', 'progressionRule', 'progressionProposal', 'bodyMeasurement',
+        'mediaBlob', 'progressPhoto',
+    ]);
+    const counts = await Promise.all(db.tables.filter((table) => personalTableNames.has(table.name)).map((table) => table.count()));
+    return counts.some((count) => count > 0);
+}
+
 export async function backupDryRun(db: DexieDB): Promise<{tableCount: number; recordCount: number; mediaCount: number; missingMediaReferences: number}> {
     const tableCounts = await Promise.all(db.tables.filter((entry) => !EXCLUDED_TABLES.has(entry.name)).map((table) => table.count()));
     const [photos, media] = await Promise.all([db.progressPhoto.toArray(), db.mediaBlob.toArray()]);
