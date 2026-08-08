@@ -3,6 +3,7 @@ export type ProgramFrequency = 2 | 3;
 export type ProgramDurationMinutes = 40 | 60;
 export type ExerciseRole = 'primary' | 'secondary' | 'accessory' | 'conditioning';
 export type ExerciseGroupType = 'single' | 'superset' | 'triset' | 'circuit';
+export type ExerciseSetScheme = 'straight' | 'top-backoff' | 'ramp' | 'drop' | 'timed' | 'circuit';
 
 export interface TrainingProgramRecord {
     id: string;
@@ -65,6 +66,9 @@ export interface ExercisePrescriptionRecord {
     restSeconds: number;
     tempo?: string;
     loadReferenceKg: number;
+    setScheme?: ExerciseSetScheme;
+    warmupSets?: number;
+    dropSets?: number;
 }
 
 export interface ProgressionRuleRecord {

@@ -11,6 +11,7 @@ import {ExerciseMediaAsset} from '../../exerciseCatalog/types';
 import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
 import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
+import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -44,7 +45,7 @@ function WorkoutRestBar({snapshot, onChange}: {snapshot: ActiveWorkoutSnapshot; 
                 <Button startIcon={<SkipNext/>} onClick={() => void service?.skipTimer(snapshot.session.id).then(onChange)}>Passer</Button>
             </Stack>
         </Stack>
-        <Typography variant="caption" color="text.secondary">Alarm and notification work across app screens and while the app remains open in the background. Android may delay them if it stops Chrome completely.</Typography>
+        <Typography variant="caption" color="text.secondary">{restAlarmGateway.isNativeAndroid() ? 'Android schedules this alarm outside the app, with a 10-second sound and vibration.' : 'The 10-second alarm works while this page can run. Android may suspend a browser tab or installed PWA.'}</Typography>
     </Paper>;
 }
 
@@ -62,6 +63,18 @@ export function ActiveWorkoutPage() {
     const [rir, setRir] = useState(2);
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
     const [notificationPermission, setNotificationPermission] = useState<RestNotificationPermission>(() => getRestNotificationPermission());
+    const [nativeCapabilities, setNativeCapabilities] = useState<RestAlarmCapabilities>();
+
+    const refreshNativeCapabilities = useCallback(async () => {
+        if (restAlarmGateway.isNativeAndroid()) setNativeCapabilities(await restAlarmGateway.getCapabilities());
+    }, []);
+
+    useEffect(() => {
+        void refreshNativeCapabilities();
+        const refreshOnVisible = () => { if (document.visibilityState === 'visible') void refreshNativeCapabilities(); };
+        document.addEventListener('visibilitychange', refreshOnVisible);
+        return () => document.removeEventListener('visibilitychange', refreshOnVisible);
+    }, [refreshNativeCapabilities]);
 
     const refresh = useCallback(async () => {
         if (!service) return;
@@ -157,7 +170,8 @@ export function ActiveWorkoutPage() {
         <ScreenContainer>
             <Stack spacing={2}>
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
-                {notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
+                {restAlarmGateway.isNativeAndroid() && nativeCapabilities && (nativeCapabilities.notificationPermission !== 'granted' || !nativeCapabilities.exactAlarmAllowed) && <Alert severity="warning" action={<Stack direction={{xs: 'column', sm: 'row'}} gap={1}>{nativeCapabilities.notificationPermission !== 'granted' && <Button startIcon={<NotificationsActive/>} onClick={() => void restAlarmGateway.requestNotificationPermission().then(setNativeCapabilities)}>Allow notifications</Button>}{!nativeCapabilities.exactAlarmAllowed && <Button onClick={() => void restAlarmGateway.requestExactAlarmPermission().then(() => refreshNativeCapabilities())}>Allow exact alarms</Button>}</Stack>}>Allow Android notifications and exact alarms so rest alerts fire reliably while the app is in the background.</Alert>}
+                {!restAlarmGateway.isNativeAndroid() && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography color="text.secondary">{completed.length}/{snapshot.sets.length} sets completed</Typography>
                     <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Resume' : 'Pause'}</Button>
@@ -171,7 +185,7 @@ export function ActiveWorkoutPage() {
                             const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
                             const isCurrent = exercise.id === currentExercise?.id && !allSetsDone;
                             return <Stack key={exercise.id} direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{py: 1}}>
-                                <Stack minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Stack>
+                                <Stack minWidth={0}><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography>{exercise.groupTypeSnapshot && exercise.groupTypeSnapshot !== 'single' && <Chip size="small" variant="outlined" label={exercise.groupTypeSnapshot}/>}</Stack><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Stack>
                                 <Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>
                             </Stack>;
                         })}
@@ -180,13 +194,13 @@ export function ActiveWorkoutPage() {
                 {!allSetsDone && currentExercise && currentSet && <>
                     <Card>{exerciseMedia.length ? <Box sx={{display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={media.kind} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: {xs: 180, sm: 260}, objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}<CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
                     <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography><Typography color="text.secondary">No history for this local workout.</Typography></Paper>
-                    <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between"><Typography component="h2" variant="h6">Set {currentSet.sequenceIndex + 1}</Typography><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
+                    <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}><Stack direction="row" alignItems="center" gap={1}><Typography component="h2" variant="h6">Set {currentSet.sequenceIndex + 1}</Typography><Chip size="small" color={currentSet.setKind === 'warmup' ? 'info' : currentSet.setKind === 'drop' ? 'secondary' : 'default'} label={currentSet.setKind ?? 'working'}/></Stack><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
                             <TextField fullWidth label="Actual load (kg)" type="number" value={load} onChange={(event) => setLoad(Number(event.target.value))} inputProps={{inputMode: 'decimal', min: 0, step: 0.5}}/>
                             <TextField fullWidth label="Actual repetitions" type="number" value={reps} onChange={(event) => setReps(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, step: 1}}/>
                             <TextField fullWidth label="RIR (optionnel)" type="number" value={rir} onChange={(event) => setRir(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, max: 10, step: 1}}/>
                         </Stack>
-                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => { void prepareRestTimerAudio(); void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir})); }}>Complete set</PrimaryButton>
+                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => { if (!restAlarmGateway.isNativeAndroid()) void prepareRestTimerAudio(); void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir})); }}>Complete set</PrimaryButton>
                     </Stack></Paper>
                 </>}
                 {allSetsDone && <StatePanel title="All sets are complete" description="Review the summary, then finish the workout. This action is safe to retry without creating duplicates." icon={<Flag/>}/>}

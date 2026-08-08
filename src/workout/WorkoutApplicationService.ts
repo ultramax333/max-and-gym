@@ -2,6 +2,7 @@ import {recordDiagnostic, writeOperationJournal} from '../diagnostics/service';
 import {ErrorCode} from '../diagnostics/types';
 import {DexieWorkoutRepository, WorkoutDomainError} from './DexieWorkoutRepository';
 import {ActiveWorkoutSnapshot, CompleteSetInput, StartWorkoutInput} from './types';
+import {RestAlarmGateway, restAlarmGateway, syncNativeRestAlarm} from '../native/restAlarmGateway';
 
 export const ACTIVE_WORKOUT_STORAGE_KEY = 'maxgym.activeWorkoutId';
 
@@ -14,7 +15,7 @@ export function createOperationId(): string {
 }
 
 export class WorkoutApplicationService {
-    constructor(private readonly repository: DexieWorkoutRepository) {}
+    constructor(private readonly repository: DexieWorkoutRepository, private readonly alarmGateway: RestAlarmGateway = restAlarmGateway) {}
 
     private code(error: unknown, fallback: ErrorCode): ErrorCode {
         return error instanceof WorkoutDomainError ? error.code : fallback;
@@ -32,6 +33,14 @@ export class WorkoutApplicationService {
             await writeOperationJournal({operationId, kind, status: 'failed', startedAt, finishedAt: new Date().toISOString(), errorCode: code});
             recordDiagnostic({level: 'error', subsystem: 'WORKOUT', code, safeMessage: `Workout operation failed: ${kind}.`, operationId, context: {errorClass: error instanceof Error ? error.name : 'UnknownError'}});
             throw error;
+        }
+    }
+
+    private async syncAlarm(snapshot: ActiveWorkoutSnapshot | undefined, fallbackTimerId?: string): Promise<void> {
+        try {
+            await syncNativeRestAlarm(snapshot?.timer, this.alarmGateway, fallbackTimerId);
+        } catch (error) {
+            recordDiagnostic({level: 'warning', subsystem: 'TIMER', code: 'TIMER_SIGNAL_UNAVAILABLE', safeMessage: 'The native rest alarm could not be synchronized.', context: {errorClass: error instanceof Error ? error.name : 'UnknownError'}});
         }
     }
 
@@ -54,6 +63,7 @@ export class WorkoutApplicationService {
             }
             if (active) localStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, active.session.id);
             else localStorage.removeItem(ACTIVE_WORKOUT_STORAGE_KEY);
+            await this.syncAlarm(active);
             return active;
         } catch (error) {
             recordDiagnostic({level: 'error', subsystem: 'WORKOUT', code: this.code(error, 'WORKOUT_RECOVERY_BLOCKED'), safeMessage: 'Active workout recovery requires attention.'});
@@ -75,26 +85,37 @@ export class WorkoutApplicationService {
 
     async completeSet(input: Omit<CompleteSetInput, 'operationId'>, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
         const result = await this.runCritical('workout-complete-set', operationId, 'WORKOUT_SET_SAVE_FAILED', () => this.repository.completeSet({...input, operationId}));
-        return this.repository.repairPosition(result.session.id);
+        const repaired = await this.repository.repairPosition(result.session.id);
+        await this.syncAlarm(repaired);
+        return repaired;
     }
 
-    undoSet(sessionId: string, setId: string, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
-        return this.runCritical('workout-undo-set', operationId, 'WORKOUT_UNDO_FAILED', () => this.repository.undoSet(sessionId, setId, operationId));
+    async undoSet(sessionId: string, setId: string, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        const priorTimerId = (await this.repository.get(sessionId))?.timer?.id;
+        const result = await this.runCritical('workout-undo-set', operationId, 'WORKOUT_UNDO_FAILED', () => this.repository.undoSet(sessionId, setId, operationId));
+        await this.syncAlarm(result, priorTimerId);
+        return result;
     }
 
-    pause(sessionId: string): Promise<ActiveWorkoutSnapshot> {
+    async pause(sessionId: string): Promise<ActiveWorkoutSnapshot> {
         const operationId = createOperationId();
-        return this.runCritical('workout-pause', operationId, 'WORKOUT_PAUSE_FAILED', () => this.repository.pause(sessionId));
+        const result = await this.runCritical('workout-pause', operationId, 'WORKOUT_PAUSE_FAILED', () => this.repository.pause(sessionId));
+        await this.syncAlarm(result);
+        return result;
     }
 
-    resume(sessionId: string): Promise<ActiveWorkoutSnapshot> {
+    async resume(sessionId: string): Promise<ActiveWorkoutSnapshot> {
         const operationId = createOperationId();
-        return this.runCritical('workout-resume', operationId, 'WORKOUT_RESUME_FAILED', () => this.repository.resume(sessionId));
+        const result = await this.runCritical('workout-resume', operationId, 'WORKOUT_RESUME_FAILED', () => this.repository.resume(sessionId));
+        await this.syncAlarm(result);
+        return result;
     }
 
-    private async runTimer(action: () => Promise<ActiveWorkoutSnapshot>): Promise<ActiveWorkoutSnapshot> {
+    private async runTimer(action: () => Promise<ActiveWorkoutSnapshot>, fallbackTimerId?: string): Promise<ActiveWorkoutSnapshot> {
         try {
-            return await action();
+            const result = await action();
+            await this.syncAlarm(result, fallbackTimerId);
+            return result;
         } catch (error) {
             recordDiagnostic({level: 'error', subsystem: 'TIMER', code: 'TIMER_STATE_INVALID', safeMessage: 'A rest timer state change failed.', context: {errorClass: error instanceof Error ? error.name : 'UnknownError'}});
             throw error;
@@ -113,19 +134,24 @@ export class WorkoutApplicationService {
         return this.runTimer(() => this.repository.resumeTimer(sessionId));
     }
 
-    skipTimer(sessionId: string): Promise<ActiveWorkoutSnapshot> {
-        return this.runTimer(() => this.repository.skipTimer(sessionId));
+    async skipTimer(sessionId: string): Promise<ActiveWorkoutSnapshot> {
+        const timerId = (await this.repository.get(sessionId))?.timer?.id;
+        return this.runTimer(() => this.repository.skipTimer(sessionId), timerId);
     }
 
     async finish(sessionId: string, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        const timerId = (await this.repository.get(sessionId))?.timer?.id;
         const result = await this.runCritical('workout-finish', operationId, 'WORKOUT_FINISH_FAILED', () => this.repository.finish(sessionId, operationId));
         localStorage.removeItem(ACTIVE_WORKOUT_STORAGE_KEY);
+        await this.syncAlarm(result, timerId);
         return result;
     }
 
     async abandon(sessionId: string, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        const timerId = (await this.repository.get(sessionId))?.timer?.id;
         const result = await this.runCritical('workout-abandon', operationId, 'WORKOUT_ABANDON_FAILED', () => this.repository.abandon(sessionId, operationId));
         localStorage.removeItem(ACTIVE_WORKOUT_STORAGE_KEY);
+        await this.syncAlarm(result, timerId);
         return result;
     }
 

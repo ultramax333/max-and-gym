@@ -129,4 +129,45 @@ describe('DexieWorkoutRepository', () => {
         expect(abandoned.timer).toBeUndefined();
         expect(await repository.findActive()).toBeUndefined();
     });
+
+    it('runs a superset round by round with warm-up and drop-set snapshots', async () => {
+        const started = await repository.startProgramDay({name: 'Arms', exercises: [
+            {exerciseId: 'curl', exerciseName: 'Curl', prescriptionSnapshot: 'advanced', workingSets: 2, repsMin: 8, repsMax: 12, targetLoadKg: 20, targetRir: 2, restSeconds: 75, groupId: 'arms', groupType: 'superset', groupSequenceIndex: 0, setScheme: 'drop', warmupSets: 1, dropSets: 1},
+            {exerciseId: 'extension', exerciseName: 'Extension', prescriptionSnapshot: 'advanced', workingSets: 2, repsMin: 8, repsMax: 12, targetLoadKg: 16, targetRir: 2, restSeconds: 75, groupId: 'arms', groupType: 'superset', groupSequenceIndex: 1, setScheme: 'straight', warmupSets: 1},
+        ]}, 'start-group');
+
+        expect(started.sets.map((entry) => [entry.sessionExerciseId, entry.setKind])).toEqual([
+            [started.exercises[0].id, 'warmup'], [started.exercises[1].id, 'warmup'],
+            [started.exercises[0].id, 'working'], [started.exercises[1].id, 'working'],
+            [started.exercises[0].id, 'working'], [started.exercises[1].id, 'working'],
+            [started.exercises[0].id, 'drop'],
+        ]);
+        const afterCurl = await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'curl-warmup', actualLoadKg: 12, actualReps: 10});
+        expect(afterCurl.session.currentSetId).toBe(started.sets[1].id);
+        expect(afterCurl.timer).toBeUndefined();
+        const afterExtension = await repository.completeSet({sessionId: started.session.id, setId: started.sets[1].id, operationId: 'extension-warmup', actualLoadKg: 10, actualReps: 10});
+        expect(afterExtension.session.currentSetId).toBe(started.sets[2].id);
+        expect(afterExtension.timer?.endsAt).toBe('2026-08-06T18:01:15.000Z');
+    });
+
+    it('applies ramp and top/back-off load targets', async () => {
+        const started = await repository.startProgramDay({name: 'Load schemes', exercises: [
+            {exerciseId: 'ramp', exerciseName: 'Ramp', prescriptionSnapshot: 'ramp', workingSets: 4, repsMin: 5, repsMax: 8, targetLoadKg: 100, targetRir: 2, restSeconds: 90, setScheme: 'ramp'},
+            {exerciseId: 'backoff', exerciseName: 'Top and back-off', prescriptionSnapshot: 'top-backoff', workingSets: 3, repsMin: 5, repsMax: 8, targetLoadKg: 100, targetRir: 2, restSeconds: 90, setScheme: 'top-backoff'},
+        ]}, 'start-load-schemes');
+
+        const rampSets = started.sets.filter((entry) => entry.sessionExerciseId === started.exercises[0].id);
+        const backoffSets = started.sets.filter((entry) => entry.sessionExerciseId === started.exercises[1].id);
+        expect(rampSets.map((entry) => entry.targetLoadKg)).toEqual([70, 80, 90, 100]);
+        expect(backoffSets.map((entry) => entry.targetLoadKg)).toEqual([100, 90, 90]);
+    });
+
+    it('rejects malformed workout snapshots without creating a partial session', async () => {
+        await expect(repository.startProgramDay({name: 'Invalid', exercises: [
+            {exerciseId: 'curl', exerciseName: 'Curl', prescriptionSnapshot: 'invalid', workingSets: 0, repsMin: 8, repsMax: 12, targetLoadKg: 20, targetRir: 2, restSeconds: 60},
+        ]}, 'invalid-start')).rejects.toBeInstanceOf(WorkoutDomainError);
+
+        expect(await db.workoutSession.count()).toBe(0);
+        expect(await db.workoutOperation.count()).toBe(0);
+    });
 });

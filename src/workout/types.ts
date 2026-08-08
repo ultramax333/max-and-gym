@@ -1,6 +1,7 @@
 export type WorkoutSessionStatus = 'active' | 'paused' | 'completed' | 'abandoned';
 export type PerformedSetStatus = 'planned' | 'completed' | 'undone';
 export type RestTimerStatus = 'running' | 'paused' | 'completed' | 'cancelled';
+export type WorkoutSetKind = 'warmup' | 'working' | 'drop';
 
 export interface WorkoutSessionRecord {
     id: string;
@@ -38,6 +39,12 @@ export interface StartWorkoutInput {
         restSeconds: number;
         locked?: boolean;
         alternativeExerciseIds?: string[];
+        groupId?: string;
+        groupType?: 'single' | 'superset' | 'triset' | 'circuit';
+        groupSequenceIndex?: number;
+        setScheme?: 'straight' | 'top-backoff' | 'ramp' | 'drop' | 'timed' | 'circuit';
+        warmupSets?: number;
+        dropSets?: number;
     }>;
 }
 
@@ -50,6 +57,10 @@ export interface SessionExerciseRecord {
     programExerciseId?: string;
     lockedSnapshot: boolean;
     alternativeExerciseIdsSnapshot: string[];
+    groupIdSnapshot?: string;
+    groupTypeSnapshot?: 'single' | 'superset' | 'triset' | 'circuit';
+    groupSequenceIndexSnapshot?: number;
+    setSchemeSnapshot?: 'straight' | 'top-backoff' | 'ramp' | 'drop' | 'timed' | 'circuit';
     sequenceIndex: number;
     status: 'pending' | 'active' | 'completed' | 'skipped';
     createdAt: string;
@@ -61,6 +72,7 @@ export interface PerformedSetRecord {
     sessionId: string;
     sessionExerciseId: string;
     sequenceIndex: number;
+    setKind?: WorkoutSetKind;
     status: PerformedSetStatus;
     targetRepsMin: number;
     targetRepsMax: number;

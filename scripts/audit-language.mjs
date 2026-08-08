@@ -11,8 +11,9 @@ const findings = [];
 for (const file of files) {
     const relative = path.relative(root, file).replaceAll('\\', '/');
     const source = await readFile(file, 'utf8');
-    for (const match of source.matchAll(frenchCopy)) {
-        const line = source.slice(0, match.index).split('\n').length;
+    const scanSource = source.replace(/https?:\/\/[^\s'"`]+/g, (url) => ' '.repeat(url.length));
+    for (const match of scanSource.matchAll(frenchCopy)) {
+        const line = scanSource.slice(0, match.index).split('\n').length;
         findings.push({file: relative, line, text: match[0]});
     }
 }

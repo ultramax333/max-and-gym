@@ -15,6 +15,7 @@ describe('progress calculations', () => {
         expect(estimatedOneRepMax(100, 5)).toBe(116.7);
         expect(result.records).toEqual({maxLoadKg: 100, maxReps: 10, maxVolumeSetKg: 950, estimatedOneRepMaxKg: 126.7});
         expect(result.estimatedMaxTrend).toHaveLength(2);
+        expect(result.volumeTrend).toEqual([{recordedAt: '2026-08-01', volumeKg: 500}, {recordedAt: '2026-08-08', volumeKg: 950}]);
         expect(result.textSummary).toContain('estimated maximum');
     });
 
@@ -25,5 +26,6 @@ describe('progress calculations', () => {
         expect(result).toMatchObject({completedSessions: 2, totalSets: 2, totalVolumeKg: 1100, totalDurationSeconds: 4200, movementDistribution: {squat: 2}, muscleDistribution: {quadriceps: 2}});
         expect(result.weeklyFrequency).toHaveLength(2);
         expect(result.monthlyFrequency).toEqual([{period: '2026-08', sessions: 2}]);
+        expect(result.sessionTrend.map((entry) => entry.volumeKg)).toEqual([500, 600]);
     });
 });

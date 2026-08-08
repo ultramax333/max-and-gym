@@ -12,8 +12,13 @@ for (const file of files) {
     result.origins.forEach((origin) => origins.add(origin));
     forbidden.push(...result.forbidden);
 }
-const report = {generatedAt: new Date().toISOString(), allowedRuntimeOrigins: ['self'], discoveredLiteralOrigins: [...origins].sort(), forbiddenRuntimeReferences: forbidden};
-const markdown = `# Network and privacy audit\n\nRuntime allowlist: same origin only.\n\nForbidden runtime references: **${forbidden.length}**.\n`;
+const allowedRuntimeOrigins = [
+    'self',
+    'https://api.github.com (manual Android release check only)',
+    'https://github.com (user-confirmed Android release download only)',
+];
+const markdown = `# Network and privacy audit\n\nRuntime allowlist:\n\n- same origin for application assets;\n- \`https://api.github.com/repos/ultramax333/max-and-gym/releases/latest\` only after a manual Android update check;\n- \`https://github.com/ultramax333/max-and-gym/releases/download/…\` only after explicit user confirmation.\n\nThe update check sends no token, cookie, personal data or workout data.\n\nForbidden runtime references: **${forbidden.length}**.\n`;
+const report = {generatedAt: new Date().toISOString(), allowedRuntimeOrigins, discoveredLiteralOrigins: [...origins].sort(), forbiddenRuntimeReferences: forbidden};
 await writeAudit('network-origins', report, markdown);
 await writeFile(path.join(root, 'artifacts', 'audit', 'network-audit.md'), markdown);
 await unlink(path.join(root, 'artifacts', 'audit', 'network-origins.md'));

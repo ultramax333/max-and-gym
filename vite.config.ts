@@ -22,6 +22,8 @@ import {VitePWA} from "vite-plugin-pwa";
 
 const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {version: string};
 const appVersion = process.env.npm_package_version ?? packageJson.version;
+const isAndroidBuild = process.env.MAX_GYM_TARGET === 'android';
+const githubPagesBase = '/max-and-gym/';
 const cacheVersion = '3';
 const gitSha = process.env.GITHUB_SHA ?? (() => {
     try {
@@ -33,18 +35,19 @@ const gitSha = process.env.GITHUB_SHA ?? (() => {
 const buildTimestamp = process.env.BUILD_TIMESTAMP ?? new Date().toISOString();
 
 export default defineConfig({
-    base: '/max-and-gym/',
+    base: isAndroidBuild ? './' : githubPagesBase,
     define: {
         __APP_VERSION__: JSON.stringify(appVersion),
-        __BUILD_NUMBER__: JSON.stringify(process.env.GITHUB_RUN_NUMBER ?? 'local'),
+        __BUILD_NUMBER__: JSON.stringify(isAndroidBuild ? process.env.ANDROID_VERSION_CODE ?? '120000000' : process.env.GITHUB_RUN_NUMBER ?? 'local'),
         __GIT_SHA__: JSON.stringify(gitSha),
         __BUILD_TIMESTAMP__: JSON.stringify(buildTimestamp),
-        __BUILD_ENVIRONMENT__: JSON.stringify(process.env.GITHUB_ACTIONS ? 'github-pages' : 'local'),
+        __BUILD_ENVIRONMENT__: JSON.stringify(isAndroidBuild ? 'android' : process.env.GITHUB_ACTIONS ? 'github-pages' : 'local'),
     },
     build: {
-        outDir: "build"
+        outDir: isAndroidBuild ? 'build-android' : 'build'
     },
     plugins: [react(), VitePWA({
+        disable: isAndroidBuild,
         registerType: 'autoUpdate',
         injectRegister: false,
         workbox: {

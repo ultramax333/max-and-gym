@@ -27,7 +27,6 @@ import {OneRm} from "../../utils/oneRm";
 import {useNavigate} from "react-router-dom";
 import {Straighten} from "@mui/icons-material";
 
-declare let window: any;
 export const WorkoutSettingsPage = () => {
     const {t} = useTranslation();
 

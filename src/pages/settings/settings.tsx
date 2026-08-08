@@ -22,7 +22,7 @@ import TranslateIcon from '@mui/icons-material/Translate';
 import pjson from "../../../package.json";
 import i18n from "i18next";
 import Selector from "../../components/selector";
-import {Build, Cake, Campaign, FormatPaint, MonitorHeart} from "@mui/icons-material";
+import {Build, Cake, Campaign, FormatPaint, Info, MonitorHeart, NotificationsActive} from "@mui/icons-material";
 import {useNavigate} from "react-router-dom";
 import BackupIcon from "@mui/icons-material/Backup";
 import {DBContext} from "../../context/dbContext";
@@ -83,6 +83,14 @@ export const SettingsPage = () => {
                 </ListItemAvatar>
                 <ListItemText primary={t("workoutSettings")} secondary={t("workoutSettingsDescription")} />
             </ListItemButton>
+            <ListItemButton component="a" onClick={() => navigate("/settings/rest-alarm")}>
+                <ListItemAvatar>
+                    <Avatar sx={{bgcolor: (theme) => theme.palette.primary.main}}>
+                        <NotificationsActive sx={{color: (theme) => theme.palette.primary.contrastText}}/>
+                    </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary="Rest alarm" secondary="Duration, tone, vibration and notification actions" />
+            </ListItemButton>
             <ListItemButton component="a" onClick={() => navigate("/settings/backup")}>
                 <ListItemAvatar>
                     <Avatar sx={{bgcolor: (theme) => theme.palette.secondary.main}}>
@@ -106,6 +114,12 @@ export const SettingsPage = () => {
                     </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary="Diagnostics" secondary="Check storage, migrations and local status." />
+            </ListItemButton>
+            <ListItemButton component="a" onClick={() => navigate("/settings/about")}>
+                <ListItemAvatar>
+                    <Avatar><Info/></Avatar>
+                </ListItemAvatar>
+                <ListItemText primary="About and updates" secondary={`Version ${pjson.version} · manual Android update check`} />
             </ListItemButton>
             <ListItemButton component="a" href="https://docs.google.com/forms/d/e/1FAIpQLSdrG44hZZ8MoGzFx2DjIVKSnFylDDbCHtaQL3vhEGM4yuOb8g/viewform?usp=sf_link" target="_blank">
                 <ListItemAvatar>

@@ -3,7 +3,7 @@ import {AddProgramExerciseInput, CreateProgramInput, ExerciseGroupType, Exercise
 import type {GeneratedProgram} from '../generator/types';
 
 export class ProgramDomainError extends Error {
-    constructor(public readonly code: 'PROGRAM_NOT_FOUND' | 'PROGRAM_INVALID_FREQUENCY' | 'PROGRAM_INVALID_GROUP' | 'PROGRAM_EMPTY_DAY', message: string) {
+    constructor(public readonly code: 'PROGRAM_NOT_FOUND' | 'PROGRAM_INVALID_FREQUENCY' | 'PROGRAM_INVALID_GROUP' | 'PROGRAM_EMPTY_DAY' | 'PROGRAM_INVALID_PRESCRIPTION', message: string) {
         super(message);
         this.name = 'ProgramDomainError';
     }
@@ -119,6 +119,23 @@ export class ProgramRepository {
     }
 
     async updatePrescription(id: string, change: Partial<Omit<ExercisePrescriptionRecord, 'id'>>): Promise<void> {
+        const current = await this.db.exercisePrescription.get(id);
+        if (!current) throw new ProgramDomainError('PROGRAM_NOT_FOUND', 'Prescription not found.');
+        const next = {...current, ...change};
+        const validInteger = (value: number, minimum: number) => Number.isFinite(value) && Number.isInteger(value) && value >= minimum;
+        if (!validInteger(next.workingSets, 1)
+            || !validInteger(next.warmupSets ?? 0, 0)
+            || !validInteger(next.dropSets ?? 0, 0)
+            || !validInteger(next.repsMin, 1)
+            || !validInteger(next.repsMax, next.repsMin)
+            || !validInteger(next.restSeconds, 0)
+            || !Number.isFinite(next.targetRir)
+            || next.targetRir < 0
+            || next.targetRir > 10
+            || !Number.isFinite(next.loadReferenceKg)
+            || next.loadReferenceKg < 0) {
+            throw new ProgramDomainError('PROGRAM_INVALID_PRESCRIPTION', 'Sets, repetitions, rest, RIR and load must form a valid prescription.');
+        }
         if (!(await this.db.exercisePrescription.update(id, change))) throw new ProgramDomainError('PROGRAM_NOT_FOUND', 'Prescription not found.');
     }
 
@@ -180,6 +197,7 @@ export class ProgramRepository {
         const copy = await this.create({name: `${source.name} — copie`, weeklyFrequency: source.weeklyFrequency, defaultDurationMinutes: source.defaultDurationMinutes});
         for (const [dayIndex, day] of source.days.entries()) {
             const targetDay = copy.days[dayIndex];
+            const copiedBySourceId = new Map<string, string>();
             await this.db.programDay.update(targetDay.id, {name: day.name, emphasis: day.emphasis, notes: day.notes, warmupSeconds: day.warmupSeconds, conditioningSeconds: day.conditioningSeconds});
             for (const exercise of day.exercises) {
                 const created = await this.addExercise({dayId: targetDay.id, exerciseId: exercise.exerciseId, exerciseName: exercise.exerciseNameSnapshot, movementPattern: exercise.movementPatternSnapshot, primaryMuscles: exercise.primaryMusclesSnapshot, defaultRestSeconds: exercise.prescription.restSeconds, defaultReps: {min: exercise.prescription.repsMin, max: exercise.prescription.repsMax}});
@@ -187,6 +205,12 @@ export class ProgramRepository {
                 void ignoredPrescriptionId;
                 await this.updatePrescription(created.prescriptionId, prescriptionChange);
                 await this.updateExercise(created.id, {role: exercise.role, locked: exercise.locked, stableUntil: exercise.stableUntil, alternativeExerciseIds: [...exercise.alternativeExerciseIds], notes: exercise.notes});
+                copiedBySourceId.set(exercise.id, created.id);
+            }
+            const groups = new Map(day.exercises.filter((entry) => entry.groupId).map((entry) => [entry.groupId!, entry.groupType]));
+            for (const [groupId, groupType] of groups) {
+                const copiedIds = day.exercises.filter((entry) => entry.groupId === groupId).map((entry) => copiedBySourceId.get(entry.id)).filter((id): id is string => Boolean(id));
+                await this.groupExercises(targetDay.id, copiedIds, groupType);
             }
         }
         return (await this.get(copy.id))!;

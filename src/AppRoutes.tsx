@@ -15,6 +15,8 @@ const Backup = React.lazy(() => import('./pages/settings/backup').then((module) 
 const SettingsPage = React.lazy(() => import('./pages/settings/settings').then((module) => ({default: module.SettingsPage})));
 const WorkoutSettingsPage = React.lazy(() => import('./pages/settings/workoutSettings').then((module) => ({default: module.WorkoutSettingsPage})));
 const SystemSettingsPage = React.lazy(() => import('./pages/settings/system').then((module) => ({default: module.SystemSettingsPage})));
+const RestAlarmSettingsPage = React.lazy(() => import('./pages/settings/RestAlarmSettingsPage').then((module) => ({default: module.RestAlarmSettingsPage})));
+const AboutPage = React.lazy(() => import('./pages/settings/AboutPage').then((module) => ({default: module.AboutPage})));
 const WorkoutPage = React.lazy(() => import('./pages/workout/workout').then((module) => ({default: module.WorkoutPage})));
 const PostWorkout = React.lazy(() => import('./pages/workout/postWorkout'));
 const WorkoutEditor = React.lazy(() => import('./pages/workout-editor/workout_editor').then((module) => ({default: module.WorkoutEditor})));
@@ -84,6 +86,8 @@ const AppRoutes = () => {
                element={<WorkoutSettingsPage/>}/>
         <Route path="/settings/system"
                element={<SystemSettingsPage/>}/>
+        <Route path="/settings/rest-alarm" element={<RestAlarmSettingsPage/>}/>
+        <Route path="/settings/about" element={<AboutPage/>}/>
         <Route path="/workout" element={<WorkoutPage/>}/>
         <Route path="/workout/active" element={<ActiveWorkoutPage/>}/>
         <Route path="/workout/summary/:sessionId" element={<WorkoutSummaryPage/>}/>

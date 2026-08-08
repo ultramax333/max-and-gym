@@ -1,10 +1,11 @@
 import 'fake-indexeddb/auto';
 import Dexie from 'dexie';
-import {afterEach, beforeEach, describe, expect, it} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {diagnosticsDb} from '../diagnostics/database';
 import {DexieDB} from '../db/db';
 import {DexieWorkoutRepository} from './DexieWorkoutRepository';
 import {ACTIVE_WORKOUT_STORAGE_KEY, createOperationId, hasActiveWorkoutMarker, WorkoutApplicationService} from './WorkoutApplicationService';
+import {RestAlarmGateway} from '../native/restAlarmGateway';
 
 describe('WorkoutApplicationService recovery', () => {
     let db: DexieDB;
@@ -72,5 +73,37 @@ describe('WorkoutApplicationService recovery', () => {
         snapshot = await service.finish(snapshot.session.id, 'offline-finish');
         expect(snapshot.session.status).toBe('completed');
         expect(snapshot.sets.every((entry) => entry.status === 'completed')).toBe(true);
+    });
+
+    it('projects committed timer transitions to Android without owning domain truth', async () => {
+        const alarm: RestAlarmGateway = {
+            isNativeAndroid: () => true,
+            getCapabilities: vi.fn(),
+            requestNotificationPermission: vi.fn(),
+            requestExactAlarmPermission: vi.fn(),
+            getPreferences: vi.fn(),
+            setPreferences: vi.fn(),
+            schedule: vi.fn().mockResolvedValue({scheduled: true, exactAlarmAllowed: true}),
+            cancel: vi.fn().mockResolvedValue(undefined),
+            consumeLastAction: vi.fn().mockResolvedValue({}),
+            addActionListener: vi.fn().mockResolvedValue(undefined),
+        };
+        const nativeService = new WorkoutApplicationService(new DexieWorkoutRepository(db), alarm);
+        let snapshot = await nativeService.start('native-start');
+        snapshot = await nativeService.completeSet({sessionId: snapshot.session.id, setId: snapshot.sets[0].id, actualLoadKg: 16, actualReps: 8}, 'native-complete');
+        expect(alarm.schedule).toHaveBeenCalledWith(expect.objectContaining({id: snapshot.timer?.id, sessionId: snapshot.session.id}));
+
+        snapshot = await nativeService.pause(snapshot.session.id);
+        expect(snapshot.timer?.status).toBe('paused');
+        expect(alarm.cancel).toHaveBeenCalledWith(snapshot.timer?.id);
+
+        snapshot = await nativeService.resume(snapshot.session.id);
+        expect(snapshot.timer?.status).toBe('running');
+        expect(alarm.schedule).toHaveBeenCalledTimes(2);
+
+        const timerId = snapshot.timer?.id;
+        snapshot = await nativeService.skipTimer(snapshot.session.id);
+        expect(snapshot.timer).toBeUndefined();
+        expect(alarm.cancel).toHaveBeenCalledWith(timerId);
     });
 });

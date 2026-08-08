@@ -20,7 +20,7 @@ const checks = [
     {check: 'project identity', status: pkg.name === 'max-and-gym' ? 'pass' : 'fail', detail: `${pkg.name}@${pkg.version}`},
     {check: 'single lockfile', status: 'pass', detail: 'package-lock.json'},
     {check: 'forbidden packages', status: forbiddenPresent.length ? 'fail' : 'pass', detail: forbiddenPresent.join(', ') || 'none'},
-    {check: 'GitHub Pages base', status: vite.includes("base: '/max-and-gym/'") ? 'pass' : 'fail', detail: '/max-and-gym/'},
+    {check: 'GitHub Pages base', status: vite.includes("const githubPagesBase = '/max-and-gym/'") && vite.includes("base: isAndroidBuild ? './' : githubPagesBase") ? 'pass' : 'fail', detail: '/max-and-gym/ (web) and ./ (Android)'},
     {check: 'automatic PWA update', status: vite.includes("registerType: 'autoUpdate'") && vite.includes('skipWaiting: true') && vite.includes('clientsClaim: true') ? 'pass' : 'fail', detail: 'auto-update with immediate activation'},
     {check: 'error code uniqueness', status: new Set(codeValues).size === codeValues.length ? 'pass' : 'fail', detail: `${codeValues.length} registered`},
     {check: 'legacy direct database access', status: 'warning', detail: `${dexieUiAccesses} files; replacement staged in later domain tasks`},

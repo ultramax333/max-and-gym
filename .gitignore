@@ -11,7 +11,15 @@
 
 # production
 /build
+/build-android
 /dist
+
+# Android local machine and signing material
+/android/.gradle
+/android/local.properties
+/android/**/build
+*.jks
+*.keystore
 
 # misc
 .DS_Store

@@ -3,7 +3,7 @@ import Dexie from 'dexie';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {DexieDB} from '../db/db';
 import {RestTimerRecord} from '../workout/types';
-import {RestTimerAlarmRepository, showRestNotification} from './restTimerNotifications';
+import {reconcileRestTimerExpiry, RestTimerAlarmRepository, shouldMonitorRestTimerExpiryInPage, showRestNotification} from './restTimerNotifications';
 
 describe('rest timer notifications', () => {
     let db: DexieDB;
@@ -46,6 +46,70 @@ describe('rest timer notifications', () => {
         const stored = await db.restTimer.get(timer.id);
         expect(stored).toMatchObject({status: 'running'});
         expect(stored).not.toHaveProperty('signalDeliveredAt');
+    });
+
+    it('acknowledges a native delivery exactly once before recovery can cancel it', async () => {
+        const deliveredAt = new Date('2026-08-07T18:01:15.500Z');
+        const acknowledged = await repository.acknowledgeNativeDelivery(timer.id, deliveredAt);
+        expect(acknowledged).toMatchObject({id: timer.id, status: 'completed', signalDeliveredAt: deliveredAt.toISOString()});
+        await expect(repository.acknowledgeNativeDelivery(timer.id, new Date('2026-08-07T18:01:16.000Z'))).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'completed', signalDeliveredAt: deliveredAt.toISOString()});
+    });
+
+    it('rejects a stale native delivery after the persisted deadline was extended', async () => {
+        const oldEndsAt = new Date(timer.endsAt).getTime();
+        await db.restTimer.update(timer.id, {endsAt: '2026-08-07T18:02:15.000Z'});
+        await expect(repository.acknowledgeNativeDelivery(timer.id, new Date('2026-08-07T18:01:15.500Z'), oldEndsAt)).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running', endsAt: '2026-08-07T18:02:15.000Z'});
+    });
+
+    it('rejects a native delivery timestamp before the current persisted deadline', async () => {
+        await expect(repository.acknowledgeNativeDelivery(timer.id, new Date('2026-08-07T18:01:14.999Z'))).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running'});
+    });
+
+    it('re-arms the same timer from an identity-matched native +30 second action', async () => {
+        const previousEndsAt = new Date(timer.endsAt).getTime();
+        const deliveredAt = new Date('2026-08-07T18:01:15.500Z');
+        await repository.acknowledgeNativeDelivery(timer.id, deliveredAt, previousEndsAt);
+        const snoozedEndsAt = deliveredAt.getTime() + 30_000;
+        const snoozed = await repository.snoozeNativeDelivery(timer.id, previousEndsAt, snoozedEndsAt, `${timer.id}:${snoozedEndsAt}`, deliveredAt);
+        expect(snoozed).toMatchObject({id: timer.id, status: 'running', endsAt: '2026-08-07T18:01:45.500Z'});
+        expect(snoozed).not.toHaveProperty('signalDeliveredAt', expect.anything());
+    });
+
+    it('rejects a native snooze from an obsolete generation', async () => {
+        const endsAt = new Date(timer.endsAt).getTime();
+        await expect(repository.snoozeNativeDelivery(timer.id, endsAt - 1_000, endsAt + 30_000, `${timer.id}:${endsAt + 30_000}`, new Date(timer.endsAt))).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running', endsAt: timer.endsAt});
+    });
+
+    it('rejects a snooze whose new native generation does not match its deadline', async () => {
+        const endsAt = new Date(timer.endsAt).getTime();
+        await expect(repository.snoozeNativeDelivery(timer.id, endsAt, endsAt + 30_000, `${timer.id}:${endsAt + 29_000}`, new Date(timer.endsAt))).resolves.toBeUndefined();
+    });
+
+    it('reconciles a foreground native expiry without starting a second web alarm', async () => {
+        const received = vi.fn();
+        const vibrate = vi.fn();
+        const originalVibrate = Object.getOwnPropertyDescriptor(navigator, 'vibrate');
+        Object.defineProperty(navigator, 'vibrate', {configurable: true, value: vibrate});
+        window.addEventListener('max-gym-rest-timer-complete', received);
+        try {
+            const completed = await reconcileRestTimerExpiry(repository, timer, {nativeDelivery: true, now: new Date('2026-08-07T18:01:16.000Z')});
+            expect(completed).toMatchObject({status: 'completed', signalDeliveredAt: '2026-08-07T18:01:16.000Z'});
+            expect(received).toHaveBeenCalledOnce();
+            expect(vibrate).not.toHaveBeenCalled();
+        } finally {
+            window.removeEventListener('max-gym-rest-timer-complete', received);
+            if (originalVibrate) Object.defineProperty(navigator, 'vibrate', originalVibrate);
+            else delete (navigator as unknown as {vibrate?: unknown}).vibrate;
+        }
+    });
+
+    it('leaves expiry authority to Android instead of a page timeout in the native app', () => {
+        expect(shouldMonitorRestTimerExpiryInPage(true)).toBe(false);
+        expect(shouldMonitorRestTimerExpiryInPage(false)).toBe(true);
     });
 
     it('uses the local service worker when notification permission is granted', async () => {
