@@ -12,6 +12,7 @@ import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
 import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
+import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -28,6 +29,16 @@ function useRestSeconds(snapshot: ActiveWorkoutSnapshot | undefined): number {
     if (!snapshot?.timer) return 0;
     if (snapshot.timer.status === 'paused') return snapshot.timer.remainingWhenPausedSeconds ?? 0;
     return Math.max(0, Math.ceil((new Date(snapshot.timer.endsAt).getTime() - tick) / 1000));
+}
+
+function useWorkoutElapsedSeconds(snapshot: ActiveWorkoutSnapshot | undefined): number {
+    const [tick, setTick] = useState(Date.now());
+    useEffect(() => {
+        if (!snapshot || (snapshot.session.status !== 'active' && snapshot.session.status !== 'paused')) return;
+        const interval = window.setInterval(() => setTick(Date.now()), 1000);
+        return () => window.clearInterval(interval);
+    }, [snapshot]);
+    return snapshot ? elapsedSeconds(snapshot.session, tick) : 0;
 }
 
 function WorkoutRestBar({snapshot, onChange}: {snapshot: ActiveWorkoutSnapshot; onChange: (next: ActiveWorkoutSnapshot) => void}) {
@@ -64,6 +75,7 @@ export function ActiveWorkoutPage() {
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
     const [notificationPermission, setNotificationPermission] = useState<RestNotificationPermission>(() => getRestNotificationPermission());
     const [nativeCapabilities, setNativeCapabilities] = useState<RestAlarmCapabilities>();
+    const workoutElapsedSeconds = useWorkoutElapsedSeconds(snapshot);
 
     const refreshNativeCapabilities = useCallback(async () => {
         if (restAlarmGateway.isNativeAndroid()) setNativeCapabilities(await restAlarmGateway.getCapabilities());
@@ -172,8 +184,11 @@ export function ActiveWorkoutPage() {
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
                 {restAlarmGateway.isNativeAndroid() && nativeCapabilities && (nativeCapabilities.notificationPermission !== 'granted' || !nativeCapabilities.exactAlarmAllowed) && <Alert severity="warning" action={<Stack direction={{xs: 'column', sm: 'row'}} gap={1}>{nativeCapabilities.notificationPermission !== 'granted' && <Button startIcon={<NotificationsActive/>} onClick={() => void restAlarmGateway.requestNotificationPermission().then(setNativeCapabilities)}>Allow notifications</Button>}{!nativeCapabilities.exactAlarmAllowed && <Button onClick={() => void restAlarmGateway.requestExactAlarmPermission().then(() => refreshNativeCapabilities())}>Allow exact alarms</Button>}</Stack>}>Allow Android notifications and exact alarms so rest alerts fire reliably while the app is in the background.</Alert>}
                 {!restAlarmGateway.isNativeAndroid() && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography color="text.secondary">{completed.length}/{snapshot.sets.length} sets completed</Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
+                    <Stack>
+                        <Typography color="text.secondary">{completed.length}/{snapshot.sets.length} sets completed</Typography>
+                        <Typography variant="caption" color="text.secondary">Elapsed time: <Box component="span" sx={{fontVariantNumeric: 'tabular-nums'}}>{formatElapsedDuration(workoutElapsedSeconds)}</Box></Typography>
+                    </Stack>
                     <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Resume' : 'Pause'}</Button>
                 </Stack>
                 <LinearProgress variant="determinate" value={(completed.length / snapshot.sets.length) * 100} aria-label="Workout progress"/>
