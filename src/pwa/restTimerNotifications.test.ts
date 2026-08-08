@@ -68,6 +68,27 @@ describe('rest timer notifications', () => {
         await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running'});
     });
 
+    it('re-arms the same timer from an identity-matched native +30 second action', async () => {
+        const previousEndsAt = new Date(timer.endsAt).getTime();
+        const deliveredAt = new Date('2026-08-07T18:01:15.500Z');
+        await repository.acknowledgeNativeDelivery(timer.id, deliveredAt, previousEndsAt);
+        const snoozedEndsAt = deliveredAt.getTime() + 30_000;
+        const snoozed = await repository.snoozeNativeDelivery(timer.id, previousEndsAt, snoozedEndsAt, `${timer.id}:${snoozedEndsAt}`, deliveredAt);
+        expect(snoozed).toMatchObject({id: timer.id, status: 'running', endsAt: '2026-08-07T18:01:45.500Z'});
+        expect(snoozed).not.toHaveProperty('signalDeliveredAt', expect.anything());
+    });
+
+    it('rejects a native snooze from an obsolete generation', async () => {
+        const endsAt = new Date(timer.endsAt).getTime();
+        await expect(repository.snoozeNativeDelivery(timer.id, endsAt - 1_000, endsAt + 30_000, `${timer.id}:${endsAt + 30_000}`, new Date(timer.endsAt))).resolves.toBeUndefined();
+        await expect(db.restTimer.get(timer.id)).resolves.toMatchObject({status: 'running', endsAt: timer.endsAt});
+    });
+
+    it('rejects a snooze whose new native generation does not match its deadline', async () => {
+        const endsAt = new Date(timer.endsAt).getTime();
+        await expect(repository.snoozeNativeDelivery(timer.id, endsAt, endsAt + 30_000, `${timer.id}:${endsAt + 29_000}`, new Date(timer.endsAt))).resolves.toBeUndefined();
+    });
+
     it('reconciles a foreground native expiry without starting a second web alarm', async () => {
         const received = vi.fn();
         const vibrate = vi.fn();

@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(RestAlarmPlugin.class);
+        registerPlugin(AndroidUpdatePlugin.class);
         super.onCreate(savedInstanceState);
         rememberAlarmAction(getIntent());
     }

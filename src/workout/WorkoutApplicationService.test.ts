@@ -81,6 +81,8 @@ describe('WorkoutApplicationService recovery', () => {
             getCapabilities: vi.fn(),
             requestNotificationPermission: vi.fn(),
             requestExactAlarmPermission: vi.fn(),
+            getPreferences: vi.fn(),
+            setPreferences: vi.fn(),
             schedule: vi.fn().mockResolvedValue({scheduled: true, exactAlarmAllowed: true}),
             cancel: vi.fn().mockResolvedValue(undefined),
             consumeLastAction: vi.fn().mockResolvedValue({}),

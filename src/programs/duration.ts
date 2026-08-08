@@ -15,9 +15,9 @@ export interface DurationBreakdown {
 
 export function estimateProgramDay(day: ProgramDayDetail): DurationBreakdown {
     const exercises = day.exercises;
-    const ramp = exercises.filter((entry) => entry.role === 'primary').length * 180;
-    const execution = exercises.reduce((sum, entry) => sum + entry.prescription.workingSets * 40, 0);
-    const rest = exercises.reduce((sum, entry) => sum + Math.max(0, entry.prescription.workingSets - 1) * entry.prescription.restSeconds, 0);
+    const ramp = exercises.reduce((sum, entry) => sum + (entry.prescription.warmupSets === undefined ? (entry.role === 'primary' ? 180 : 0) : entry.prescription.warmupSets * 45), 0);
+    const execution = exercises.reduce((sum, entry) => sum + (entry.prescription.workingSets + (entry.prescription.warmupSets ?? 0) + (entry.prescription.dropSets ?? 0)) * 40, 0);
+    const rest = exercises.reduce((sum, entry) => sum + Math.max(0, entry.prescription.workingSets + (entry.prescription.dropSets ?? 0) - 1) * entry.prescription.restSeconds, 0);
     const setup = exercises.length * 75;
     const groupedTransitions = exercises.slice(1).filter((entry, index) => entry.groupId && entry.groupId === exercises[index].groupId).length;
     const transitions = Math.max(0, exercises.length - 1) * 45 - groupedTransitions * 25;

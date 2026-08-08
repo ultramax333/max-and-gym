@@ -1,7 +1,34 @@
 import {Capacitor, PluginListenerHandle, registerPlugin} from '@capacitor/core';
 import {RestTimerRecord} from '../workout/types';
 
-export type RestAlarmAction = 'fired' | 'open' | 'stop';
+export type RestAlarmAction = 'fired' | 'open' | 'stop' | 'snooze';
+export type RestAlarmTone = 'classic' | 'urgent' | 'silent';
+
+export interface RestAlarmPreferences {
+    durationSeconds: 5 | 10 | 20 | 30;
+    vibrationEnabled: boolean;
+    tone: RestAlarmTone;
+}
+
+export const DEFAULT_REST_ALARM_PREFERENCES: RestAlarmPreferences = {
+    durationSeconds: 10,
+    vibrationEnabled: true,
+    tone: 'classic',
+};
+
+export function normalizeRestAlarmPreferences(value: Partial<RestAlarmPreferences>): RestAlarmPreferences {
+    const durationSeconds = [5, 10, 20, 30].includes(value.durationSeconds ?? 0)
+        ? value.durationSeconds as RestAlarmPreferences['durationSeconds']
+        : DEFAULT_REST_ALARM_PREFERENCES.durationSeconds;
+    const tone = value.tone === 'urgent' || value.tone === 'silent' || value.tone === 'classic'
+        ? value.tone
+        : DEFAULT_REST_ALARM_PREFERENCES.tone;
+    return {
+        durationSeconds,
+        vibrationEnabled: typeof value.vibrationEnabled === 'boolean' ? value.vibrationEnabled : DEFAULT_REST_ALARM_PREFERENCES.vibrationEnabled,
+        tone,
+    };
+}
 
 export interface RestAlarmCapabilities {
     nativeAndroid: boolean;
@@ -15,12 +42,15 @@ export interface RestAlarmActionResult {
     occurredAtEpochMs?: number;
     endsAtEpochMs?: number;
     generation?: string;
+    previousEndsAtEpochMs?: number;
 }
 
 interface NativeRestAlarmPlugin {
     getCapabilities(): Promise<RestAlarmCapabilities>;
     requestNotificationPermission(): Promise<RestAlarmCapabilities>;
     requestExactAlarmPermission(): Promise<{opened: boolean; exactAlarmAllowed: boolean}>;
+    getPreferences(): Promise<RestAlarmPreferences>;
+    setPreferences(options: RestAlarmPreferences): Promise<RestAlarmPreferences>;
     schedule(options: {timerId: string; sessionId: string; endsAtEpochMs: number; generation: string}): Promise<{scheduled: boolean; exactAlarmAllowed: boolean}>;
     cancel(options: {timerId?: string}): Promise<void>;
     consumeLastAction(): Promise<RestAlarmActionResult>;
@@ -34,6 +64,8 @@ export interface RestAlarmGateway {
     getCapabilities(): Promise<RestAlarmCapabilities>;
     requestNotificationPermission(): Promise<RestAlarmCapabilities>;
     requestExactAlarmPermission(): Promise<{opened: boolean; exactAlarmAllowed: boolean}>;
+    getPreferences(): Promise<RestAlarmPreferences>;
+    setPreferences(preferences: RestAlarmPreferences): Promise<RestAlarmPreferences>;
     schedule(timer: Pick<RestTimerRecord, 'id' | 'sessionId' | 'endsAt'>): Promise<{scheduled: boolean; exactAlarmAllowed: boolean}>;
     cancel(timerId?: string): Promise<void>;
     consumeLastAction(): Promise<RestAlarmActionResult>;
@@ -56,6 +88,13 @@ export const restAlarmGateway: RestAlarmGateway = {
     },
     async requestExactAlarmPermission() {
         return this.isNativeAndroid() ? NativeRestAlarm.requestExactAlarmPermission() : {opened: false, exactAlarmAllowed: false};
+    },
+    async getPreferences() {
+        return this.isNativeAndroid() ? normalizeRestAlarmPreferences(await NativeRestAlarm.getPreferences()) : DEFAULT_REST_ALARM_PREFERENCES;
+    },
+    async setPreferences(preferences) {
+        if (!this.isNativeAndroid()) return normalizeRestAlarmPreferences(preferences);
+        return normalizeRestAlarmPreferences(await NativeRestAlarm.setPreferences(normalizeRestAlarmPreferences(preferences)));
     },
     async schedule(timer) {
         if (!this.isNativeAndroid()) return {scheduled: false, exactAlarmAllowed: false};

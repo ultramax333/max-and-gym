@@ -38,7 +38,7 @@ export default defineConfig({
     base: isAndroidBuild ? './' : githubPagesBase,
     define: {
         __APP_VERSION__: JSON.stringify(appVersion),
-        __BUILD_NUMBER__: JSON.stringify(process.env.GITHUB_RUN_NUMBER ?? 'local'),
+        __BUILD_NUMBER__: JSON.stringify(isAndroidBuild ? process.env.ANDROID_VERSION_CODE ?? '120000000' : process.env.GITHUB_RUN_NUMBER ?? 'local'),
         __GIT_SHA__: JSON.stringify(gitSha),
         __BUILD_TIMESTAMP__: JSON.stringify(buildTimestamp),
         __BUILD_ENVIRONMENT__: JSON.stringify(isAndroidBuild ? 'android' : process.env.GITHUB_ACTIONS ? 'github-pages' : 'local'),

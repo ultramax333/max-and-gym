@@ -30,4 +30,9 @@ public class RestAlarmSchedulerTest {
             2_500L
         ));
     }
+
+    @Test
+    public void createsADeadlineBoundGenerationForSnooze() {
+        assertTrue("timer-1:30000".equals(RestAlarmScheduler.generation("timer-1", 30_000L)));
+    }
 }

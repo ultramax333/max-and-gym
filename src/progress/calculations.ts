@@ -21,6 +21,7 @@ export interface ExerciseProgress {
     rawSets: RawProgressSet[];
     records: ExerciseRecords;
     estimatedMaxTrend: Array<{recordedAt: string; valueKg: number}>;
+    volumeTrend: Array<{recordedAt: string; volumeKg: number}>;
     textSummary: string;
 }
 
@@ -33,6 +34,7 @@ export interface ProgressOverview {
     monthlyFrequency: Array<{period: string; sessions: number}>;
     movementDistribution: Record<string, number>;
     muscleDistribution: Record<string, number>;
+    sessionTrend: Array<{recordedAt: string; volumeKg: number; sets: number; durationMinutes: number}>;
     textSummary: string;
 }
 
@@ -67,10 +69,16 @@ export function calculateExerciseProgress(exerciseId: string, sessions: WorkoutS
         estimatedOneRepMaxKg: Math.max(0, ...rawSets.map((entry) => entry.estimatedOneRepMaxKg)),
     };
     const byDate = new Map<string, number>();
-    for (const entry of rawSets) byDate.set(entry.performedAt.slice(0, 10), Math.max(byDate.get(entry.performedAt.slice(0, 10)) ?? 0, entry.estimatedOneRepMaxKg));
+    const volumeByDate = new Map<string, number>();
+    for (const entry of rawSets) {
+        const date = entry.performedAt.slice(0, 10);
+        byDate.set(date, Math.max(byDate.get(date) ?? 0, entry.estimatedOneRepMaxKg));
+        volumeByDate.set(date, (volumeByDate.get(date) ?? 0) + entry.volumeKg);
+    }
     const estimatedMaxTrend = [...byDate].map(([recordedAt, valueKg]) => ({recordedAt, valueKg}));
+    const volumeTrend = [...volumeByDate].map(([recordedAt, volumeKg]) => ({recordedAt, volumeKg}));
     const textSummary = rawSets.length ? `${rawSets.length} completed sets. Best load ${records.maxLoadKg} kg ; estimated maximum ${records.estimatedOneRepMaxKg} kg.` : 'No completed set for this exercise.';
-    return {rawSets, records, estimatedMaxTrend, textSummary};
+    return {rawSets, records, estimatedMaxTrend, volumeTrend, textSummary};
 }
 
 export function calculateProgressOverview(sessions: WorkoutSessionRecord[], exercises: SessionExerciseRecord[], sets: PerformedSetRecord[], taxonomy: Record<string, {movement?: string; muscles?: string[]}> = {}): ProgressOverview {
@@ -89,6 +97,15 @@ export function calculateProgressOverview(sessions: WorkoutSessionRecord[], exer
     }
     const totalVolumeKg = completedSets.reduce((total, entry) => total + (entry.actualLoadKg ?? entry.targetLoadKg) * (entry.actualReps ?? 0), 0);
     const totalDurationSeconds = completed.reduce((total, entry) => total + (entry.elapsedSeconds ?? 0), 0);
+    const sessionTrend = completed.map((session) => {
+        const sessionSets = completedSets.filter((entry) => entry.sessionId === session.id);
+        return {
+            recordedAt: session.endedAt ?? session.startedAt,
+            volumeKg: sessionSets.reduce((total, entry) => total + (entry.actualLoadKg ?? entry.targetLoadKg) * (entry.actualReps ?? 0), 0),
+            sets: sessionSets.length,
+            durationMinutes: Math.round((session.elapsedSeconds ?? 0) / 60),
+        };
+    });
     return {
         completedSessions: completed.length,
         totalSets: completedSets.length,
@@ -98,6 +115,7 @@ export function calculateProgressOverview(sessions: WorkoutSessionRecord[], exer
         monthlyFrequency: frequency(completed, (iso) => iso.slice(0, 7)),
         movementDistribution,
         muscleDistribution,
+        sessionTrend,
         textSummary: completed.length ? `${completed.length} completed workouts, ${completedSets.length} sets and ${Math.round(totalDurationSeconds / 60)} recorded minutes.` : 'No completed workout to calculate a trend.',
     };
 }

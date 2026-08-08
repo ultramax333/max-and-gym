@@ -16,6 +16,7 @@ final class RestAlarmScheduler {
     static final String ACTION_FIRE = "io.github.ultramax333.maxandgym.REST_ALARM_FIRE";
     static final String ACTION_OPEN = "io.github.ultramax333.maxandgym.REST_ALARM_OPEN";
     static final String ACTION_STOP = "io.github.ultramax333.maxandgym.REST_ALARM_STOP";
+    static final String ACTION_SNOOZE = "io.github.ultramax333.maxandgym.REST_ALARM_SNOOZE";
     private static final String KEY_TIMER_ID = "scheduledTimerId";
     private static final String KEY_SESSION_ID = "scheduledSessionId";
     private static final String KEY_ENDS_AT = "scheduledEndsAt";
@@ -28,6 +29,7 @@ final class RestAlarmScheduler {
     static final String KEY_LAST_ACTION_AT = "lastActionAt";
     static final String KEY_LAST_ACTION_ENDS_AT = "lastActionEndsAt";
     static final String KEY_LAST_ACTION_GENERATION = "lastActionGeneration";
+    static final String KEY_LAST_ACTION_PREVIOUS_ENDS_AT = "lastActionPreviousEndsAt";
 
     private RestAlarmScheduler() {}
 
@@ -117,11 +119,23 @@ final class RestAlarmScheduler {
             && nowEpochMs >= storedEndsAtEpochMs;
     }
 
+    static String generation(String timerId, long endsAtEpochMs) {
+        return timerId + ":" + endsAtEpochMs;
+    }
+
     static boolean isCurrentExact(Context context, String timerId, long endsAtEpochMs, String generation) {
         return isCurrentDelivery(context, timerId, endsAtEpochMs, generation, System.currentTimeMillis()) && preferences(context).getBoolean(KEY_EXACT, false);
     }
 
     static void markAction(Context context, String action, String timerId, long endsAtEpochMs, String generation) {
+        markAction(context, action, timerId, endsAtEpochMs, generation, 0L);
+    }
+
+    static void markSnoozeAction(Context context, String timerId, long previousEndsAtEpochMs, long endsAtEpochMs, String generation) {
+        markAction(context, "snooze", timerId, endsAtEpochMs, generation, previousEndsAtEpochMs);
+    }
+
+    private static void markAction(Context context, String action, String timerId, long endsAtEpochMs, String generation, long previousEndsAtEpochMs) {
         long occurredAt = System.currentTimeMillis();
         preferences(context).edit()
             .putString(KEY_LAST_ACTION, action)
@@ -129,8 +143,9 @@ final class RestAlarmScheduler {
             .putLong(KEY_LAST_ACTION_AT, occurredAt)
             .putLong(KEY_LAST_ACTION_ENDS_AT, endsAtEpochMs)
             .putString(KEY_LAST_ACTION_GENERATION, generation)
+            .putLong(KEY_LAST_ACTION_PREVIOUS_ENDS_AT, previousEndsAtEpochMs)
             .apply();
-        RestAlarmPlugin.emitAction(action, timerId, occurredAt, endsAtEpochMs, generation);
+        RestAlarmPlugin.emitAction(action, timerId, occurredAt, endsAtEpochMs, generation, previousEndsAtEpochMs);
     }
 
     static void clearScheduled(Context context, String timerId, long endsAtEpochMs, String generation) {

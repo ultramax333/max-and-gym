@@ -37,20 +37,21 @@ public class RestAlarmPlugin extends Plugin {
         super.handleOnDestroy();
     }
 
-    static void emitAction(String action, String timerId, long occurredAtEpochMs, long endsAtEpochMs, String generation) {
+    static void emitAction(String action, String timerId, long occurredAtEpochMs, long endsAtEpochMs, String generation, long previousEndsAtEpochMs) {
         RestAlarmPlugin plugin = activePlugin;
         if (plugin == null) return;
-        JSObject result = actionResult(action, timerId, occurredAtEpochMs, endsAtEpochMs, generation);
+        JSObject result = actionResult(action, timerId, occurredAtEpochMs, endsAtEpochMs, generation, previousEndsAtEpochMs);
         plugin.notifyListeners("restAlarmAction", result);
     }
 
-    private static JSObject actionResult(String action, String timerId, long occurredAtEpochMs, long endsAtEpochMs, String generation) {
+    private static JSObject actionResult(String action, String timerId, long occurredAtEpochMs, long endsAtEpochMs, String generation, long previousEndsAtEpochMs) {
         JSObject result = new JSObject();
         if (action != null) result.put("action", action);
         if (timerId != null) result.put("timerId", timerId);
         if (occurredAtEpochMs > 0L) result.put("occurredAtEpochMs", occurredAtEpochMs);
         if (endsAtEpochMs > 0L) result.put("endsAtEpochMs", endsAtEpochMs);
         if (generation != null) result.put("generation", generation);
+        if (previousEndsAtEpochMs > 0L) result.put("previousEndsAtEpochMs", previousEndsAtEpochMs);
         return result;
     }
 
@@ -89,12 +90,30 @@ public class RestAlarmPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void getPreferences(PluginCall call) {
+        call.resolve(preferencesResult());
+    }
+
+    @PluginMethod
+    public void setPreferences(PluginCall call) {
+        Integer durationSeconds = call.getInt("durationSeconds");
+        Boolean vibrationEnabled = call.getBoolean("vibrationEnabled");
+        String tone = call.getString("tone");
+        if (durationSeconds == null || vibrationEnabled == null || tone == null) {
+            call.reject("durationSeconds, vibrationEnabled and tone are required.");
+            return;
+        }
+        RestAlarmPreferences.save(getContext(), durationSeconds, vibrationEnabled, tone);
+        call.resolve(preferencesResult());
+    }
+
+    @PluginMethod
     public void schedule(PluginCall call) {
         String timerId = call.getString("timerId");
         String sessionId = call.getString("sessionId");
         Long endsAtEpochMs = call.getLong("endsAtEpochMs");
         String generation = call.getString("generation");
-        if (timerId == null || timerId.isBlank() || sessionId == null || sessionId.isBlank() || endsAtEpochMs == null || endsAtEpochMs <= 0L || generation == null || generation.isBlank()) {
+        if (timerId == null || timerId.trim().isEmpty() || sessionId == null || sessionId.trim().isEmpty() || endsAtEpochMs == null || endsAtEpochMs <= 0L || generation == null || generation.trim().isEmpty()) {
             call.reject("A valid timerId, sessionId, endsAtEpochMs and generation are required.");
             return;
         }
@@ -119,9 +138,18 @@ public class RestAlarmPlugin extends Plugin {
         long occurredAt = preferences.getLong(RestAlarmScheduler.KEY_LAST_ACTION_AT, 0L);
         long endsAt = preferences.getLong(RestAlarmScheduler.KEY_LAST_ACTION_ENDS_AT, 0L);
         String generation = preferences.getString(RestAlarmScheduler.KEY_LAST_ACTION_GENERATION, null);
-        JSObject result = actionResult(action, timerId, occurredAt, endsAt, generation);
-        preferences.edit().remove(RestAlarmScheduler.KEY_LAST_ACTION).remove(RestAlarmScheduler.KEY_LAST_ACTION_TIMER_ID).remove(RestAlarmScheduler.KEY_LAST_ACTION_AT).remove(RestAlarmScheduler.KEY_LAST_ACTION_ENDS_AT).remove(RestAlarmScheduler.KEY_LAST_ACTION_GENERATION).apply();
+        long previousEndsAt = preferences.getLong(RestAlarmScheduler.KEY_LAST_ACTION_PREVIOUS_ENDS_AT, 0L);
+        JSObject result = actionResult(action, timerId, occurredAt, endsAt, generation, previousEndsAt);
+        preferences.edit().remove(RestAlarmScheduler.KEY_LAST_ACTION).remove(RestAlarmScheduler.KEY_LAST_ACTION_TIMER_ID).remove(RestAlarmScheduler.KEY_LAST_ACTION_AT).remove(RestAlarmScheduler.KEY_LAST_ACTION_ENDS_AT).remove(RestAlarmScheduler.KEY_LAST_ACTION_GENERATION).remove(RestAlarmScheduler.KEY_LAST_ACTION_PREVIOUS_ENDS_AT).apply();
         call.resolve(result);
+    }
+
+    private JSObject preferencesResult() {
+        JSObject result = new JSObject();
+        result.put("durationSeconds", RestAlarmPreferences.durationSeconds(getContext()));
+        result.put("vibrationEnabled", RestAlarmPreferences.vibrationEnabled(getContext()));
+        result.put("tone", RestAlarmPreferences.tone(getContext()));
+        return result;
     }
 
     private JSObject capabilities() {

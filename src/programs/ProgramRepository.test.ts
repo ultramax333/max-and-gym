@@ -37,6 +37,15 @@ describe('ProgramRepository', () => {
         expect((await repository.get(program.id))?.days[0].exercises).toHaveLength(0);
     });
 
+    it('rejects invalid prescriptions before they can be persisted', async () => {
+        const program = await repository.create({name: 'Safe', weeklyFrequency: 2, defaultDurationMinutes: 40});
+        const exercise = await add(program.days[0].id);
+
+        await expect(repository.updatePrescription(exercise.prescriptionId, {workingSets: 0})).rejects.toMatchObject({code: 'PROGRAM_INVALID_PRESCRIPTION'});
+        await expect(repository.updatePrescription(exercise.prescriptionId, {repsMin: 12, repsMax: 8})).rejects.toMatchObject({code: 'PROGRAM_INVALID_PRESCRIPTION'});
+        expect((await db.exercisePrescription.get(exercise.prescriptionId))?.workingSets).toBe(3);
+    });
+
     it('reorders and groups only consecutive exercises', async () => {
         const program = await repository.create({name: 'Groupes', weeklyFrequency: 2, defaultDurationMinutes: 60});
         const [a, b, c] = [await add(program.days[0].id, 'A'), await add(program.days[0].id, 'B'), await add(program.days[0].id, 'C')];

@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - 'fix/**'
+      - 'feat/**'
   pull_request:
   workflow_dispatch:
 
@@ -19,6 +20,10 @@ env:
 jobs:
   android-apk:
     runs-on: ubuntu-latest
+    outputs:
+      version_code: ${{ steps.android-version.outputs.version_code }}
+      version_name: ${{ steps.android-version.outputs.version_name }}
+      signing_enabled: ${{ steps.signing.outputs.enabled }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,6 +50,10 @@ jobs:
             exit 1
           fi
           version_name="$(node --input-type=module -e "import metadata from './package.json' with {type: 'json'}; process.stdout.write(metadata.version)")"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "$GITHUB_REF_NAME" != "v$version_name" ]]; then
+            echo "Release tag $GITHUB_REF_NAME does not match package version v$version_name." >&2
+            exit 1
+          fi
           echo "ANDROID_VERSION_CODE=$version_code" >> "$GITHUB_ENV"
           echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
           echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
@@ -63,6 +72,7 @@ jobs:
           if-no-files-found: error
 
       - name: Check release signing configuration
+        if: github.ref == 'refs/heads/master'
         id: signing
         shell: bash
         env:
@@ -107,9 +117,43 @@ jobs:
       - name: Verify release APK signature
         if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
         run: '"$ANDROID_SDK_ROOT/build-tools/36.0.0/apksigner" verify --verbose --print-certs android/app/build/outputs/apk/release/app-release.apk'
+      - name: Name release APK for safe in-app discovery
+        if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          mkdir -p android/app/build/outputs/release-artifacts
+          cp android/app/build/outputs/apk/release/app-release.apk "android/app/build/outputs/release-artifacts/max-and-gym-v${{ steps.android-version.outputs.version_name }}-${{ steps.android-version.outputs.version_code }}-release.apk"
       - uses: actions/upload-artifact@v4
         if: github.ref == 'refs/heads/master' && steps.signing.outputs.enabled == 'true'
         with:
           name: max-and-gym-v${{ steps.android-version.outputs.version_name }}-${{ steps.android-version.outputs.version_code }}-release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/release-artifacts/max-and-gym-v${{ steps.android-version.outputs.version_name }}-${{ steps.android-version.outputs.version_code }}-release.apk
           if-no-files-found: error
+
+  publish-release:
+    needs: android-apk
+    if: github.ref == 'refs/heads/master' && needs.android-apk.outputs.signing_enabled == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release-apk
+          path: release-apk
+      - name: Publish immutable-candidate GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_tag="v${{ needs.android-apk.outputs.version_name }}"
+          if gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $release_tag already exists; keeping its immutable APK." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if git ls-remote --exit-code --tags "https://github.com/$GITHUB_REPOSITORY.git" "refs/tags/$release_tag" >/dev/null 2>&1; then
+            echo "Tag $release_tag exists without a release; refusing an ambiguous publication." >&2
+            exit 1
+          fi
+          apk="release-apk/max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release.apk"
+          gh release create "$release_tag" "$apk" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest --title "Max & Gym $release_tag" --notes "Signed Android release. Back up your local data before updating."

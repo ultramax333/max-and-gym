@@ -7,6 +7,7 @@ import {PrimaryButton, ScreenContainer, SectionHeader, StatePanel} from '../../c
 import Layout from '../../components/layout';
 import {db} from '../../db/db';
 import {ProgramRepository} from '../../programs/ProgramRepository';
+import {programDayWorkoutInput} from '../../programs/workoutSnapshot';
 import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
 import {WorkoutApplicationService} from '../../workout/WorkoutApplicationService';
 import {ARM_WORKOUT_45, QuickWorkoutDefinition} from '../../workout/quickWorkouts';
@@ -24,7 +25,7 @@ async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>): Pr
     const program = await programs.active();
     const day = program?.days[program.currentDayIndex % program.days.length];
     if (!program || !day?.exercises.length) { navigate('/programs'); return; }
-    await workout.startProgramDay({name: `${program.name} · ${day.name}`, programId: program.id, programDayId: day.id, exercises: day.exercises.map((entry) => ({exerciseId: entry.exerciseId, exerciseName: entry.exerciseNameSnapshot, prescriptionSnapshot: `${entry.prescription.workingSets} × ${entry.prescription.repsMin}–${entry.prescription.repsMax} · rest ${entry.prescription.restSeconds} s · RIR ${entry.prescription.targetRir}`, programExerciseId: entry.id, workingSets: entry.prescription.workingSets, repsMin: entry.prescription.repsMin, repsMax: entry.prescription.repsMax, targetLoadKg: entry.prescription.loadReferenceKg, targetRir: entry.prescription.targetRir, restSeconds: entry.prescription.restSeconds, locked: entry.locked, alternativeExerciseIds: entry.alternativeExerciseIds}))});
+    await workout.startProgramDay(programDayWorkoutInput(program.name, day));
     navigate('/workout/active');
 }
 

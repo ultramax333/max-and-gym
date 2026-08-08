@@ -28,8 +28,18 @@ export function NativeLifecycleCoordinator() {
 
         const reconcile = async (action?: RestAlarmActionResult) => {
             try {
-                const delivered = action?.action && action.timerId
-                    ? await new RestTimerAlarmRepository(db).acknowledgeNativeDelivery(
+                const alarmRepository = new RestTimerAlarmRepository(db);
+                const snoozed = action?.action === 'snooze' && action.timerId && action.previousEndsAtEpochMs && action.endsAtEpochMs && action.generation
+                    ? await alarmRepository.snoozeNativeDelivery(
+                        action.timerId,
+                        action.previousEndsAtEpochMs,
+                        action.endsAtEpochMs,
+                        action.generation,
+                        new Date(action.occurredAtEpochMs ?? Date.now()),
+                    )
+                    : undefined;
+                const delivered = action?.action && action.action !== 'snooze' && action.timerId
+                    ? await alarmRepository.acknowledgeNativeDelivery(
                         action.timerId,
                         new Date(action.occurredAtEpochMs ?? Date.now()),
                         action.endsAtEpochMs,
@@ -39,6 +49,9 @@ export function NativeLifecycleCoordinator() {
                 if (!active) return;
                 if (delivered) {
                     window.dispatchEvent(new CustomEvent(REST_TIMER_COMPLETE_EVENT, {detail: {sessionId: delivered.sessionId, timerId: delivered.id}}));
+                }
+                if (snoozed) {
+                    window.dispatchEvent(new CustomEvent(REST_TIMER_COMPLETE_EVENT, {detail: {sessionId: snoozed.sessionId, timerId: snoozed.id, snoozed: true}}));
                 }
                 if (snapshot && (routeRef.current === '/' || action?.action === 'open')) {
                     navigate('/workout/active', {replace: true});

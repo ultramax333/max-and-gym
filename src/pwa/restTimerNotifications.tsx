@@ -128,6 +128,25 @@ export class RestTimerAlarmRepository {
             return completed;
         });
     }
+
+    async snoozeNativeDelivery(timerId: string, previousEndsAtEpochMs: number, endsAtEpochMs: number, generation: string, occurredAt: Date): Promise<RestTimerRecord | undefined> {
+        return this.db.transaction('rw', this.db.restTimer, async () => {
+            const timer = await this.db.restTimer.get(timerId);
+            if (!timer || (timer.status !== 'running' && timer.status !== 'completed')) return undefined;
+            if (new Date(timer.endsAt).getTime() !== previousEndsAtEpochMs || endsAtEpochMs <= occurredAt.getTime()) return undefined;
+            if (generation !== `${timerId}:${endsAtEpochMs}`) return undefined;
+            const updatedAt = occurredAt.toISOString();
+            const snoozed = {
+                ...timer,
+                status: 'running' as const,
+                endsAt: new Date(endsAtEpochMs).toISOString(),
+                signalDeliveredAt: undefined,
+                updatedAt,
+            };
+            await this.db.restTimer.put(snoozed);
+            return snoozed;
+        });
+    }
 }
 
 export async function reconcileRestTimerExpiry(repository: RestTimerAlarmRepository, timer: RestTimerRecord, options: {nativeDelivery?: boolean; now?: Date} = {}): Promise<RestTimerRecord | undefined> {
