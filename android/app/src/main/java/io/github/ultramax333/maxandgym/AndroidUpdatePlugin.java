@@ -1,6 +1,7 @@
 package io.github.ultramax333.maxandgym;
 
 import android.app.DownloadManager;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,13 +10,26 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.ParcelFileDescriptor;
 import android.provider.Settings;
+
+import androidx.core.content.FileProvider;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @CapacitorPlugin(name = "AndroidUpdate")
 public class AndroidUpdatePlugin extends Plugin {
@@ -27,16 +41,21 @@ public class AndroidUpdatePlugin extends Plugin {
 
     private DownloadManager downloadManager;
     private BroadcastReceiver downloadReceiver;
+    private Handler handler;
+    private ExecutorService fileExecutor;
+    private Runnable downloadPoller;
+    private long processingDownloadId = -1L;
 
     @Override
     public void load() {
         downloadManager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+        handler = new Handler(Looper.getMainLooper());
+        fileExecutor = Executors.newSingleThreadExecutor();
         downloadReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (!DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(intent.getAction())) return;
-                long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L);
-                finishDownload(downloadId);
+                finishDownload(intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L));
             }
         };
         IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
@@ -45,15 +64,17 @@ public class AndroidUpdatePlugin extends Plugin {
         } else {
             getContext().registerReceiver(downloadReceiver, filter);
         }
-        resumePendingDownload();
+        scheduleDownloadPolling();
     }
 
     @Override
     protected void handleOnDestroy() {
+        if (handler != null && downloadPoller != null) handler.removeCallbacks(downloadPoller);
         if (downloadReceiver != null) {
             getContext().unregisterReceiver(downloadReceiver);
             downloadReceiver = null;
         }
+        if (fileExecutor != null) fileExecutor.shutdownNow();
         super.handleOnDestroy();
     }
 
@@ -95,6 +116,7 @@ public class AndroidUpdatePlugin extends Plugin {
             .edit()
             .putLong(PENDING_DOWNLOAD_ID, downloadId)
             .apply();
+        scheduleDownloadPolling();
 
         JSObject result = new JSObject();
         result.put("status", "downloading");
@@ -116,39 +138,77 @@ public class AndroidUpdatePlugin extends Plugin {
             && uri.getFragment() == null;
     }
 
-    private void resumePendingDownload() {
-        long downloadId = getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private void scheduleDownloadPolling() {
+        if (handler == null) return;
+        if (downloadPoller != null) handler.removeCallbacks(downloadPoller);
+        downloadPoller = new Runnable() {
+            @Override
+            public void run() {
+                long pendingId = pendingDownloadId();
+                if (pendingId > 0L) {
+                    finishDownload(pendingId);
+                    handler.postDelayed(this, 1000L);
+                } else {
+                    downloadPoller = null;
+                }
+            }
+        };
+        handler.post(downloadPoller);
+    }
+
+    private long pendingDownloadId() {
+        return getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
             .getLong(PENDING_DOWNLOAD_ID, -1L);
-        if (downloadId > 0L) finishDownload(downloadId);
     }
 
     private void finishDownload(long downloadId) {
-        if (downloadId <= 0L || downloadManager == null) return;
-        long pendingId = getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
-            .getLong(PENDING_DOWNLOAD_ID, -1L);
-        if (downloadId != pendingId) return;
-
+        if (downloadId <= 0L || downloadManager == null || downloadId != pendingDownloadId()) return;
         DownloadManager.Query query = new DownloadManager.Query().setFilterById(downloadId);
         try (Cursor cursor = downloadManager.query(query)) {
             if (cursor == null || !cursor.moveToFirst()) return;
             int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-            if (status == DownloadManager.STATUS_PENDING || status == DownloadManager.STATUS_RUNNING) return;
-            clearPendingDownload();
+            if (status == DownloadManager.STATUS_PENDING || status == DownloadManager.STATUS_RUNNING || processingDownloadId == downloadId) return;
             if (status != DownloadManager.STATUS_SUCCESSFUL) {
-                JSObject result = new JSObject();
-                result.put("status", "failed");
-                notifyListeners("androidUpdateDownload", result);
+                clearPendingDownload();
+                notifyDownloadStatus("failed");
                 return;
             }
-            Uri apkUri = downloadManager.getUriForDownloadedFile(downloadId);
-            if (apkUri == null) {
-                JSObject result = new JSObject();
-                result.put("status", "failed");
-                notifyListeners("androidUpdateDownload", result);
-                return;
-            }
-            getActivity().runOnUiThread(() -> launchInstaller(apkUri));
+            processingDownloadId = downloadId;
+            fileExecutor.execute(() -> prepareInstaller(downloadId));
         }
+    }
+
+    private void prepareInstaller(long downloadId) {
+        Uri installerUri = null;
+        try {
+            File sharedDirectory = new File(getContext().getFilesDir(), "shared");
+            if (!sharedDirectory.exists() && !sharedDirectory.mkdirs()) throw new IOException("Could not create update directory.");
+            File apkFile = new File(sharedDirectory, "max-and-gym-update.apk");
+            try (ParcelFileDescriptor descriptor = downloadManager.openDownloadedFile(downloadId);
+                 InputStream input = new ParcelFileDescriptor.AutoCloseInputStream(descriptor);
+                 OutputStream output = new FileOutputStream(apkFile, false)) {
+                byte[] buffer = new byte[64 * 1024];
+                int count;
+                while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+            }
+            installerUri = FileProvider.getUriForFile(
+                getContext(),
+                getContext().getPackageName() + ".fileprovider",
+                apkFile
+            );
+        } catch (Exception exception) {
+            // The UI can retry the update after a failed copy or stale DownloadManager entry.
+        }
+        Uri finalInstallerUri = installerUri;
+        getActivity().runOnUiThread(() -> {
+            processingDownloadId = -1L;
+            clearPendingDownload();
+            if (finalInstallerUri == null) {
+                notifyDownloadStatus("failed");
+                return;
+            }
+            launchInstaller(finalInstallerUri);
+        });
     }
 
     private void clearPendingDownload() {
@@ -159,12 +219,29 @@ public class AndroidUpdatePlugin extends Plugin {
     }
 
     private void launchInstaller(Uri apkUri) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         intent.setDataAndType(apkUri, APK_MIME_TYPE);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-        getActivity().startActivity(intent);
+        try {
+            getActivity().startActivity(intent);
+            notifyDownloadStatus("ready");
+        } catch (ActivityNotFoundException | SecurityException exception) {
+            Intent fallback = new Intent(Intent.ACTION_VIEW);
+            fallback.setDataAndType(apkUri, APK_MIME_TYPE);
+            fallback.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+            try {
+                getActivity().startActivity(fallback);
+                notifyDownloadStatus("ready");
+            } catch (ActivityNotFoundException | SecurityException ignored) {
+                notifyDownloadStatus("failed");
+            }
+        }
+    }
+
+    private void notifyDownloadStatus(String status) {
         JSObject result = new JSObject();
-        result.put("status", "ready");
+        result.put("status", status);
         notifyListeners("androidUpdateDownload", result);
     }
 }
