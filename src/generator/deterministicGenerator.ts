@@ -1,5 +1,6 @@
 import {evaluateHardConstraints, matchesRole} from './constraints';
 import {CandidateExclusion, CandidateSelection, GeneratedDay, GeneratedExercise, GeneratedProgram, GenerationResult, GeneratorCandidate, GeneratorDurationBreakdown, GeneratorInput, GeneratorRole, NormalizedGeneratorInput, WarmupStep} from './types';
+import {ProgramDurationMinutes} from '../programs/types';
 import {WEEKLY_ROLE_TEMPLATES} from './seedPrograms';
 
 export function stableHash(value: string): string {
@@ -15,25 +16,25 @@ export function normalizeGeneratorInput(input: GeneratorInput): NormalizedGenera
     return {...normalized, inputHash: stableHash(JSON.stringify(normalized))};
 }
 
-function prescriptionFor(role: GeneratorRole, duration: 40 | 60, goal: GeneratorInput['goal'], id: string) {
+function prescriptionFor(role: GeneratorRole, duration: ProgramDurationMinutes, goal: GeneratorInput['goal'], id: string) {
     const primary = ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(role);
-    const sets = primary ? (duration === 60 ? 4 : 3) : role === 'accessory' ? (duration === 60 ? 2 : 2) : 3;
+    const sets = primary ? (duration >= 60 ? 4 : 3) : role === 'accessory' ? 2 : 3;
     const strength = primary && goal !== 'hypertrophy';
-    return {id, workingSets: sets, repsMin: strength ? 4 : 8, repsMax: strength ? 6 : 12, targetRir: 2, restSeconds: primary ? (duration === 60 ? 180 : 150) : role === 'accessory' ? 60 : duration === 60 ? 120 : 90, loadReferenceKg: 0};
+    return {id, workingSets: sets, repsMin: strength ? 4 : 8, repsMax: strength ? 6 : 12, targetRir: 2, restSeconds: primary ? (duration >= 60 ? 180 : 150) : role === 'accessory' ? 60 : duration >= 60 ? 120 : 90, loadReferenceKg: 0};
 }
 
-function warmup(lowBackComfort: boolean, duration: 40 | 60): WarmupStep[] {
+function warmup(lowBackComfort: boolean, duration: ProgramDurationMinutes): WarmupStep[] {
     if (lowBackComfort) return [
         {id: 'easy-cardio', name: 'Easy cycling or walking', seconds: 120, reason: 'Raise body temperature gradually.'},
         {id: 'cat-camel', name: 'Gentle cat-camel', seconds: 45, reason: 'Controlled mobility without forcing range.'},
         {id: 'bird-dog', name: 'Controlled bird dog', seconds: 60, reason: 'Prepare trunk control.'},
         {id: 'glute-bridge', name: 'Glute bridge', seconds: 60, reason: 'Prepare the hips.'},
-        {id: 'hinge-practice', name: 'Hinge-to-wall or unloaded movement', seconds: duration === 60 ? 135 : 15, reason: 'Practice the workout movement pattern.'},
+        {id: 'hinge-practice', name: 'Hinge-to-wall or unloaded movement', seconds: duration >= 60 ? 135 : 15, reason: 'Practice the workout movement pattern.'},
     ];
-    return [{id: 'easy-cardio', name: 'Easy cardio', seconds: 120, reason: 'Raise body temperature gradually.'}, {id: 'dynamic-prep', name: 'Targeted dynamic mobility', seconds: 120, reason: 'Prepare the joints used.'}, ...(duration === 60 ? [{id: 'movement-practice', name: 'Unloaded movement practice', seconds: 180, reason: 'Prepare the first primary movement.'}] : [{id: 'movement-practice', name: 'Unloaded movement practice', seconds: 60, reason: 'Prepare the first primary movement.'}])];
+    return [{id: 'easy-cardio', name: 'Easy cardio', seconds: 120, reason: 'Raise body temperature gradually.'}, {id: 'dynamic-prep', name: 'Targeted dynamic mobility', seconds: 120, reason: 'Prepare the joints used.'}, ...(duration >= 60 ? [{id: 'movement-practice', name: 'Unloaded movement practice', seconds: 180, reason: 'Prepare the first primary movement.'}] : [{id: 'movement-practice', name: 'Unloaded movement practice', seconds: 60, reason: 'Prepare the first primary movement.'}])];
 }
 
-export function estimateGeneratedDay(exercises: GeneratedExercise[], warmupSeconds: number, conditioningSeconds: number, targetMinutes: 40 | 60): GeneratorDurationBreakdown {
+export function estimateGeneratedDay(exercises: GeneratedExercise[], warmupSeconds: number, conditioningSeconds: number, targetMinutes: ProgramDurationMinutes): GeneratorDurationBreakdown {
     const ramp = exercises.filter((entry) => ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(entry.role)).length * 180;
     const execution = exercises.reduce((sum, entry) => sum + entry.prescription.workingSets * 40, 0);
     const rest = exercises.reduce((sum, entry) => sum + Math.max(0, entry.prescription.workingSets - 1) * entry.prescription.restSeconds, 0);
@@ -76,7 +77,7 @@ function selectExercise(role: GeneratorRole, dayIndex: number, candidates: Gener
 
 export function generateProgram(rawInput: GeneratorInput, rawCandidates: GeneratorCandidate[]): GenerationResult {
     const input = normalizeGeneratorInput(rawInput);
-    if (![2, 3].includes(input.frequency) || ![40, 60].includes(input.durationMinutes) || !input.equipment.length) return {ok: false, code: 'INVALID_INPUT', message: 'Invalid frequency, duration or equipment.', exclusions: []};
+    if ((input.frequency !== 2 && input.frequency !== 3) || ![40, 60].includes(input.durationMinutes) || !input.equipment.length) return {ok: false, code: 'INVALID_INPUT', message: 'Invalid frequency, duration or equipment.', exclusions: []};
     const candidates = [...rawCandidates].sort((a, b) => a.id.localeCompare(b.id));
     const exclusions: CandidateExclusion[] = [];
     const selections: CandidateSelection[] = [];

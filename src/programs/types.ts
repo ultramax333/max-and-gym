@@ -1,6 +1,6 @@
 export type ProgramStatus = 'draft' | 'active' | 'archived';
-export type ProgramFrequency = 2 | 3;
-export type ProgramDurationMinutes = 40 | 60;
+export type ProgramFrequency = 1 | 2 | 3;
+export type ProgramDurationMinutes = 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 55 | 60;
 export type ExerciseRole = 'primary' | 'secondary' | 'accessory' | 'conditioning';
 export type ExerciseGroupType = 'single' | 'superset' | 'triset' | 'circuit';
 export type ExerciseSetScheme = 'straight' | 'top-backoff' | 'ramp' | 'drop' | 'timed' | 'circuit';

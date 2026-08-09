@@ -39,11 +39,11 @@ export class ProgramRepository {
     }
 
     async create(input: CreateProgramInput): Promise<ProgramDetail> {
-        if (![2, 3].includes(input.weeklyFrequency)) throw new ProgramDomainError('PROGRAM_INVALID_FREQUENCY', 'A program must contain two or three days.');
+        if (![1, 2, 3].includes(input.weeklyFrequency)) throw new ProgramDomainError('PROGRAM_INVALID_FREQUENCY', 'A program must contain one, two or three days.');
         const now = this.iso();
         const id = this.clock.id();
         const program: TrainingProgramRecord = {id, name: input.name.trim() || 'My program', description: '', source: 'manual', status: 'draft', weeklyFrequency: input.weeklyFrequency, defaultDurationMinutes: input.defaultDurationMinutes, currentDayIndex: 0, createdAt: now, updatedAt: now};
-        const days = Array.from({length: input.weeklyFrequency}, (_, sequenceIndex) => ({id: this.clock.id(), programId: id, name: `Day ${String.fromCharCode(65 + sequenceIndex)}`, sequenceIndex, emphasis: 'Full body', targetDurationMinutes: input.defaultDurationMinutes, warmupSeconds: input.defaultDurationMinutes === 40 ? 300 : 420, conditioningSeconds: 0, notes: ''} as const));
+        const days = Array.from({length: input.weeklyFrequency}, (_, sequenceIndex) => ({id: this.clock.id(), programId: id, name: `Day ${String.fromCharCode(65 + sequenceIndex)}`, sequenceIndex, emphasis: 'Full body', targetDurationMinutes: input.defaultDurationMinutes, warmupSeconds: input.defaultDurationMinutes <= 30 ? 180 : input.defaultDurationMinutes <= 45 ? 300 : 420, conditioningSeconds: 0, notes: ''} as const));
         await this.db.transaction('rw', [this.db.trainingProgram, this.db.programDay], () => this.db.trainingProgram.add(program).then(() => this.db.programDay.bulkAdd(days)));
         return (await this.get(id))!;
     }
