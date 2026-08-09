@@ -1,20 +1,20 @@
 import {Capacitor, registerPlugin} from '@capacitor/core';
 
 interface NativeAndroidUpdatePlugin {
-    openDownload(options: {url: string}): Promise<void>;
+    downloadAndInstall(options: {url: string}): Promise<{status: 'downloading' | 'permission-required'}>;
 }
 
 const NativeAndroidUpdate = registerPlugin<NativeAndroidUpdatePlugin>('AndroidUpdate');
 
 export interface AndroidUpdateLauncher {
     isNativeAndroid(): boolean;
-    openDownload(url: string): Promise<void>;
+    downloadAndInstall(url: string): Promise<{status: 'downloading' | 'permission-required'}>;
 }
 
 export const androidUpdateLauncher: AndroidUpdateLauncher = {
     isNativeAndroid: () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android',
-    async openDownload(url) {
+    async downloadAndInstall(url) {
         if (!this.isNativeAndroid()) throw new Error('Android update download is only available in the installed Android app.');
-        await NativeAndroidUpdate.openDownload({url});
+        return NativeAndroidUpdate.downloadAndInstall({url});
     },
 };

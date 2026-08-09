@@ -24,7 +24,7 @@ function renderCard(service: AndroidUpdateService, launcher: AndroidUpdateLaunch
 describe('AndroidUpdateCard', () => {
     it('does not contact GitHub until the user taps the manual check', async () => {
         const service = {check: vi.fn(async () => ({status: 'available' as const, currentVersion: '1.0.0-test', release: update}))};
-        const launcher = {isNativeAndroid: () => true, openDownload: vi.fn(async () => undefined)};
+        const launcher = {isNativeAndroid: () => true, downloadAndInstall: vi.fn(async () => ({status: 'downloading' as const}))};
         renderCard(service, launcher);
         expect(service.check).not.toHaveBeenCalled();
         fireEvent.click(screen.getByRole('button', {name: 'Check for update'}));
@@ -32,25 +32,25 @@ describe('AndroidUpdateCard', () => {
         expect(service.check).toHaveBeenCalledTimes(1);
     });
 
-    it('requires confirmation before opening the approved browser download', async () => {
+    it('requires confirmation before starting the native download', async () => {
         const service = {check: vi.fn(async () => ({status: 'available' as const, currentVersion: '1.0.0-test', release: update}))};
-        const launcher = {isNativeAndroid: () => true, openDownload: vi.fn(async () => undefined)};
+        const launcher = {isNativeAndroid: () => true, downloadAndInstall: vi.fn(async () => ({status: 'downloading' as const}))};
         renderCard(service, launcher);
         fireEvent.click(screen.getByRole('button', {name: 'Check for update'}));
-        fireEvent.click(await screen.findByRole('button', {name: 'Open download'}));
+        fireEvent.click(await screen.findByRole('button', {name: 'Download update'}));
         expect(await screen.findByRole('dialog')).toBeInTheDocument();
-        expect(launcher.openDownload).not.toHaveBeenCalled();
-        fireEvent.click(screen.getByRole('button', {name: 'Open GitHub download'}));
-        await waitFor(() => expect(launcher.openDownload).toHaveBeenCalledWith(update.downloadUrl));
+        expect(launcher.downloadAndInstall).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByRole('button', {name: 'Download update'}));
+        await waitFor(() => expect(launcher.downloadAndInstall).toHaveBeenCalledWith(update.downloadUrl));
     });
 
     it('blocks update activity throughout an active workout', async () => {
         const service = {check: vi.fn(async () => ({status: 'available' as const, currentVersion: '1.0.0-test', release: update}))};
-        const launcher = {isNativeAndroid: () => true, openDownload: vi.fn(async () => undefined)};
+        const launcher = {isNativeAndroid: () => true, downloadAndInstall: vi.fn(async () => ({status: 'downloading' as const}))};
         renderCard(service, launcher, 'active-workout');
         fireEvent.click(screen.getByRole('button', {name: 'Check for update'}));
         expect(await screen.findByText(/Finish or abandon the active workout/)).toBeInTheDocument();
         expect(service.check).not.toHaveBeenCalled();
-        expect(launcher.openDownload).not.toHaveBeenCalled();
+        expect(launcher.downloadAndInstall).not.toHaveBeenCalled();
     });
 });

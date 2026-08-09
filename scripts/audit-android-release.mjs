@@ -1,12 +1,13 @@
 import {readFile} from 'node:fs/promises';
 
-const [gradle, workflow, providerPaths, gitignore, updatePlugin, mainActivity, viteConfig] = await Promise.all([
+const [gradle, workflow, providerPaths, gitignore, updatePlugin, mainActivity, manifest, viteConfig] = await Promise.all([
     readFile(new URL('../android/app/build.gradle', import.meta.url), 'utf8'),
     readFile(new URL('../.github/workflows/android.yml', import.meta.url), 'utf8'),
     readFile(new URL('../android/app/src/main/res/xml/file_paths.xml', import.meta.url), 'utf8'),
     readFile(new URL('../.gitignore', import.meta.url), 'utf8'),
     readFile(new URL('../android/app/src/main/java/io/github/ultramax333/maxandgym/AndroidUpdatePlugin.java', import.meta.url), 'utf8'),
     readFile(new URL('../android/app/src/main/java/io/github/ultramax333/maxandgym/MainActivity.java', import.meta.url), 'utf8'),
+    readFile(new URL('../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8'),
     readFile(new URL('../vite.config.ts', import.meta.url), 'utf8'),
 ]);
 
@@ -62,9 +63,15 @@ if (signatureVerification < 0 || releasePublication <= signatureVerification) {
 }
 
 if (!mainActivity.includes('registerPlugin(AndroidUpdatePlugin.class)') ||
+    !updatePlugin.includes('downloadAndInstall(PluginCall call)') ||
+    !updatePlugin.includes('DownloadManager') ||
     !updatePlugin.includes('APPROVED_HOST = "github.com"') ||
     !updatePlugin.includes('APPROVED_PATH_PREFIX = "/ultramax333/max-and-gym/releases/download/"')) {
     throw new Error('The Android update launcher is not registered or repository-scoped.');
+}
+
+if (!manifest.includes('android.permission.REQUEST_INSTALL_PACKAGES')) {
+    throw new Error('Android in-app updates must declare the package installation permission.');
 }
 
 if (!mainActivity.includes('getOnBackPressedDispatcher()') ||
