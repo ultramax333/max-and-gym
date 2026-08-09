@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.ParcelFileDescriptor;
 import android.provider.Settings;
 
 import androidx.core.content.FileProvider;
@@ -183,7 +184,8 @@ public class AndroidUpdatePlugin extends Plugin {
             File sharedDirectory = new File(getContext().getFilesDir(), "shared");
             if (!sharedDirectory.exists() && !sharedDirectory.mkdirs()) throw new IOException("Could not create update directory.");
             File apkFile = new File(sharedDirectory, "max-and-gym-update.apk");
-            try (InputStream input = downloadManager.openDownloadedFile(downloadId);
+            try (ParcelFileDescriptor descriptor = downloadManager.openDownloadedFile(downloadId);
+                 InputStream input = new ParcelFileDescriptor.AutoCloseInputStream(descriptor);
                  OutputStream output = new FileOutputStream(apkFile, false)) {
                 byte[] buffer = new byte[64 * 1024];
                 int count;
