@@ -33,6 +33,31 @@ jobs:
       - name: Enforce high/critical advisory policy
         run: node scripts/check-vulnerabilities.mjs artifacts/audit/npm-audit.json
       - run: npm run quality
+      - name: Include signed Android installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          release_tag="v$(node --input-type=module -e "import metadata from './package.json' with {type:'json'}; process.stdout.write(metadata.version)")"
+          apk_url=""
+          apk_name=""
+          for attempt in {1..18}; do
+            apk_name="$(gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[] | select(.name | endswith("-release.apk")) | .name' | head -n 1)"
+            if [[ -n "$apk_name" ]]; then
+              apk_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$release_tag/$apk_name"
+              break
+            fi
+            echo "Waiting for signed Android release $release_tag (attempt $attempt/18)."
+            sleep 10
+          done
+          if [[ -z "$apk_name" || -z "$apk_url" ]]; then
+            echo "Signed Android release $release_tag was not published in time." >&2
+            exit 1
+          fi
+          mkdir -p build/downloads
+          curl --fail --location --retry 3 --retry-delay 2 "$apk_url" -o "build/downloads/$apk_name"
+          cp "build/downloads/$apk_name" build/downloads/max-and-gym-latest.apk
+          test -s "build/downloads/$apk_name"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
