@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Alert, Box, Button, Card, CardContent, Checkbox, Chip, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
+import {Alert, Box, Button, Card, CardContent, CardMedia, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
 import {AutoAwesome, Save} from '@mui/icons-material';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useLiveQuery} from 'dexie-react-hooks';
@@ -7,9 +7,10 @@ import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SectionHeader} from '../../components/ui/UiPrimitives';
 import {db} from '../../db/db';
 import {ExerciseCatalogRepository} from '../../exerciseCatalog/ExerciseCatalogRepository';
+import {LibraryExercise} from '../../exerciseCatalog/types';
 import {GENERATOR_VERSION as BUILD_GENERATOR_VERSION, EXERCISE_SEED_VERSION, PROGRAM_SEED_VERSION} from '../../config/buildIdentity';
 import {generateCoreSession} from '../../generator/coreWarmup';
-import {generateProgram, regenerateAccessories} from '../../generator/deterministicGenerator';
+import {generateProgram, regenerateAccessories, stableHash} from '../../generator/deterministicGenerator';
 import {GeneratedCoreSession, GeneratedProgram, GeneratorCandidate, GeneratorInput, GoalBlend} from '../../generator/types';
 import {generateQuickSession, QUICK_SESSION_DURATIONS, QUICK_SESSION_ZONES, QuickSessionZone} from '../../generator/quickSession';
 import {ProgramRepository} from '../../programs/ProgramRepository';
@@ -24,6 +25,10 @@ const catalog = new ExerciseCatalogRepository(db);
 const programs = new ProgramRepository(db);
 const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
 const allEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'];
+
+function catalogMediaUrl(path: string): string {
+    return `${import.meta.env.BASE_URL}${path}`;
+}
 
 export function ProgramsWithGeneratorPage() {
     const navigate = useNavigate();
@@ -55,6 +60,8 @@ function QuickSessionBuilder() {
     const [equipment, setEquipment] = useState(allEquipment);
     const [seed, setSeed] = useState('maxgym-session-01');
     const [preview, setPreview] = useState<GeneratedProgram>();
+    const [libraryExercises, setLibraryExercises] = useState<LibraryExercise[]>([]);
+    const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
 
@@ -62,7 +69,9 @@ function QuickSessionBuilder() {
         setBusy(true);
         setError('');
         try {
-            const candidates = await catalog.list({status: 'eligible'}) as GeneratorCandidate[];
+            const catalogExercises = await catalog.list({status: 'eligible'});
+            setLibraryExercises(catalogExercises);
+            const candidates = catalogExercises as GeneratorCandidate[];
             const input: GeneratorInput = {
                 frequency: 1,
                 durationMinutes: duration,
@@ -88,6 +97,7 @@ function QuickSessionBuilder() {
                 setError(result.message);
             } else {
                 setPreview(result.program);
+                setReplaceIndex(null);
             }
         } catch (reason) {
             setPreview(undefined);
@@ -122,6 +132,38 @@ function QuickSessionBuilder() {
         }
     };
 
+    const replaceExercise = (index: number, replacement: LibraryExercise) => {
+        if (!preview) return;
+        const currentDay = preview.days[0];
+        const existingIds = new Set(currentDay.exercises.map((entry) => entry.exerciseId));
+        if (existingIds.has(replacement.id)) return;
+        const current = currentDay.exercises[index];
+        const nextExercise = {
+            ...current,
+            exerciseId: replacement.id,
+            exerciseName: replacement.name,
+            movementPattern: replacement.movementPattern,
+            primaryMuscles: [...replacement.primaryMuscles],
+            alternativeExerciseIds: libraryExercises.filter((entry) => entry.id !== replacement.id && !existingIds.has(entry.id) && (entry.movementPattern === replacement.movementPattern || entry.primaryMuscles.some((muscle) => replacement.primaryMuscles.includes(muscle)))).slice(0, 3).map((entry) => entry.id),
+            reasons: ['Manually selected from the local exercise alternatives.'],
+        };
+        const nextDay = {...currentDay, exercises: currentDay.exercises.map((entry, entryIndex) => entryIndex === index ? nextExercise : entry)};
+        const nextSelections = preview.explanation.selections.map((selection) => selection.exerciseId === current.exerciseId ? {...selection, exerciseId: replacement.id, reasons: nextExercise.reasons} : selection);
+        const nextProgram = {...preview, days: [nextDay], explanation: {...preview.explanation, selections: nextSelections}, identityHash: ''};
+        nextProgram.identityHash = stableHash(JSON.stringify(nextProgram));
+        setPreview(nextProgram);
+        setReplaceIndex(null);
+    };
+
+    const replacementOptions = replaceIndex === null || !preview ? [] : (() => {
+        const current = preview.days[0].exercises[replaceIndex];
+        const selectedIds = new Set(preview.days[0].exercises.map((entry) => entry.exerciseId));
+        const preferred = current.alternativeExerciseIds.map((id) => libraryExercises.find((entry) => entry.id === id)).filter((entry): entry is LibraryExercise => entry !== undefined && !selectedIds.has(entry.id));
+        if (preferred.length >= 3) return preferred;
+        const fallback = libraryExercises.filter((entry) => !selectedIds.has(entry.id) && !preferred.some((item) => item.id === entry.id) && (entry.movementPattern === current.movementPattern || entry.primaryMuscles.some((muscle) => current.primaryMuscles.includes(muscle))));
+        return [...preferred, ...fallback].slice(0, 5);
+    })();
+
     return <Stack spacing={2}>
         <Card><CardContent><Stack spacing={2}>
             <Typography variant="h5" component="h2">Build a single session</Typography>
@@ -138,9 +180,18 @@ function QuickSessionBuilder() {
         {error && <Alert severity="error">{error}</Alert>}
         {preview && <Card><CardContent><Stack spacing={2}>
             <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1}><div><Typography variant="h5" component="h2">{preview.name}</Typography><Typography color="text.secondary">{preview.days[0].exercises.length} exercises · about {Math.round(preview.days[0].duration.total / 60)} min</Typography></div><Stack direction={{xs: 'column', sm: 'row'}} gap={1}><Button variant="outlined" startIcon={<Save/>} disabled={busy} onClick={() => void save()}>Save and edit</Button><PrimaryButton disabled={busy} onClick={() => void start()}>Start this session</PrimaryButton></Stack></Stack>
-            {preview.days[0].exercises.map((exercise, index) => <Stack key={exercise.exerciseId} direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" gap={1} sx={{py: 1, borderTop: 1, borderColor: 'divider'}}><div><Typography fontWeight={700}>{index + 1}. {exercise.exerciseName}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescription.workingSets} × {exercise.prescription.repsMin}–{exercise.prescription.repsMax} · rest {exercise.prescription.restSeconds} s</Typography></div><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography></Stack>)}
+            {preview.days[0].exercises.map((exercise, index) => {
+                const details = libraryExercises.find((entry) => entry.id === exercise.exerciseId);
+                const startImage = details?.media.find((media) => media.kind === 'start-image') ?? details?.media.find((media) => media.kind === 'thumbnail');
+                const endImage = details?.media.find((media) => media.kind === 'end-image');
+                return <Card key={`${exercise.exerciseId}-${index}`} variant="outlined"><CardContent><Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
+                    <Box sx={{width: {xs: '100%', sm: 190}, flexShrink: 0, display: 'grid', gridTemplateColumns: endImage ? '1fr 1fr' : '1fr', gap: 0.5, alignContent: 'start'}}>{startImage && <CardMedia component="img" image={catalogMediaUrl(startImage.path)} alt={startImage.altText} loading="lazy" sx={{width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 1}}/>}{endImage && <CardMedia component="img" image={catalogMediaUrl(endImage.path)} alt={endImage.altText} loading="lazy" sx={{width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 1}}/>}{!startImage && <Box sx={{aspectRatio: '1', bgcolor: 'background.default', borderRadius: 1, display: 'grid', placeItems: 'center'}}><Typography variant="caption" color="text.secondary">No local photo</Typography></Box>}</Box>
+                    <Stack spacing={0.75} sx={{minWidth: 0, flex: 1}}><Typography fontWeight={700}>{index + 1}. {exercise.exerciseName}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescription.workingSets} × {exercise.prescription.repsMin}–{exercise.prescription.repsMax} · rest {exercise.prescription.restSeconds} s</Typography><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Box><Button size="small" variant="outlined" disabled={libraryExercises.length === 0} onClick={() => setReplaceIndex(index)}>Replace exercise</Button></Box></Stack>
+                </Stack></CardContent></Card>;
+            })}
             <Alert severity="info">You can start it now, or save it to Programs to rename, reorder and edit exercises later.</Alert>
         </Stack></CardContent></Card>}
+        {preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent><Typography color="text.secondary" sx={{mb: 2}}>Choose a compatible local alternative. The current sets, reps and rest are kept.</Typography>{replacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{replacementOptions.map((option) => { const image = option.media.find((media) => media.kind === 'thumbnail') ?? option.media.find((media) => media.kind === 'start-image'); return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}>{image && <CardMedia component="img" image={catalogMediaUrl(image.path)} alt={image.altText} loading="lazy" sx={{width: 96, height: 96, objectFit: 'cover'}}/>}<CardContent sx={{minWidth: 0, flex: 1}}><Typography fontWeight={700}>{option.name}</Typography><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative was found in the local catalog.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
     </Stack>;
 }
 
