@@ -70,17 +70,19 @@ export function AndroidUpdateCard({
         if (await checkSafety()) setConfirmOpen(true);
     };
 
-    const openDownload = async () => {
+    const downloadUpdate = async () => {
         if (!available) return;
         setConfirmOpen(false);
         setBusy(true);
         try {
             if (!(await checkSafety())) return;
-            await launcher.openDownload(available.downloadUrl);
-            setMessage('GitHub opened in your browser. Download the APK, open it, then approve Android’s installation prompt.');
+            const result = await launcher.downloadAndInstall(available.downloadUrl);
+            setMessage(result.status === 'permission-required'
+                ? 'Allow Max & Gym to install updates, then tap Download update again.'
+                : 'The update is downloading. Android will show the installation prompt when it is ready.');
         } catch (reason) {
-            const errorId = recordException(reason, 'ANDROID_UPDATE_LAUNCH_FAILED', 'PWA', 'The Android update download could not be opened.');
-            setError(`Could not open the release download. Error ID: ${errorId}`);
+            const errorId = recordException(reason, 'ANDROID_UPDATE_LAUNCH_FAILED', 'PWA', 'The Android update download could not be started.');
+            setError(`Could not start the release download. Error ID: ${errorId}`);
         } finally {
             setBusy(false);
         }
@@ -98,32 +100,32 @@ export function AndroidUpdateCard({
                         <Typography variant="h6">Android updates</Typography>
                         <Chip size="small" label={`Installed ${buildIdentity.appVersion} (${buildIdentity.buildNumber})`}/>
                     </Stack>
-                    <Typography color="text.secondary">Checks happen only when you tap the button. The app contacts the public GitHub Releases API and never downloads or installs silently.</Typography>
+                    <Typography color="text.secondary">Checks happen only when you tap the button. The app contacts the public GitHub Releases API and downloads only after your confirmation.</Typography>
                     {message && <Alert severity={available ? 'info' : 'success'}>{message}</Alert>}
                     {error && <Alert severity="warning">{error}</Alert>}
                     {available && <Alert severity="info" icon={<SystemUpdate/>}>
                         Release {available.versionName} · Android code {available.versionCode} · {Math.ceil(available.assetSize / 1024 / 1024)} MB
-                        {!available.immutable && <><br/>GitHub does not mark this release immutable; Android’s signing check still applies.</>}
+                        {!available.immutable && <><br/>GitHub does not mark this release immutable; Android's signing check still applies.</>}
                     </Alert>}
                 </Stack>
             </CardContent>
             <CardActions sx={{px: 2, pb: 2, flexWrap: 'wrap'}}>
-                <Button variant="outlined" disabled={busy} onClick={() => void check()}>{busy ? 'Checking…' : 'Check for update'}</Button>
-                {available && <Button variant="contained" startIcon={<Download/>} disabled={busy} onClick={() => void prepareDownload()}>Open download</Button>}
+                <Button variant="outlined" disabled={busy} onClick={() => void check()}>{busy ? 'Checking...' : 'Check for update'}</Button>
+                {available && <Button variant="contained" startIcon={<Download/>} disabled={busy} onClick={() => void prepareDownload()}>Download update</Button>}
             </CardActions>
         </Card>
         <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} aria-labelledby="android-update-confirm-title">
-            <DialogTitle id="android-update-confirm-title">Leave Max & Gym to update?</DialogTitle>
+            <DialogTitle id="android-update-confirm-title">Download Max & Gym update?</DialogTitle>
             <DialogContent>
                 <Stack spacing={1.5}>
-                    <Typography>Your browser will open the exact APK attached to GitHub release v{available?.versionName}. After downloading, open the APK yourself.</Typography>
-                    <Alert severity="warning">Do not uninstall Max & Gym. Android must show an installation confirmation and will accept an in-place update only when the application ID, signing certificate and version code are compatible.</Alert>
+                    <Typography>The signed APK for release v{available?.versionName} will download in the background. Android will ask you to confirm the installation when it is ready.</Typography>
+                    <Alert severity="warning">Do not uninstall Max & Gym. Android accepts an in-place update only when the application ID, signing certificate and version code are compatible.</Alert>
                     <Typography variant="body2" color="text.secondary">Your local workout data is not uploaded. Make a .maxgym backup before major updates.</Typography>
                 </Stack>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-                <Button variant="contained" onClick={() => void openDownload()}>Open GitHub download</Button>
+                <Button variant="contained" onClick={() => void downloadUpdate()}>Download update</Button>
             </DialogActions>
         </Dialog>
     </>;
