@@ -65,6 +65,8 @@ if (signatureVerification < 0 || releasePublication <= signatureVerification) {
 if (!mainActivity.includes('registerPlugin(AndroidUpdatePlugin.class)') ||
     !updatePlugin.includes('downloadAndInstall(PluginCall call)') ||
     !updatePlugin.includes('DownloadManager') ||
+    !updatePlugin.includes('ACTION_INSTALL_PACKAGE') ||
+    !updatePlugin.includes('FileProvider.getUriForFile') ||
     !updatePlugin.includes('APPROVED_HOST = "github.com"') ||
     !updatePlugin.includes('APPROVED_PATH_PREFIX = "/ultramax333/max-and-gym/releases/download/"')) {
     throw new Error('The Android update launcher is not registered or repository-scoped.');
