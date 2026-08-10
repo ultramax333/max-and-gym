@@ -38,6 +38,7 @@ public class AndroidUpdatePlugin extends Plugin {
     private static final String APK_MIME_TYPE = "application/vnd.android.package-archive";
     private static final String PREFERENCES_NAME = "android-update";
     private static final String PENDING_DOWNLOAD_ID = "pendingDownloadId";
+    private static final String STAGED_APK_PATH = "stagedApkPath";
 
     private DownloadManager downloadManager;
     private BroadcastReceiver downloadReceiver;
@@ -103,6 +104,15 @@ public class AndroidUpdatePlugin extends Plugin {
             return;
         }
 
+        // A previous DownloadManager entry can remain at 100% after the installer
+        // was dismissed. Remove it before starting a fresh download so Android
+        // does not reuse a completed destination and leave the UI stuck.
+        long previousDownloadId = pendingDownloadId();
+        if (previousDownloadId > 0L) downloadManager.remove(previousDownloadId);
+        clearPendingDownload();
+        clearStagedApk();
+
+        String destinationName = "max-and-gym-update-" + System.currentTimeMillis() + ".apk";
         DownloadManager.Request request = new DownloadManager.Request(uri)
             .setTitle("Max & Gym update")
             .setDescription("Downloading the signed Android update")
@@ -110,7 +120,7 @@ public class AndroidUpdatePlugin extends Plugin {
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             .setAllowedOverMetered(true)
             .setAllowedOverRoaming(false)
-            .setDestinationInExternalFilesDir(getContext(), Environment.DIRECTORY_DOWNLOADS, "max-and-gym-update.apk");
+            .setDestinationInExternalFilesDir(getContext(), Environment.DIRECTORY_DOWNLOADS, destinationName);
         long downloadId = downloadManager.enqueue(request);
         getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
             .edit()
@@ -121,6 +131,34 @@ public class AndroidUpdatePlugin extends Plugin {
         JSObject result = new JSObject();
         result.put("status", "downloading");
         result.put("downloadId", downloadId);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void getUpdateStatus(PluginCall call) {
+        JSObject result = new JSObject();
+        result.put("staged", stagedApkFile().isFile());
+        result.put("downloading", pendingDownloadId() > 0L);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void installPending(PluginCall call) {
+        File apkFile = stagedApkFile();
+        if (!apkFile.isFile()) {
+            JSObject result = new JSObject();
+            result.put("status", "none");
+            call.resolve(result);
+            return;
+        }
+        Uri apkUri = FileProvider.getUriForFile(
+            getContext(),
+            getContext().getPackageName() + ".fileprovider",
+            apkFile
+        );
+        boolean launched = launchInstaller(apkUri);
+        JSObject result = new JSObject();
+        result.put("status", launched ? "ready" : "failed");
         call.resolve(result);
     }
 
@@ -196,6 +234,10 @@ public class AndroidUpdatePlugin extends Plugin {
                 getContext().getPackageName() + ".fileprovider",
                 apkFile
             );
+            getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(STAGED_APK_PATH, apkFile.getAbsolutePath())
+                .apply();
         } catch (Exception exception) {
             // The UI can retry the update after a failed copy or stale DownloadManager entry.
         }
@@ -218,7 +260,22 @@ public class AndroidUpdatePlugin extends Plugin {
             .apply();
     }
 
-    private void launchInstaller(Uri apkUri) {
+    private File stagedApkFile() {
+        String path = getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+            .getString(STAGED_APK_PATH, null);
+        return path == null ? new File(getContext().getFilesDir(), "shared/max-and-gym-update.apk") : new File(path);
+    }
+
+    private void clearStagedApk() {
+        File file = stagedApkFile();
+        if (file.exists()) file.delete();
+        getContext().getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .remove(STAGED_APK_PATH)
+            .apply();
+    }
+
+    private boolean launchInstaller(Uri apkUri) {
         Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         intent.setDataAndType(apkUri, APK_MIME_TYPE);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -226,6 +283,7 @@ public class AndroidUpdatePlugin extends Plugin {
         try {
             getActivity().startActivity(intent);
             notifyDownloadStatus("ready");
+            return true;
         } catch (ActivityNotFoundException | SecurityException exception) {
             Intent fallback = new Intent(Intent.ACTION_VIEW);
             fallback.setDataAndType(apkUri, APK_MIME_TYPE);
@@ -233,8 +291,10 @@ public class AndroidUpdatePlugin extends Plugin {
             try {
                 getActivity().startActivity(fallback);
                 notifyDownloadStatus("ready");
+                return true;
             } catch (ActivityNotFoundException | SecurityException ignored) {
                 notifyDownloadStatus("failed");
+                return false;
             }
         }
     }

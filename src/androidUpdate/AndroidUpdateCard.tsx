@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Alert, Button, Card, CardActions, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography} from '@mui/material';
 import {Download, SystemUpdate} from '@mui/icons-material';
 import {DBContext} from '../context/dbContext';
@@ -30,6 +30,33 @@ export function AndroidUpdateCard({
     const [error, setError] = useState<string>();
     const [available, setAvailable] = useState<AndroidReleaseUpdate>();
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [downloadReady, setDownloadReady] = useState(false);
+
+    useEffect(() => {
+        if (!launcher.isNativeAndroid()) return undefined;
+        let active = true;
+        let listener: {remove: () => Promise<void>} | undefined;
+        if (launcher.getUpdateStatus) {
+            void launcher.getUpdateStatus().then((status) => {
+                if (active && status.staged) setDownloadReady(true);
+            });
+        }
+        if (launcher.addListener) {
+            void launcher.addListener((event) => {
+                if (!active) return;
+                if (event.status === 'ready') {
+                    setDownloadReady(true);
+                    setMessage('The update is ready. Tap Install update if Android did not open the installer.');
+                } else if (event.status === 'failed') {
+                    setError('The APK finished downloading but could not be opened. Tap Retry, or use the Android notification.');
+                }
+            }).then((handle) => { listener = handle; });
+        }
+        return () => {
+            active = false;
+            if (listener) void listener.remove();
+        };
+    }, [launcher]);
 
     const checkSafety = async (): Promise<boolean> => {
         if (!db) {
@@ -73,6 +100,7 @@ export function AndroidUpdateCard({
     const downloadUpdate = async () => {
         if (!available) return;
         setConfirmOpen(false);
+        setDownloadReady(false);
         setBusy(true);
         try {
             if (!(await checkSafety())) return;
@@ -83,6 +111,23 @@ export function AndroidUpdateCard({
         } catch (reason) {
             const errorId = recordException(reason, 'ANDROID_UPDATE_LAUNCH_FAILED', 'PWA', 'The Android update download could not be started.');
             setError(`Could not start the release download. Error ID: ${errorId}`);
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const installPending = async () => {
+        if (!launcher.installPending) return;
+        setBusy(true);
+        setError(undefined);
+        try {
+            const result = await launcher.installPending();
+            if (result.status === 'none') setError('No completed update is available. Tap Check for update, then Download update.');
+            else if (result.status === 'failed') setError('Android could not open the installer. Check that Max & Gym is allowed to install unknown apps.');
+            else setMessage('Android is ready to install the update.');
+        } catch (reason) {
+            const errorId = recordException(reason, 'ANDROID_UPDATE_INSTALL_FAILED', 'PWA', 'The staged Android update could not be opened.');
+            setError(`Could not open the update installer. Error ID: ${errorId}`);
         } finally {
             setBusy(false);
         }
@@ -112,6 +157,7 @@ export function AndroidUpdateCard({
             <CardActions sx={{px: 2, pb: 2, flexWrap: 'wrap'}}>
                 <Button variant="outlined" disabled={busy} onClick={() => void check()}>{busy ? 'Checking...' : 'Check for update'}</Button>
                 {available && <Button variant="contained" startIcon={<Download/>} disabled={busy} onClick={() => void prepareDownload()}>Download update</Button>}
+                {downloadReady && <Button variant="contained" color="secondary" disabled={busy} onClick={() => void installPending()}>Install update</Button>}
             </CardActions>
         </Card>
         <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)} aria-labelledby="android-update-confirm-title">
