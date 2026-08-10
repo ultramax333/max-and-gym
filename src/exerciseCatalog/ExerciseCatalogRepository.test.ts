@@ -26,7 +26,7 @@ describe('reviewed local exercise catalogue', () => {
 
     it('ships a reviewed, attributed and locally-addressed seed', () => {
         expect(seed.length).toBeGreaterThanOrEqual(150);
-        expect(seed.length).toBeLessThanOrEqual(220);
+        expect(seed.length).toBeLessThanOrEqual(400);
         expect(seed.every((entry) => entry.contentStatus === 'reviewed' && entry.sourceRevision === 'b0eed061e1c8' && entry.sourceUrl && entry.license === 'Unlicense')).toBe(true);
         expect(seed.every((entry) => entry.media.every((media) => media.path.startsWith('media/exercises/') && !media.path.startsWith('/')))).toBe(true);
         expect(seed.every((entry) => !/(burpee|bunny|rapid.*floor|rapid.*plank)/i.test(entry.name))).toBe(true);

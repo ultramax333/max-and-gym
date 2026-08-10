@@ -10,6 +10,40 @@ const reportFile = path.join(root, 'docs', 'reports', 'generated', '04-curation-
 const supportedEquipment = new Set(['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other']);
 const excluded = /(burpee|bunny|rapid.*floor|rapid.*plank|high.*impact.*transition)/i;
 const priority = /(squat|deadlift|row|press|curl|extension|raise|pull|lat|lunge|leg|calf|fly|crunch|plank|carry|sled|hip|glute|hamstring|abdominal|back|shoulder|triceps|biceps|machine|cable)/i;
+const curatedExpansionNames = new Set([
+    // Arms: distinct loading profiles, grips and useful machine/cable options.
+    'Machine Bicep Curl', 'Machine Preacher Curls', 'One Arm Dumbbell Preacher Curl', 'Overhead Cable Curl', 'Preacher Curl',
+    'Reverse Barbell Curl', 'Reverse Cable Curl', 'Seated Dumbbell Curl', 'Standing One-Arm Cable Curl', 'Zottman Curl',
+    'Band Skull Crusher', 'Bench Dips', 'JM Press', 'Kneeling Cable Triceps Extension', 'Machine Triceps Extension',
+    'Reverse Grip Triceps Pushdown', 'Seated Triceps Press', 'Smith Machine Close-Grip Bench Press', 'Tate Press',
+    'Tricep Dumbbell Kickback', 'Triceps Overhead Extension with Rope', 'Triceps Pushdown - Rope Attachment',
+    'Dumbbell Lying Pronation', 'Dumbbell Lying Supination', 'Plate Pinch', 'Palms-Up Dumbbell Wrist Curl Over A Bench',
+    'Palms-Down Dumbbell Wrist Curl Over A Bench', 'Wrist Roller',
+    // Chest and shoulders: machine, cable, unilateral and joint-preparation choices.
+    'Dips - Chest Version', 'Incline Dumbbell Bench With Palms Facing In', 'Low Cable Crossover', 'Leverage Chest Press',
+    'Machine Bench Press', 'One Arm Dumbbell Bench Press', 'One-Arm Kettlebell Floor Press', 'Pushups',
+    'Push-Ups With Feet Elevated', 'Smith Machine Bench Press', 'Smith Machine Incline Bench Press', 'Standing Cable Chest Press',
+    'Dumbbell Scaption', 'External Rotation', 'External Rotation with Band', 'Internal Rotation with Band', 'Kettlebell Arnold Press',
+    'Lateral Raise - With Bands', 'Leverage Shoulder Press', 'Lying Rear Delt Raise', 'Machine Shoulder (Military) Press',
+    'Reverse Flyes', 'Reverse Machine Flyes', 'Seated Dumbbell Press', 'Seated Side Lateral Raise', 'Side Lateral Raise',
+    'Standing Military Press', 'Standing Palm-In One-Arm Dumbbell Press',
+    // Back and traps: vertical/horizontal pulls with practical commercial-gym substitutions.
+    'Chin-Up', 'Kneeling High Pulley Row', 'Kneeling Single-Arm High Pulley Row', 'Leverage Iso Row', 'One Arm Lat Pulldown',
+    'Pullups', 'Rope Straight-Arm Pulldown', 'Straight-Arm Pulldown', 'Underhand Cable Pulldowns', 'V-Bar Pulldown',
+    'Weighted Pull Ups', 'Wide-Grip Lat Pulldown', 'Leverage High Row', 'One-Arm Dumbbell Row', 'Seated Cable Rows',
+    'T-Bar Row with Handle', 'Suspended Row', 'Barbell Shrug', 'Dumbbell Shrug', 'Leverage Shrug',
+    // Lower body: machines, unilateral work and distinct posterior-chain patterns.
+    'Barbell Step Ups', 'Dumbbell Step Ups', 'Leg Extensions', 'Leg Press', 'Narrow Stance Leg Press',
+    'Single-Leg Leg Extension', 'Smith Machine Squat', 'Split Squat with Dumbbells', 'Trap Bar Deadlift', 'Wide Stance Barbell Squat',
+    'Kettlebell One-Legged Deadlift', 'Lying Leg Curls', 'Natural Glute Ham Raise', 'Platform Hamstring Slides',
+    'Romanian Deadlift', 'Seated Band Hamstring Curl', 'Seated Leg Curl', 'Standing Leg Curl',
+    'Butt Lift (Bridge)', 'One-Legged Cable Kickback', 'Pull Through', 'Single Leg Glute Bridge',
+    'Seated Calf Raise', 'Standing Calf Raises', 'Thigh Adductor', 'Thigh Abductor', 'Monster Walk',
+    // Core: anti-rotation, flexion, stability and loaded options without cosmetic duplicates.
+    'Ab Roller', 'Air Bike', 'Alternate Heel Touchers', 'Barbell Ab Rollout - On Knees', 'Dead Bug', 'Dumbbell Side Bend',
+    'Hanging Pike', 'Knee/Hip Raise On Parallel Bars', "Landmine 180's", 'Leg Pull-In', 'Pallof Press',
+    'Pallof Press With Rotation', 'Plank', 'Reverse Crunch', 'Russian Twist', 'Side Bridge', 'Standing Cable Wood Chop',
+]);
 
 function slug(value) {
     return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -82,13 +116,22 @@ function buildExercise(entry) {
 
 const raw = JSON.parse(await readFile(sourceFile, 'utf8'));
 const candidates = raw.filter((entry) => supportedEquipment.has(entry.equipment) && ['strength', 'cardio', 'stretching'].includes(entry.category) && !excluded.test(entry.name) && Array.isArray(entry.images) && entry.images.length >= 2);
-const reviewed = candidates
+const initialEntries = candidates
     .map((entry) => ({entry, score: priority.test(entry.name) ? 0 : 1}))
     .sort((a, b) => a.score - b.score || a.entry.name.localeCompare(b.entry.name))
     .slice(0, 180)
-    .map(({entry}) => buildExercise(entry));
+    .map(({entry}) => entry);
+const initialIds = new Set(initialEntries.map((entry) => entry.id));
+const expansionEntries = candidates
+    .filter((entry) => curatedExpansionNames.has(entry.name) && !initialIds.has(entry.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+const missingExpansionNames = [...curatedExpansionNames].filter((name) => !expansionEntries.some((entry) => entry.name === name));
+if (missingExpansionNames.length > 0 || expansionEntries.length !== curatedExpansionNames.size) {
+    throw new Error(`Curated expansion mismatch: ${missingExpansionNames.join(', ')}`);
+}
+const reviewed = [...initialEntries, ...expansionEntries].map((entry) => buildExercise(entry));
 const duplicateNames = reviewed.filter((entry, index) => reviewed.findIndex((other) => other.name.toLowerCase() === entry.name.toLowerCase()) !== index);
-if (reviewed.length < 150 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
+if (reviewed.length !== 300 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
 await mkdir(path.dirname(outputFile), {recursive: true});
 await mkdir(path.dirname(reportFile), {recursive: true});
 await writeFile(outputFile, JSON.stringify(reviewed, null, 2) + '\n');
@@ -98,6 +141,7 @@ await writeFile(reportFile, JSON.stringify({
     sourceCount: raw.length,
     reviewedCount: reviewed.length,
     generatorEligibleCount: reviewed.filter((entry) => entry.generatorEligible).length,
+    curatedExpansionCount: expansionEntries.length,
     excludedCount: raw.length - candidates.length,
     duplicateNames: duplicateNames.map((entry) => entry.name),
     generatedAt: new Date().toISOString(),

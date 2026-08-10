@@ -1,5 +1,5 @@
 import {evaluateHardConstraints} from './constraints';
-import {estimateGeneratedDay, normalizeGeneratorInput, stableHash} from './deterministicGenerator';
+import {normalizeGeneratorInput, stableHash} from './deterministicGenerator';
 import {CandidateExclusion, CandidateSelection, GeneratedExercise, GeneratedProgram, GenerationResult, GeneratorCandidate, GeneratorInput, GeneratorRole} from './types';
 import {ProgramDurationMinutes} from '../programs/types';
 
@@ -60,21 +60,18 @@ function roleFor(candidate: GeneratorCandidate): GeneratorRole {
     return 'accessory';
 }
 
-function exerciseCount(duration: ProgramDurationMinutes): number {
-    if (duration <= 20) return 3;
-    if (duration <= 35) return 4;
-    if (duration <= 50) return 5;
-    return 6;
-}
-
 function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorRole, index: number) {
-    const workingSets = duration >= 60 ? 4 : duration <= 20 ? 2 : 3;
+    const workingSets = duration <= 20 ? 2 : 3;
     const primary = ['horizontal-push', 'vertical-push', 'supported-pull', 'vertical-pull', 'leg-assistance', 'posterior-assistance'].includes(role);
     return {id: `quick:${duration}:${index}`, workingSets, repsMin: primary ? 8 : 10, repsMax: primary ? 12 : 15, targetRir: 2, restSeconds: primary ? (duration >= 45 ? 90 : 75) : 60, loadReferenceKg: 0};
 }
 
-function warmupSeconds(duration: ProgramDurationMinutes): number {
-    return duration <= 20 ? 120 : duration <= 40 ? 240 : 300;
+function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: ProgramDurationMinutes) {
+    const execution = exercises.reduce((sum, exercise) => sum + exercise.prescription.workingSets * 50, 0);
+    const rest = exercises.reduce((sum, exercise) => sum + Math.max(0, exercise.prescription.workingSets - 1) * exercise.prescription.restSeconds, 0);
+    const setup = exercises.length * 60;
+    const transitions = Math.max(0, exercises.length - 1) * 30;
+    return {warmup: 0, ramp: 0, execution, rest, setup, transitions, conditioning: 0, total: execution + rest + setup + transitions, target: targetMinutes * 60};
 }
 
 export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: GeneratorCandidate[], zone: QuickSessionZone): GenerationResult {
@@ -95,28 +92,34 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         return [{candidate, role, score, targetScore}];
     }).sort((a, b) => b.targetScore - a.targetScore || b.score - a.score || a.candidate.id.localeCompare(b.candidate.id));
 
-    const selected: typeof candidates = [];
+    const diverse: typeof candidates = [];
     const patterns = new Set<string>();
     for (const entry of candidates) {
-        if (selected.length >= exerciseCount(input.durationMinutes)) break;
-        if (patterns.has(entry.candidate.movementPattern) && selected.length < exerciseCount(input.durationMinutes) - 1) continue;
-        selected.push(entry);
+        if (patterns.has(entry.candidate.movementPattern)) continue;
+        diverse.push(entry);
         patterns.add(entry.candidate.movementPattern);
     }
-    if (selected.length < Math.min(3, exerciseCount(input.durationMinutes))) return {ok: false, code: 'NO_VALID_CANDIDATE', message: `Not enough eligible exercises for ${zoneDefinition.label}. Adjust equipment or exercise exclusions.`, exclusions};
-
-    const exercises: GeneratedExercise[] = selected.map((entry, index) => {
+    const ordered = [...diverse, ...candidates.filter((entry) => !diverse.some((diverseEntry) => diverseEntry.candidate.id === entry.candidate.id))];
+    const lowerBound = input.durationMinutes * 60 * 0.9;
+    const upperBound = input.durationMinutes * 60 * 1.1;
+    const minimumExercises = input.durationMinutes <= 20 ? 2 : 3;
+    const exercises: GeneratedExercise[] = [];
+    for (const entry of ordered) {
+        if (exercises.length >= 10) break;
+        if (exercises.length >= minimumExercises && quickSessionDuration(exercises, input.durationMinutes).total >= lowerBound) break;
+        const index = exercises.length;
         const prescription = exercisePrescription(input.durationMinutes, entry.role, index);
-        const reasons = [`Targets ${zoneDefinition.label.toLowerCase()}.`, 'Matches the available equipment and local exercise catalog.'];
+        const reasons = [`Targets ${zoneDefinition.label.toLowerCase()}.`, 'Fits the selected time budget, including rest, and available equipment.'];
+        const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && other.targetScore > 0).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
+        const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
+        if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
+        exercises.push(exercise);
         selections.push({exerciseId: entry.candidate.id, role: entry.role, score: entry.score, reasons});
-        return {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && other.targetScore > 0).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
-    });
-
-    const warmup = warmupSeconds(input.durationMinutes);
-    const duration = estimateGeneratedDay(exercises, warmup, 0, input.durationMinutes);
-    const conditioningSeconds = Math.max(0, Math.min(600, input.durationMinutes * 60 - duration.total));
-    const finalDuration = estimateGeneratedDay(exercises, warmup, conditioningSeconds, input.durationMinutes);
-    const day = {name: `${zoneDefinition.label} session`, emphasis: `Focused ${zoneDefinition.label.toLowerCase()} training`, targetDurationMinutes: input.durationMinutes, warmup: [{id: 'quick-warmup', name: 'General warm-up and target-joint mobility', seconds: warmup, reason: 'Prepare the joints used in this session.'}], conditioning: {kind: 'low-impact' as const, name: conditioningSeconds ? 'Optional low-impact finisher' : 'No conditioning added', seconds: conditioningSeconds}, exercises, duration: finalDuration, warnings: []};
+    }
+    if (exercises.length < minimumExercises) return {ok: false, code: 'NO_VALID_CANDIDATE', message: `Not enough eligible exercises for a ${input.durationMinutes}-minute ${zoneDefinition.label.toLowerCase()} session. Adjust equipment or exercise exclusions.`, exclusions};
+    const duration = quickSessionDuration(exercises, input.durationMinutes);
+    if (duration.total < lowerBound || duration.total > upperBound) return {ok: false, code: 'VALIDATION_FAILED', message: `Could not build a coherent ${input.durationMinutes}-minute session with the selected equipment.`, exclusions};
+    const day = {name: `${zoneDefinition.label} session`, emphasis: `Focused ${zoneDefinition.label.toLowerCase()} training`, targetDurationMinutes: input.durationMinutes, warmup: [], conditioning: {kind: 'low-impact' as const, name: 'No finisher added', seconds: 0}, exercises, duration, warnings: []};
     const weeklyPatterns: Record<string, number> = {};
     const weeklyMuscles: Record<string, number> = {};
     for (const exercise of exercises) {

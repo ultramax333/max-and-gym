@@ -59,6 +59,7 @@ function QuickSessionBuilder() {
     const [duration, setDuration] = useState<ProgramDurationMinutes>(45);
     const [equipment, setEquipment] = useState(allEquipment);
     const [seed, setSeed] = useState('maxgym-session-01');
+    const [variationNumber, setVariationNumber] = useState(1);
     const [preview, setPreview] = useState<GeneratedProgram>();
     const [libraryExercises, setLibraryExercises] = useState<LibraryExercise[]>([]);
     const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
@@ -87,7 +88,7 @@ function QuickSessionBuilder() {
                 stableExercises: [],
                 coreMinutes: 10,
                 lowBackComfortWarmup: true,
-                seed,
+                seed: `${seed}:variation-${variationNumber}`,
                 generatorVersion: BUILD_GENERATOR_VERSION,
                 exerciseSeedVersion: EXERCISE_SEED_VERSION,
                 programSeedVersion: PROGRAM_SEED_VERSION,
@@ -99,6 +100,7 @@ function QuickSessionBuilder() {
             } else {
                 setPreview(result.program);
                 setReplaceIndex(null);
+                setVariationNumber((current) => current + 1);
             }
         } catch (reason) {
             setPreview(undefined);
@@ -185,19 +187,19 @@ function QuickSessionBuilder() {
     return <Stack spacing={2}>
         <Card><CardContent><Stack spacing={2}>
             <Typography variant="h5" component="h2">Build a single session</Typography>
-            <Typography color="text.secondary">Choose a body area and a time budget. The session is generated locally from your exercise catalog.</Typography>
+            <Typography color="text.secondary">Choose a body area and a training-time target. The session is generated locally; rest counts toward the target, while warm-up is left to you.</Typography>
             <Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
                 <FormControl fullWidth><InputLabel id="quick-zone">Body area</InputLabel><Select labelId="quick-zone" label="Body area" value={zone} onChange={(event) => setZone(event.target.value as QuickSessionZone)}>{QUICK_SESSION_ZONES.map((entry) => <MenuItem key={entry.value} value={entry.value}>{entry.label}</MenuItem>)}</Select></FormControl>
                 <FormControl fullWidth><InputLabel id="quick-duration">Duration</InputLabel><Select labelId="quick-duration" label="Duration" value={duration} onChange={(event) => setDuration(Number(event.target.value) as ProgramDurationMinutes)}>{QUICK_SESSION_DURATIONS.map((minutes) => <MenuItem key={minutes} value={minutes}>{minutes} minutes</MenuItem>)}</Select></FormControl>
             </Stack>
-            <TextField label="Reproducible seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Version ${BUILD_GENERATOR_VERSION} · same inputs produce the same session`}/>
+            <TextField label="Variation seed" value={seed} onChange={(event) => { setSeed(event.target.value); setVariationNumber(1); }} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/>
             <Typography variant="subtitle2">Equipment available</Typography>
             <Stack direction="row" gap={1} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item))}/>} label={item}/>)}</Stack>
             <PrimaryButton startIcon={<AutoAwesome/>} disabled={busy || equipment.length === 0} onClick={() => void generate()}>{busy ? 'Working…' : 'Generate session'}</PrimaryButton>
         </Stack></CardContent></Card>
         {error && <Alert severity="error">{error}</Alert>}
         {preview && <Card><CardContent><Stack spacing={2}>
-            <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1}><div><Typography variant="h5" component="h2">{preview.name}</Typography><Typography color="text.secondary">{preview.days[0].exercises.length} exercises · about {Math.round(preview.days[0].duration.total / 60)} min</Typography></div><Stack direction={{xs: 'column', sm: 'row'}} gap={1}><Button variant="outlined" startIcon={<Save/>} disabled={busy} onClick={() => void save()}>Save and edit</Button><PrimaryButton disabled={busy} onClick={() => void start()}>Start this session</PrimaryButton></Stack></Stack>
+            <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1}><div><Typography variant="h5" component="h2">{preview.name}</Typography><Typography color="text.secondary">{preview.days[0].exercises.length} exercises · {preview.days[0].exercises.reduce((sum, exercise) => sum + exercise.prescription.workingSets, 0)} working sets · about {Math.round(preview.days[0].duration.total / 60)} min</Typography><Typography variant="caption" color="text.secondary">Rest included; warm-up excluded.</Typography></div><Stack direction={{xs: 'column', sm: 'row'}} gap={1}><Button variant="outlined" startIcon={<Save/>} disabled={busy} onClick={() => void save()}>Save and edit</Button><PrimaryButton disabled={busy} onClick={() => void start()}>Start this session</PrimaryButton></Stack></Stack>
             {preview.days[0].exercises.map((exercise, index) => {
                 const details = libraryExercises.find((entry) => entry.id === exercise.exerciseId);
                 const startImage = details?.media.find((media) => media.kind === 'start-image') ?? details?.media.find((media) => media.kind === 'thumbnail');

@@ -24,4 +24,4 @@ for (const exercise of catalog) {
 }
 const report = {generatedAt: new Date().toISOString(), reviewedExercises: catalog.length, assetCount: assets.length, totalBytes: assets.reduce((sum, asset) => sum + asset.bytes, 0), invalid};
 await writeAudit('exercise-assets', report, '# Exercise media audit\n\nReviewed exercises: ' + catalog.length + '. Local images: ' + assets.length + '. Invalid: ' + invalid.length + '.\n');
-if (catalog.length < 150 || catalog.length > 220 || invalid.length) process.exitCode = 1;
+if (catalog.length < 150 || catalog.length > 400 || invalid.length) process.exitCode = 1;

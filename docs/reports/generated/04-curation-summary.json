@@ -2,9 +2,10 @@
   "source": "Free Exercise DB",
   "revision": "b0eed061e1c8",
   "sourceCount": 873,
-  "reviewedCount": 180,
-  "generatorEligibleCount": 180,
+  "reviewedCount": 300,
+  "generatorEligibleCount": 300,
+  "curatedExpansionCount": 120,
   "excludedCount": 258,
   "duplicateNames": [],
-  "generatedAt": "2026-08-06T18:38:42.024Z"
+  "generatedAt": "2026-08-10T08:52:07.340Z"
 }
