@@ -13,6 +13,7 @@ import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
+import {parseNonNegativeDecimal} from './numericInput';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -69,7 +70,7 @@ export function ActiveWorkoutPage() {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string>();
     const [finishOpen, setFinishOpen] = useState(false);
-    const [load, setLoad] = useState(0);
+    const [loadInput, setLoadInput] = useState('0');
     const [reps, setReps] = useState(0);
     const [rir, setRir] = useState(2);
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
@@ -153,7 +154,7 @@ export function ActiveWorkoutPage() {
     }, [catalog, currentExercise]);
     useEffect(() => {
         if (!currentSet) return;
-        setLoad(currentSet.targetLoadKg);
+        setLoadInput(String(currentSet.targetLoadKg));
         setReps(currentSet.targetRepsMin);
         setRir(currentSet.targetRir);
     }, [currentSet]);
@@ -169,6 +170,8 @@ export function ActiveWorkoutPage() {
             setBusy(false);
         }
     };
+
+    const load = parseNonNegativeDecimal(loadInput);
 
     const start = async () => {
         if (!service) return;
@@ -211,11 +214,11 @@ export function ActiveWorkoutPage() {
                     <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography><Typography color="text.secondary">No history for this local workout.</Typography></Paper>
                     <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}><Stack direction="row" alignItems="center" gap={1}><Typography component="h2" variant="h6">Set {currentSet.sequenceIndex + 1}</Typography><Chip size="small" color={currentSet.setKind === 'warmup' ? 'info' : currentSet.setKind === 'drop' ? 'secondary' : 'default'} label={currentSet.setKind ?? 'working'}/></Stack><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
-                            <TextField fullWidth label="Actual load (kg)" type="number" value={load} onChange={(event) => setLoad(Number(event.target.value))} inputProps={{inputMode: 'decimal', min: 0, step: 0.5}}/>
+                            <TextField fullWidth label="Actual load (kg)" type="number" value={loadInput} onFocus={(event) => event.target.select()} onChange={(event) => setLoadInput(event.target.value)} error={load === undefined} helperText={load === undefined ? 'Enter a load of 0 kg or more.' : undefined} inputProps={{inputMode: 'decimal', min: 0, step: 0.5}}/>
                             <TextField fullWidth label="Actual repetitions" type="number" value={reps} onChange={(event) => setReps(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, step: 1}}/>
                             <TextField fullWidth label="RIR (optionnel)" type="number" value={rir} onChange={(event) => setRir(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, max: 10, step: 1}}/>
                         </Stack>
-                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load < 0} onClick={() => { if (!restAlarmGateway.isNativeAndroid()) void prepareRestTimerAudio(); void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir})); }}>Complete set</PrimaryButton>
+                        <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load === undefined} onClick={() => { if (load === undefined) return; if (!restAlarmGateway.isNativeAndroid()) void prepareRestTimerAudio(); void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir})); }}>Complete set</PrimaryButton>
                     </Stack></Paper>
                 </>}
                 {allSetsDone && <StatePanel title="All sets are complete" description="Review the summary, then finish the workout. This action is safe to retry without creating duplicates." icon={<Flag/>}/>}
