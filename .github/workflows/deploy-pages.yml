@@ -42,7 +42,7 @@ jobs:
           apk_url=""
           apk_name=""
           for attempt in {1..18}; do
-            apk_name="$(gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[] | select(.name | endswith("-release.apk")) | .name' | head -n 1)"
+            apk_name="$(gh release view "$release_tag" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[] | select(.name | endswith("-release.apk")) | .name' 2>/dev/null | head -n 1 || true)"
             if [[ -n "$apk_name" ]]; then
               apk_url="https://github.com/$GITHUB_REPOSITORY/releases/download/$release_tag/$apk_name"
               break
