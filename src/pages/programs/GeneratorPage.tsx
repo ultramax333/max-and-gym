@@ -57,6 +57,7 @@ function QuickSessionBuilder() {
     const navigate = useNavigate();
     const [zone, setZone] = useState<QuickSessionZone>('arms');
     const [duration, setDuration] = useState<ProgramDurationMinutes>(45);
+    const [sessionRestSeconds, setSessionRestSeconds] = useState(90);
     const [equipment, setEquipment] = useState(allEquipment);
     const [seed, setSeed] = useState('maxgym-session-01');
     const [variationNumber, setVariationNumber] = useState(1);
@@ -88,6 +89,7 @@ function QuickSessionBuilder() {
                 stableExercises: [],
                 coreMinutes: 10,
                 lowBackComfortWarmup: true,
+                sessionRestSeconds,
                 seed: `${seed}:variation-${variationNumber}`,
                 generatorVersion: BUILD_GENERATOR_VERSION,
                 exerciseSeedVersion: EXERCISE_SEED_VERSION,
@@ -192,6 +194,8 @@ function QuickSessionBuilder() {
                 <FormControl fullWidth><InputLabel id="quick-zone">Body area</InputLabel><Select labelId="quick-zone" label="Body area" value={zone} onChange={(event) => setZone(event.target.value as QuickSessionZone)}>{QUICK_SESSION_ZONES.map((entry) => <MenuItem key={entry.value} value={entry.value}>{entry.label}</MenuItem>)}</Select></FormControl>
                 <FormControl fullWidth><InputLabel id="quick-duration">Duration</InputLabel><Select labelId="quick-duration" label="Duration" value={duration} onChange={(event) => setDuration(Number(event.target.value) as ProgramDurationMinutes)}>{QUICK_SESSION_DURATIONS.map((minutes) => <MenuItem key={minutes} value={minutes}>{minutes} minutes</MenuItem>)}</Select></FormControl>
             </Stack>
+            <FormControl fullWidth><InputLabel id="quick-rest">Recovery between sets</InputLabel><Select labelId="quick-rest" label="Recovery between sets" value={sessionRestSeconds} onChange={(event) => { setSessionRestSeconds(Number(event.target.value)); setPreview(undefined); }}>{[30, 45, 60, 90, 120, 150, 180, 240, 300].map((seconds) => <MenuItem key={seconds} value={seconds}>{seconds < 60 ? `${seconds} sec` : `${Math.floor(seconds / 60)}${seconds % 60 ? ':30' : ':00'} min`}</MenuItem>)}</Select></FormControl>
+            <Typography variant="caption" color="text.secondary">Recovery is included when calculating how many exercises fit in the selected duration.</Typography>
             <TextField label="Variation seed" value={seed} onChange={(event) => { setSeed(event.target.value); setVariationNumber(1); }} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/>
             <Typography variant="subtitle2">Equipment available</Typography>
             <Stack direction="row" gap={1} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item))}/>} label={item}/>)}</Stack>

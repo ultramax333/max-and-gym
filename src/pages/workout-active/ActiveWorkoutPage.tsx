@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, Box, Button, Card, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, Paper, Stack, TextField, Typography} from '@mui/material';
+import {Alert, Box, Button, Card, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
 import {Add, FitnessCenter, Flag, NotificationsActive, Pause, PlayArrow, Remove, SkipNext, Undo} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import Layout from '../../components/layout';
@@ -14,6 +14,7 @@ import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotific
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
 import {parseNonNegativeDecimal} from './numericInput';
+import {remainingRestSeconds} from './restTimerDisplay';
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -21,15 +22,14 @@ function formatTimer(seconds: number): string {
 }
 
 function useRestSeconds(snapshot: ActiveWorkoutSnapshot | undefined): number {
-    const [tick, setTick] = useState(Date.now());
+    const [, setTick] = useState(Date.now());
     useEffect(() => {
         if (snapshot?.timer?.status !== 'running') return;
+        setTick(Date.now());
         const interval = window.setInterval(() => setTick(Date.now()), 500);
         return () => window.clearInterval(interval);
-    }, [snapshot?.timer?.status]);
-    if (!snapshot?.timer) return 0;
-    if (snapshot.timer.status === 'paused') return snapshot.timer.remainingWhenPausedSeconds ?? 0;
-    return Math.max(0, Math.ceil((new Date(snapshot.timer.endsAt).getTime() - tick) / 1000));
+    }, [snapshot?.timer?.endsAt, snapshot?.timer?.id, snapshot?.timer?.status]);
+    return remainingRestSeconds(snapshot?.timer, Date.now());
 }
 
 function useWorkoutElapsedSeconds(snapshot: ActiveWorkoutSnapshot | undefined): number {
@@ -195,6 +195,10 @@ export function ActiveWorkoutPage() {
                     <Button startIcon={snapshot.session.status === 'paused' ? <PlayArrow/> : <Pause/>} onClick={() => void perform(() => snapshot.session.status === 'paused' ? service!.resume(snapshot.session.id) : service!.pause(snapshot.session.id))}>{snapshot.session.status === 'paused' ? 'Resume' : 'Pause'}</Button>
                 </Stack>
                 <LinearProgress variant="determinate" value={(completed.length / snapshot.sets.length) * 100} aria-label="Workout progress"/>
+                <TextField select fullWidth label="Rest for this session" value={snapshot.session.restOverrideSeconds ?? 'exercise-defaults'} disabled={busy} onChange={(event) => void perform(() => service!.setRestOverride(snapshot.session.id, event.target.value === 'exercise-defaults' ? undefined : Number(event.target.value)))} helperText="Applies to the next rest timer; the current timer is unchanged.">
+                    <MenuItem value="exercise-defaults">Exercise defaults</MenuItem>
+                    {[30, 45, 60, 90, 120, 150, 180, 240, 300].map((seconds) => <MenuItem key={seconds} value={seconds}>{seconds < 60 ? `${seconds} sec` : `${Math.floor(seconds / 60)}${seconds % 60 ? ':30' : ':00'} min`}</MenuItem>)}
+                </TextField>
                 <Paper component="section" aria-labelledby="workout-plan-title" sx={{p: 2}}>
                     <Typography id="workout-plan-title" component="h2" variant="h6">Workout plan · {snapshot.exercises.length} exercises</Typography>
                     <Stack divider={<Divider flexItem/>} sx={{mt: 1}}>

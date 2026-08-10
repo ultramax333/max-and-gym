@@ -60,10 +60,10 @@ function roleFor(candidate: GeneratorCandidate): GeneratorRole {
     return 'accessory';
 }
 
-function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorRole, index: number) {
+function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorRole, index: number, sessionRestSeconds?: number) {
     const workingSets = duration <= 20 ? 2 : 3;
     const primary = ['horizontal-push', 'vertical-push', 'supported-pull', 'vertical-pull', 'leg-assistance', 'posterior-assistance'].includes(role);
-    return {id: `quick:${duration}:${index}`, workingSets, repsMin: primary ? 8 : 10, repsMax: primary ? 12 : 15, targetRir: 2, restSeconds: primary ? (duration >= 45 ? 90 : 75) : 60, loadReferenceKg: 0};
+    return {id: `quick:${duration}:${index}`, workingSets, repsMin: primary ? 8 : 10, repsMax: primary ? 12 : 15, targetRir: 2, restSeconds: sessionRestSeconds ?? (primary ? (duration >= 45 ? 90 : 75) : 60), loadReferenceKg: 0};
 }
 
 function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: ProgramDurationMinutes) {
@@ -77,7 +77,7 @@ function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: Pro
 export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: GeneratorCandidate[], zone: QuickSessionZone): GenerationResult {
     const input = normalizeGeneratorInput({...rawInput, frequency: 1});
     const zoneDefinition = QUICK_SESSION_ZONES.find((entry) => entry.value === zone);
-    if (!zoneDefinition || !input.equipment.length || !QUICK_SESSION_DURATIONS.includes(input.durationMinutes)) return {ok: false, code: 'INVALID_INPUT', message: 'Choose a body area, duration and at least one equipment option.', exclusions: []};
+    if (!zoneDefinition || !input.equipment.length || !QUICK_SESSION_DURATIONS.includes(input.durationMinutes) || (input.sessionRestSeconds !== undefined && (!Number.isInteger(input.sessionRestSeconds) || input.sessionRestSeconds <= 0))) return {ok: false, code: 'INVALID_INPUT', message: 'Choose a body area, duration, recovery time and at least one equipment option.', exclusions: []};
 
     const exclusions: CandidateExclusion[] = [];
     const selections: CandidateSelection[] = [];
@@ -108,7 +108,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         if (exercises.length >= 10) break;
         if (exercises.length >= minimumExercises && quickSessionDuration(exercises, input.durationMinutes).total >= lowerBound) break;
         const index = exercises.length;
-        const prescription = exercisePrescription(input.durationMinutes, entry.role, index);
+        const prescription = exercisePrescription(input.durationMinutes, entry.role, index, input.sessionRestSeconds);
         const reasons = [`Targets ${zoneDefinition.label.toLowerCase()}.`, 'Fits the selected time budget, including rest, and available equipment.'];
         const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && other.targetScore > 0).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
         const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
@@ -127,6 +127,6 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         for (const muscle of exercise.primaryMuscles) weeklyMuscles[muscle] = (weeklyMuscles[muscle] ?? 0) + exercise.prescription.workingSets;
     }
     const explanation = {normalizedInput: input, selections, exclusions, warnings: [], weeklyPatterns, weeklyMuscles};
-    const program: GeneratedProgram = {name: `${zoneDefinition.label} · ${input.durationMinutes} min`, frequency: 1, durationMinutes: input.durationMinutes, seed: input.seed, generatorVersion: input.generatorVersion, identityHash: stableHash(JSON.stringify({input, day, explanation})), days: [day], explanation};
+    const program: GeneratedProgram = {name: `${zoneDefinition.label} · ${input.durationMinutes} min`, frequency: 1, durationMinutes: input.durationMinutes, seed: input.seed, generatorVersion: input.generatorVersion, sessionRestSeconds: input.sessionRestSeconds, identityHash: stableHash(JSON.stringify({input, day, explanation})), days: [day], explanation};
     return {ok: true, program};
 }

@@ -91,6 +91,20 @@ describe('DexieWorkoutRepository', () => {
         expect(snapshot.timer?.endsAt).toBe('2026-08-06T18:02:00.000Z');
     });
 
+    it('persists a global session rest and applies it to future timers only', async () => {
+        const started = await repository.startSample('start');
+        let snapshot = await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'complete-1', actualLoadKg: 16, actualReps: 10});
+        expect(snapshot.timer?.endsAt).toBe('2026-08-06T18:01:15.000Z');
+
+        snapshot = await repository.setRestOverride(snapshot.session.id, 180);
+        expect(snapshot.session.restOverrideSeconds).toBe(180);
+        expect(snapshot.timer?.endsAt).toBe('2026-08-06T18:01:15.000Z');
+
+        snapshot = await repository.completeSet({sessionId: snapshot.session.id, setId: snapshot.session.currentSetId, operationId: 'complete-2', actualLoadKg: 16, actualReps: 10});
+        expect(snapshot.timer?.endsAt).toBe('2026-08-06T18:03:00.000Z');
+        expect((await repository.get(snapshot.session.id))?.session.restOverrideSeconds).toBe(180);
+    });
+
     it('pauses and resumes the session and owned timer atomically', async () => {
         const started = await repository.startSample('start');
         let snapshot = await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'complete', actualLoadKg: 16, actualReps: 10});
@@ -136,6 +150,8 @@ describe('DexieWorkoutRepository', () => {
             {exerciseId: 'extension', exerciseName: 'Extension', prescriptionSnapshot: 'advanced', workingSets: 2, repsMin: 8, repsMax: 12, targetLoadKg: 16, targetRir: 2, restSeconds: 75, groupId: 'arms', groupType: 'superset', groupSequenceIndex: 1, setScheme: 'straight', warmupSets: 1},
         ]}, 'start-group');
 
+        await repository.setRestOverride(started.session.id, 180);
+
         expect(started.sets.map((entry) => [entry.sessionExerciseId, entry.setKind])).toEqual([
             [started.exercises[0].id, 'warmup'], [started.exercises[1].id, 'warmup'],
             [started.exercises[0].id, 'working'], [started.exercises[1].id, 'working'],
@@ -147,7 +163,7 @@ describe('DexieWorkoutRepository', () => {
         expect(afterCurl.timer).toBeUndefined();
         const afterExtension = await repository.completeSet({sessionId: started.session.id, setId: started.sets[1].id, operationId: 'extension-warmup', actualLoadKg: 10, actualReps: 10});
         expect(afterExtension.session.currentSetId).toBe(started.sets[2].id);
-        expect(afterExtension.timer?.endsAt).toBe('2026-08-06T18:01:15.000Z');
+        expect(afterExtension.timer?.endsAt).toBe('2026-08-06T18:03:00.000Z');
     });
 
     it('applies ramp and top/back-off load targets', async () => {

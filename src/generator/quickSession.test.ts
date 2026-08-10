@@ -62,6 +62,17 @@ describe('quick session generator', () => {
         }
     });
 
+    it('includes the chosen global recovery when sizing the session', () => {
+        const shortRest = generateQuickSession({...input(50), sessionRestSeconds: 60}, candidates, 'arms');
+        const longRest = generateQuickSession({...input(50), sessionRestSeconds: 180}, candidates, 'arms');
+        expect(shortRest.ok && longRest.ok).toBe(true);
+        if (shortRest.ok && longRest.ok) {
+            expect(longRest.program.days[0].exercises.length).toBeLessThan(shortRest.program.days[0].exercises.length);
+            expect(longRest.program.days[0].exercises.every((exercise) => exercise.prescription.restSeconds === 180)).toBe(true);
+            expect(longRest.program.sessionRestSeconds).toBe(180);
+        }
+    });
+
     it('never offers a leg exercise as an arms-session replacement', () => {
         const current = {
             exerciseId: 'current',

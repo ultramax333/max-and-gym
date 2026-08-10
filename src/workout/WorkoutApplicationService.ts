@@ -126,6 +126,10 @@ export class WorkoutApplicationService {
         return this.runTimer(() => this.repository.adjustTimer(sessionId, seconds));
     }
 
+    setRestOverride(sessionId: string, seconds: number | undefined): Promise<ActiveWorkoutSnapshot> {
+        return this.repository.setRestOverride(sessionId, seconds);
+    }
+
     pauseTimer(sessionId: string): Promise<ActiveWorkoutSnapshot> {
         return this.runTimer(() => this.repository.pauseTimer(sessionId));
     }

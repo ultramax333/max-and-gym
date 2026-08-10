@@ -41,6 +41,7 @@ export function programDayWorkoutInput(programName: string, day: ProgramDayDetai
 export function generatedSessionWorkoutInput(program: GeneratedProgram, day: GeneratedDay = program.days[0]): StartWorkoutInput {
     return {
         name: `${program.name} · ${day.name}`,
+        restOverrideSeconds: program.sessionRestSeconds,
         exercises: day.exercises.map((entry) => ({
             exerciseId: entry.exerciseId,
             exerciseName: entry.exerciseName,

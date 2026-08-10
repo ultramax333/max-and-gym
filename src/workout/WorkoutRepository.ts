@@ -10,6 +10,7 @@ export interface WorkoutRepository {
     pause(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     resume(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     adjustTimer(sessionId: string, seconds: number): Promise<ActiveWorkoutSnapshot>;
+    setRestOverride(sessionId: string, seconds: number | undefined): Promise<ActiveWorkoutSnapshot>;
     pauseTimer(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     resumeTimer(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     skipTimer(sessionId: string): Promise<ActiveWorkoutSnapshot>;

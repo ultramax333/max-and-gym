@@ -102,6 +102,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
     async startProgramDay(input: StartWorkoutInput, operationId: string): Promise<ActiveWorkoutSnapshot> {
         if (!input.exercises.length) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'A workout session needs at least one exercise.');
         const validInteger = (value: number, minimum: number) => Number.isFinite(value) && Number.isInteger(value) && value >= minimum;
+        if (input.restOverrideSeconds !== undefined && !validInteger(input.restOverrideSeconds, 1)) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session rest override must be a positive whole number of seconds.');
         const invalidExercise = input.exercises.find((entry) => !validInteger(entry.workingSets, 1)
             || !validInteger(entry.warmupSets ?? 0, 0)
             || !validInteger(entry.dropSets ?? 0, 0)
@@ -140,7 +141,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                 const isIntermediateGroupMember = Boolean(entry.groupId && (entry.groupSequenceIndex ?? 0) < groupMembers.length - 1);
                 return rows.map((row, sequenceIndex) => ({id: this.clock.id(), sessionId, sessionExerciseId: exerciseIds[exerciseIndex], sequenceIndex, setKind: row.kind, status: 'planned' as const, targetRepsMin: entry.repsMin, targetRepsMax: entry.repsMax, targetLoadKg: Math.round(entry.targetLoadKg * row.loadFactor * 10) / 10, targetRir: entry.targetRir, restSeconds: isIntermediateGroupMember ? 0 : entry.restSeconds, createdAt: now, updatedAt: now}));
             });
-            const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
+            const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, restOverrideSeconds: input.restOverrideSeconds, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
             await this.db.workoutSession.add(session);
             await this.db.sessionExercise.bulkAdd(exercises);
             await this.db.performedSet.bulkAdd(sets);
@@ -173,8 +174,9 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             if (next && next.sessionExerciseId !== set.sessionExerciseId) await this.db.sessionExercise.update(next.sessionExerciseId, {status: 'active', updatedAt: now});
             await this.db.workoutSession.update(session.id, {currentSessionExerciseId: next?.sessionExerciseId ?? set.sessionExerciseId, currentSetId: next?.id ?? set.id, updatedAt: now});
             await this.db.restTimer.where('sessionId').equals(session.id).modify({status: 'cancelled', updatedAt: now});
-            if (set.restSeconds > 0) {
-                const endsAt = new Date(this.clock.now().getTime() + set.restSeconds * 1000).toISOString();
+            const effectiveRestSeconds = set.restSeconds === 0 ? 0 : (session.restOverrideSeconds ?? set.restSeconds);
+            if (effectiveRestSeconds > 0) {
+                const endsAt = new Date(this.clock.now().getTime() + effectiveRestSeconds * 1000).toISOString();
                 await this.db.restTimer.put({id: this.clock.id(), sessionId: session.id, performedSetId: set.id, startedAt: now, endsAt, status: 'running', createdAt: now, updatedAt: now});
             }
             await this.db.workoutOperation.put({operationId: input.operationId, kind: 'complete-set', status: 'committed', sessionId: session.id, entityId: set.id, startedAt: now, finishedAt: now});
@@ -236,6 +238,14 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         if (!timer) return (await this.get(sessionId))!;
         if (timer.status === 'paused') await this.db.restTimer.update(timer.id, {remainingWhenPausedSeconds: Math.max(0, (timer.remainingWhenPausedSeconds ?? 0) + seconds), updatedAt: this.iso()});
         else await this.db.restTimer.update(timer.id, {endsAt: new Date(new Date(timer.endsAt).getTime() + seconds * 1000).toISOString(), updatedAt: this.iso()});
+        return (await this.get(sessionId))!;
+    }
+
+    async setRestOverride(sessionId: string, seconds: number | undefined): Promise<ActiveWorkoutSnapshot> {
+        if (seconds !== undefined && (!Number.isInteger(seconds) || seconds <= 0)) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session rest override must be a positive whole number of seconds.');
+        const session = await this.db.workoutSession.get(sessionId);
+        if (!session || (session.status !== 'active' && session.status !== 'paused')) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session is not active.');
+        await this.db.workoutSession.update(sessionId, {restOverrideSeconds: seconds, updatedAt: this.iso()});
         return (await this.get(sessionId))!;
     }
 
