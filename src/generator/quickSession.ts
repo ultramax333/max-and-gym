@@ -35,6 +35,8 @@ export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
 ): T[] {
     const eligible = candidates.filter((entry) =>
         !selectedIds.has(entry.id) &&
+        entry.generatorEligible &&
+        !entry.archived &&
         !entry.neverSuggest &&
         !entry.effectiveNeverSuggest &&
         matchesQuickSessionZone(entry, zone) &&

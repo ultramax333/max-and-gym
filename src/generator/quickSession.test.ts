@@ -107,4 +107,27 @@ describe('quick session generator', () => {
         const options = quickSessionReplacementCandidates(marked, 'arms', input(45).equipment, new Set(), {exerciseId: 'current', movementPattern: 'accessory', primaryMuscles: ['biceps'], alternativeExerciseIds: [blocked.id]});
         expect(options.map((entry) => entry.id)).not.toContain(blocked.id);
     });
+
+    it('never generates or offers catalogue-excluded exercises', () => {
+        const excluded = candidates.filter((entry) => !entry.generatorEligible);
+        expect(excluded).toHaveLength(29);
+        let successfulGenerations = 0;
+        for (const duration of [15, 30, 45, 60] as const) {
+            for (const zone of ['full-body', 'upper-body', 'lower-body', 'chest', 'back', 'shoulders', 'arms', 'core'] as const) {
+                for (let variation = 1; variation <= 5; variation += 1) {
+                    const result = generateQuickSession({...input(duration), seed: `catalogue-cleanup:${zone}:${duration}:${variation}`}, candidates, zone);
+                    if (result.ok) {
+                        successfulGenerations += 1;
+                        expect(result.program.days[0].exercises.every((entry) => !excluded.some((blocked) => blocked.id === entry.exerciseId))).toBe(true);
+                    } else {
+                        expect(['NO_VALID_CANDIDATE', 'VALIDATION_FAILED'], `${zone} ${duration} variation ${variation}`).toContain(result.code);
+                    }
+                }
+            }
+        }
+        expect(successfulGenerations).toBeGreaterThan(100);
+        const blocked = excluded.find((entry) => entry.id === 'fedb:Plank')!;
+        const options = quickSessionReplacementCandidates(candidates, 'core', input(30).equipment, new Set(), {exerciseId: 'current', movementPattern: 'core', primaryMuscles: ['abdominals'], alternativeExerciseIds: [blocked.id]});
+        expect(options.map((entry) => entry.id)).not.toContain(blocked.id);
+    });
 });

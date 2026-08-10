@@ -45,6 +45,32 @@ const curatedExpansionNames = new Set([
     'Pallof Press With Rotation', 'Plank', 'Reverse Crunch', 'Russian Twist', 'Side Bridge', 'Standing Cable Wood Chop',
 ]);
 
+// These records remain browsable and keep their stable IDs for saved workouts,
+// but the generic rep-based generator must not select them automatically.
+const generatorExcludedIds = new Set([
+    // Mobility, timed holds, grip holds, or undeclared specialist equipment.
+    '90_90_Hamstring', 'Chair_Leg_Extended_Stretch', 'Chest_And_Front_Of_Shoulder_Stretch', 'Front_Leg_Raises',
+    'Hip_Circles_prone', 'Intermediate_Hip_Flexor_and_Quad_Stretch', 'Plank', 'Side_Bridge', 'Plate_Pinch',
+    'Bosu_Ball_Cable_Crunch_With_Side_Bends', 'Crunch_-_Legs_On_Exercise_Ball',
+    // Technical, explosive, atypical, or needlessly risky for a general-purpose generator.
+    'Barbell_Guillotine_Bench_Press', 'Anti-Gravity_Press', 'Bent_Press', 'Bradford_Rocky_Presses',
+    'Clean_and_Press', 'Double_Kettlebell_Push_Press', 'Box_Squat_with_Chains', 'Freehand_Jump_Squat',
+    // Minor variants kept for manual selection while canonical versions remain eligible.
+    'Barbell_Full_Squat', 'Front_Barbell_Squat_To_A_Bench', 'Dumbbell_Squat_To_A_Bench',
+    'Front_Two-Dumbbell_Raise', 'Incline_Dumbbell_Flyes_-_With_A_Twist', 'Cable_Iron_Cross',
+    'Cable_Rope_Overhead_Triceps_Extension', 'Rope_Straight-Arm_Pulldown', 'Alternate_Incline_Dumbbell_Curl',
+    'Dumbbell_Alternate_Bicep_Curl',
+]);
+
+// Redundant variants are hidden from the active library, while their records and
+// stable IDs remain in IndexedDB so old programs and workout history still resolve.
+const libraryArchivedIds = new Set([
+    'Barbell_Full_Squat', 'Front_Barbell_Squat_To_A_Bench', 'Dumbbell_Squat_To_A_Bench',
+    'Front_Two-Dumbbell_Raise', 'Incline_Dumbbell_Flyes_-_With_A_Twist', 'Cable_Iron_Cross',
+    'Cable_Rope_Overhead_Triceps_Extension', 'Rope_Straight-Arm_Pulldown', 'Alternate_Incline_Dumbbell_Curl',
+    'Dumbbell_Alternate_Bicep_Curl',
+]);
+
 function slug(value) {
     return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -55,14 +81,14 @@ function category(value) {
     return 'strength';
 }
 
-function movementPattern(name) {
-    const lower = name.toLowerCase();
-    if (/(squat|lunge|leg press|step-up)/.test(lower)) return 'squat';
+function movementPattern(entry) {
+    const lower = entry.name.toLowerCase();
+    if ((entry.primaryMuscles ?? []).includes('abdominals')) return 'core';
+    if (/(squat|lunge|leg press|step[ -]?ups?)/.test(lower)) return 'squat';
     if (/(deadlift|good morning|hip thrust|glute)/.test(lower)) return 'hinge';
-    if (/(row|pull-up|pulldown|chin-up)/.test(lower)) return 'pull';
+    if (/(row|pull[ -]?ups?|pullups?|pulldown|chin[ -]?ups?|bench pull)/.test(lower)) return 'pull';
     if (/(press|push-up|dip)/.test(lower)) return 'push';
     if (/(carry|walk)/.test(lower)) return 'carry';
-    if (/(crunch|plank|sit-up|ab)/.test(lower)) return 'core';
     return 'accessory';
 }
 
@@ -86,7 +112,7 @@ function buildExercise(entry) {
         equipmentTags: [entry.equipment ?? 'other'],
         primaryMuscles: entry.primaryMuscles ?? [],
         secondaryMuscles: entry.secondaryMuscles ?? [],
-        movementPattern: movementPattern(entry.name),
+        movementPattern: movementPattern(entry),
         positionTags: /plank|floor|sit-up|crunch/i.test(entry.name) ? ['floor'] : ['standing-or-supported'],
         transitionTags: /jump|burpee/i.test(entry.name) ? ['high-impact-transition'] : [],
         impactTags: /jump/i.test(entry.name) ? ['high-impact'] : [],
@@ -96,9 +122,9 @@ function buildExercise(entry) {
         defaultRepRange: {min: entry.category === 'cardio' ? 12 : 8, max: entry.category === 'cardio' ? 20 : 12},
         defaultRirRange: {min: 1, max: 3},
         contentStatus: 'reviewed',
-        generatorEligible: !excluded.test(entry.name),
+        generatorEligible: !excluded.test(entry.name) && !generatorExcludedIds.has(entry.id),
         neverSuggest: false,
-        archived: false,
+        archived: libraryArchivedIds.has(entry.id),
         setupInstructions: instructions[0] ?? 'Set up with controlled posture and a stable range of motion.',
         executionSteps: instructions.slice(1, 5),
         breathingCue: 'Breathe steadily; exhale through the effort.',

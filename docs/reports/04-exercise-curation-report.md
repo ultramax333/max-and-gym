@@ -27,7 +27,12 @@ and THIRD_PARTY_NOTICES.md.
 
 ## Safety and eligibility
 
-- 300 reviewed records are eligible by default.
+- 271 reviewed records are eligible by default. Another 29 are excluded from
+  automatic generation because they require timed metrics, specialist equipment or
+  technique, or duplicate a canonical movement already in the automatic pool.
+- Nineteen of those 29 remain browsable for manual selection. The other ten are
+  redundant minor variants hidden from the active library. All seed records and
+  stable IDs remain available for existing programs and history.
 - Names matching burpee, bunny jump, rapid floor/plank transition or high-impact
   transition are excluded before seed generation.
 - A user Never Suggest preference overrides generator eligibility without deleting the

@@ -32,6 +32,47 @@ describe('reviewed local exercise catalogue', () => {
         expect(seed.every((entry) => !/(burpee|bunny|rapid.*floor|rapid.*plank)/i.test(entry.name))).toBe(true);
     });
 
+    it('keeps unsuitable or redundant records browsable but out of generation', () => {
+        const reviewed = seed as ReviewedExercise[];
+        const excludedIds = reviewed.filter((entry) => !entry.generatorEligible).map((entry) => entry.id).sort();
+        expect(excludedIds).toEqual([
+            '90_90_Hamstring', 'Alternate_Incline_Dumbbell_Curl', 'Anti-Gravity_Press', 'Barbell_Full_Squat',
+            'Barbell_Guillotine_Bench_Press', 'Bent_Press', 'Bosu_Ball_Cable_Crunch_With_Side_Bends',
+            'Box_Squat_with_Chains', 'Bradford_Rocky_Presses', 'Cable_Iron_Cross',
+            'Cable_Rope_Overhead_Triceps_Extension', 'Chair_Leg_Extended_Stretch',
+            'Chest_And_Front_Of_Shoulder_Stretch', 'Clean_and_Press', 'Crunch_-_Legs_On_Exercise_Ball',
+            'Double_Kettlebell_Push_Press', 'Dumbbell_Alternate_Bicep_Curl', 'Dumbbell_Squat_To_A_Bench',
+            'Freehand_Jump_Squat', 'Front_Barbell_Squat_To_A_Bench', 'Front_Leg_Raises',
+            'Front_Two-Dumbbell_Raise', 'Hip_Circles_prone', 'Incline_Dumbbell_Flyes_-_With_A_Twist',
+            'Intermediate_Hip_Flexor_and_Quad_Stretch', 'Plank', 'Plate_Pinch',
+            'Rope_Straight-Arm_Pulldown', 'Side_Bridge',
+        ].map((id) => `fedb:${id}`).sort());
+    });
+
+    it('classifies core and common compound patterns from muscles and canonical names', () => {
+        const reviewed = seed as ReviewedExercise[];
+        const byId = (id: string) => reviewed.find((entry) => entry.id === `fedb:${id}`);
+        expect(byId('Cable_Crossover')?.movementPattern).toBe('accessory');
+        expect(byId('Cable_Hammer_Curls_-_Rope_Attachment')?.movementPattern).toBe('accessory');
+        expect(byId('Dead_Bug')?.movementPattern).toBe('core');
+        expect(byId('Pallof_Press')?.movementPattern).toBe('core');
+        expect(byId('Pullups')?.movementPattern).toBe('pull');
+        expect(byId('Barbell_Step_Ups')?.movementPattern).toBe('squat');
+    });
+
+    it('returns only the curated active pool when generation requests eligible exercises', async () => {
+        const eligible = await repository.list({status: 'eligible'});
+        expect(eligible).toHaveLength(271);
+        expect(eligible.some((entry) => entry.id === 'fedb:Plank')).toBe(false);
+        expect((await repository.list()).some((entry) => entry.id === 'fedb:Plank')).toBe(true);
+    });
+
+    it('hides redundant variants without breaking direct historical lookup', async () => {
+        const archivedId = 'fedb:Dumbbell_Alternate_Bicep_Curl';
+        expect((await repository.list()).some((entry) => entry.id === archivedId)).toBe(false);
+        expect(await repository.get(archivedId)).toMatchObject({id: archivedId, archived: true, generatorEligible: false});
+    });
+
     it('preserves local preferences when the seed is ensured again', async () => {
         const all = await repository.list();
         const first = all[0];

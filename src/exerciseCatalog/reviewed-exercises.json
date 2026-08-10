@@ -40,7 +40,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Lie on your back, with one leg extended straight out.",
@@ -267,9 +267,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Sit down on an incline bench with a dumbbell in each hand being held at arms length. Tip: Keep the elbows close to the torso.This will be your starting position.",
     "executionSteps": [
       "While holding the upper arm stationary, curl the right weight forward while contracting the biceps as you breathe out. As you do so, rotate the hand so that the palm is facing up. Continue the movement until your biceps is fully contracted and the dumbbells are at shoulder level. Hold the contracted position for a second as you squeeze the biceps. Tip: Only the forearms should move.",
@@ -805,7 +805,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Place a bar on the ground behind the head of an incline bench.",
@@ -1582,9 +1582,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "This exercise is best performed inside a squat rack for safety purposes. To begin, first set the bar on a rack just above shoulder level. Once the correct height is chosen and the bar is loaded, step under the bar and place the back of your shoulders (slightly below the neck) across it.",
     "executionSteps": [
       "Hold on to the bar using both arms at each side and lift it off the rack by first pushing with your legs and at the same time straightening your torso.",
@@ -1660,7 +1660,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Using a medium width grip (a grip that creates a 90-degree angle in the middle of the movement between the forearms and the upper arms), lift the bar from the rack and hold it straight over your neck with your arms locked. This will be your starting position.",
@@ -3281,7 +3281,7 @@
       "shoulders",
       "triceps"
     ],
-    "movementPattern": "push",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -3301,7 +3301,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Clean a kettlebell to your shoulder. Clean the kettlebell to your shoulders by extending through the legs and hips as you raise the kettlebell towards your shoulder. The wrist should rotate as you do so. This will be your starting position.",
@@ -3513,7 +3513,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -3835,7 +3835,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Connect a standard handle to each arm of a cable machine, and position them in the most downward position.",
@@ -3917,7 +3917,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Begin in a power rack with a box at the appropriate height behind you. Typically, you would aim for a box height that brings you to a parallel squat, but you can train higher or lower if desired.",
@@ -3994,7 +3994,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Sit on a Military Press Bench with a bar at shoulder level with a pronated grip (palms facing forward). Tip: Your grip should be wider than shoulder width and it should create a 90-degree angle between the forearm and the upper arm as the barbell goes down. This is your starting position.",
@@ -4203,7 +4203,7 @@
     "secondaryMuscles": [
       "shoulders"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4432,7 +4432,7 @@
       "biceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4507,7 +4507,7 @@
       "quadriceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4582,7 +4582,7 @@
       "lats"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4657,7 +4657,7 @@
       "triceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4732,7 +4732,7 @@
       "shoulders"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4807,7 +4807,7 @@
       "chest"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -4827,9 +4827,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Begin by moving the pulleys to the high position, select the resistance to be used, and take a handle in each hand.",
     "executionSteps": [
       "Stand directly between both pulleys with your arms extended out to your sides. Your head and chest should be up while your arms form a \"T\". This will be your starting position.",
@@ -4957,7 +4957,7 @@
       "triceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5032,7 +5032,7 @@
       "triceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5109,7 +5109,7 @@
     "secondaryMuscles": [
       "forearms"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5184,7 +5184,7 @@
       "shoulders"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5333,7 +5333,7 @@
       "triceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5353,9 +5353,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Attach a rope to the bottom pulley of the pulley machine.",
     "executionSteps": [
       "Grasping the rope with both hands, extend your arms with your hands directly above your head using a neutral grip (palms facing each other). Your elbows should be in close to your head and the arms should be perpendicular to the floor with the knuckles aimed at the ceiling. This will be your starting position.",
@@ -5639,7 +5639,7 @@
       "middle back",
       "traps"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5790,7 +5790,7 @@
       "traps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -5865,7 +5865,7 @@
       "forearms"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -6335,7 +6335,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Sit upright in a chair and grip the seat on the sides.",
@@ -6490,7 +6490,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Start off by standing with your legs together, holding a bodybar or a broomstick.",
@@ -6574,7 +6574,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Assume a shoulder-width stance, with knees inside the arms. Now while keeping the back flat, bend at the knees and hips so that you can grab the bar with the arms fully extended and a pronated grip that is slightly wider than shoulder width. Point the elbows out to sides. The bar should be close to the shins. Position the shoulders over or slightly ahead of the bar. Establish a flat back posture. This will be your starting position.",
@@ -7341,7 +7341,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Lie flat on your back with your feet resting on an exercise ball and your knees bent at a 90 degree angle.",
@@ -8486,7 +8486,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Clean two kettlebells to your shoulders.",
@@ -8637,9 +8637,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Stand (torso upright) with a dumbbell in each hand held at arms length. The elbows should be close to the torso and the palms of your hand should be facing your thighs.",
     "executionSteps": [
       "While holding the upper arm stationary, curl the right weight as you rotate the palm of the hands until they are facing forward. At this point continue contracting the biceps as you breathe out until your biceps is fully contracted and the dumbbells are at shoulder level. Hold the contracted position for a second as you squeeze the biceps. Tip: Only the forearms should move.",
@@ -10100,9 +10100,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Stand up straight with a flat bench behind you while holding a dumbbell on each hand (palms facing the side of your legs).",
     "executionSteps": [
       "Position your legs using a shoulder width medium stance with the toes slightly pointed out. Keep your head up at all times as looking down will get you off balance and also maintain a straight back. This will be your starting position. Note: For the purposes of this discussion we will use the medium stance described above which targets overall development; however you can choose any of the three stances discussed in the foot stances section.",
@@ -10459,7 +10459,7 @@
       "shoulders"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -10679,7 +10679,7 @@
       "chest"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -10754,7 +10754,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -10829,7 +10829,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -11006,7 +11006,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Cross your arms over your chest.",
@@ -11164,9 +11164,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "This exercise is best performed inside a squat rack for safety purposes. To begin, first set a flat bench behind you and set the bar on a rack that best matches your height. Once the correct height is chosen and the bar is loaded, bring your arms up under the bar while keeping the elbows high and the upper arm slightly above parallel to the floor. Rest the bar on top of the deltoids and cross your arms while grasping the bar for total control.",
     "executionSteps": [
       "Lift the bar off the rack by first pushing with your legs and at the same time straightening your torso.",
@@ -11219,7 +11219,7 @@
       "shoulders"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -11463,7 +11463,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Stand next to a chair or other support, holding on with one hand.",
@@ -11842,9 +11842,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Pick a couple of dumbbells and stand with a straight torso and the dumbbells on front of your thighs at arms length with the palms of the hand facing your thighs. This will be your starting position.",
     "executionSteps": [
       "While maintaining the torso stationary (no swinging), lift the dumbbells to the front with a slight bend on the elbow and the palms of the hands always facing down. Continue to go up until you arms are slightly above parallel to the floor. Exhale as you execute this portion of the movement and pause for a second at the top.",
@@ -12436,7 +12436,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -12510,7 +12510,7 @@
       "biceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -12606,7 +12606,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Position yourself on your hands and knees on the ground. Maintaining good posture, raise one bent knee off of the ground. This will be your starting position.",
@@ -13045,7 +13045,7 @@
       "lats",
       "shoulders"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "pull",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -13198,7 +13198,7 @@
     "secondaryMuscles": [
       "shoulders"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -13446,9 +13446,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Hold a dumbbell in each hand and lie on an incline bench that is set to an incline angle of no more than 30 degrees.",
     "executionSteps": [
       "Extend your arms above you with a slight bend at the elbows.",
@@ -13747,7 +13747,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Lie face down on the floor, with a rope, belt, or band looped around one foot.",
@@ -13875,7 +13875,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -13950,7 +13950,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -14254,7 +14254,7 @@
       "hamstrings",
       "quadriceps"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "squat",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -14559,7 +14559,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -15010,7 +15010,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -15088,7 +15088,7 @@
       "glutes",
       "hamstrings"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "squat",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -15312,7 +15312,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -15769,7 +15769,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -15844,7 +15844,7 @@
       "triceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -16076,7 +16076,7 @@
       "lower back",
       "shoulders"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -16378,7 +16378,7 @@
       "abdominals"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -16835,7 +16835,7 @@
     "secondaryMuscles": [
       "shoulders"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -18052,7 +18052,7 @@
     "secondaryMuscles": [
       "hamstrings"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -18127,7 +18127,7 @@
       "biceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -18206,7 +18206,7 @@
       "shoulders",
       "triceps"
     ],
-    "movementPattern": "push",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -18285,7 +18285,7 @@
       "shoulders",
       "triceps"
     ],
-    "movementPattern": "push",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -18530,7 +18530,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Get into a prone position on the floor, supporting your weight on your toes and your forearms. Your arms are bent and directly below the shoulder.",
@@ -18602,7 +18602,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Grab two wide-rimmed plates and put them together with the smooth sides facing outward",
@@ -18886,7 +18886,7 @@
       "biceps",
       "middle back"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "pull",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -19194,7 +19194,7 @@
     "secondaryMuscles": [
       "forearms"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -19666,9 +19666,9 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
-    "archived": false,
+    "archived": true,
     "setupInstructions": "Attach a rope to a high pulley and make your weight selection. Stand a couple feet back from the pulley with your feet staggered and take the rope with both hands. Lean forward from the hip, keeping your back straight, with your arms extended up in front of you. This will be your starting position.",
     "executionSteps": [
       "Keeping your arms straight, extend the shoulder to pull the rope down to your thighs.",
@@ -19722,7 +19722,7 @@
     "secondaryMuscles": [
       "lower back"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -20402,7 +20402,7 @@
     "secondaryMuscles": [
       "shoulders"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "core",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -20422,7 +20422,7 @@
       "max": 3
     },
     "contentStatus": "reviewed",
-    "generatorEligible": true,
+    "generatorEligible": false,
     "neverSuggest": false,
     "archived": false,
     "setupInstructions": "Set up with controlled posture and a stable range of motion.",
@@ -21468,7 +21468,7 @@
       "biceps"
     ],
     "secondaryMuscles": [],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -21929,7 +21929,7 @@
     "secondaryMuscles": [
       "glutes"
     ],
-    "movementPattern": "core",
+    "movementPattern": "accessory",
     "positionTags": [
       "standing-or-supported"
     ],
@@ -22541,7 +22541,7 @@
       "biceps",
       "middle back"
     ],
-    "movementPattern": "accessory",
+    "movementPattern": "pull",
     "positionTags": [
       "standing-or-supported"
     ],
