@@ -40,7 +40,7 @@ export function HomeShellPage() {
     const next = active?.days[active.currentDayIndex % active.days.length];
     return <Layout title="Home" hideAppBar hideBack><ScreenContainer><SectionHeader eyebrow="MAX & GYM" title="Ready to train"/><Stack spacing={2}>
         {active && next ? <ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · ${next.targetDurationMinutes}-minute target. Start in one tap.`} icon={<PlayArrow/>} onClick={() => startNextProgramDay(navigate)}/> : <ShellCard title="Build your first program" text="Choose a simple structure to see your next workout here." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
-        <Stack direction={{xs: 'column', sm: 'row'}} gap={2}><ShellCard title="Essential workout" text="Start or resume the reliable offline flow." icon={<PlayArrow/>} onClick={() => navigate('/workout/active')}/><ShellCard title="Quick core" text="10 to 15 minutes, without abrupt transitions." icon={<Bolt/>} onClick={() => navigate('/train')}/></Stack>
+        <Stack direction={{xs: 'column', sm: 'row'}} gap={2}><ShellCard title="Essential workout" text="Start or resume the reliable offline flow." icon={<PlayArrow/>} onClick={() => navigate('/workout/active')}/><ShellCard title="Core video classes" text="Professional 10 to 30-minute classes and your own YouTube links." icon={<Bolt/>} onClick={() => navigate('/train/core-videos')}/></Stack>
         {!active && (
             <StatePanel title="No workout planned" description="Create a program or start a free workout. Your data stays on this device." action={<PrimaryButton startIcon={<Add/>} onClick={() => navigate('/programs')}>Create a program</PrimaryButton>}/>
         )}
@@ -84,7 +84,7 @@ export function TrainShellPage() {
         <ShellCard title="Essential workout" text="Start or resume a reliable local workout." icon={<FitnessCenter/>} onClick={() => navigate('/workout/active')}/>
         <ShellCard title="Previous workouts" text="Open the editor and your existing RepQuest workouts." icon={<FitnessCenter/>} onClick={() => navigate('/workouts')}/>
         {!active && <ShellCard title="Create a planned workout" text="Activate a program with two or three days." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
-        <ShellCard title="Warm-up and core" text="Detailed flows arrive with the workout engine." icon={<Bolt/>}/>
+        <ShellCard title="Core video classes" text="Choose a professional 10 to 30-minute class or add your own video." icon={<Bolt/>} onClick={() => navigate('/train/core-videos')}/>
     </Stack></ScreenContainer><Dialog open={Boolean(workoutToReplace)} onClose={() => !replacing && setWorkoutToReplace(undefined)}><DialogTitle>Start {ARM_WORKOUT_45.name}?</DialogTitle><DialogContent><Typography>Your workout “{workoutToReplace?.name}” is still active. Replace it with the complete 5-exercise arm workout? Completed sets stay saved on this device.</Typography></DialogContent><DialogActions><Button onClick={() => setWorkoutToReplace(undefined)} disabled={replacing}>Keep current workout</Button><Button variant="contained" onClick={() => void replaceWithArmWorkout()} disabled={replacing}>Start arm workout</Button></DialogActions></Dialog></Layout>;
 }
 

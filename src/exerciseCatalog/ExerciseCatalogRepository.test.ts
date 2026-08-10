@@ -38,9 +38,17 @@ describe('reviewed local exercise catalogue', () => {
         await repository.updatePreference(first.id, {favourite: true, neverSuggest: true});
         await repository.ensureSeed();
         const restored = await repository.get(first.id);
-        expect(restored?.favourite).toBe(true);
+        expect(restored?.favourite).toBe(false);
         expect(restored?.effectiveNeverSuggest).toBe(true);
         expect((await repository.list({status: 'eligible'})).every((entry) => !entry.effectiveNeverSuggest && entry.generatorEligible)).toBe(true);
+    });
+
+    it('makes Never Suggest override a favourite preference', async () => {
+        const exercise = (await repository.list({status: 'eligible'}))[0];
+        await repository.updatePreference(exercise.id, {favourite: true});
+        await repository.updatePreference(exercise.id, {neverSuggest: true});
+        expect(await repository.get(exercise.id)).toMatchObject({favourite: false, effectiveNeverSuggest: true});
+        expect((await repository.list({status: 'eligible'}).then((entries) => entries.map((entry) => entry.id)))).not.toContain(exercise.id);
     });
 
     it('refreshes stale reviewed records with local media without changing preferences', async () => {

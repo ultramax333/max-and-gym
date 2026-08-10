@@ -59,7 +59,7 @@ function AddExerciseDialog(props: {day: ProgramDayDetail; open: boolean; onClose
 function AlternativePicker({exercise}: {exercise: ProgramExerciseDetail}) {
     const [open, setOpen] = useState(false);
     const [selected, setSelected] = useState<string[]>(exercise.alternativeExerciseIds);
-    const options = useLiveQuery(() => catalog.list(), []) ?? [];
+    const options = useLiveQuery(() => catalog.list({status: 'eligible'}), []) ?? [];
     return <><Button onClick={() => setOpen(true)}>Alternatives ({exercise.alternativeExerciseIds.length})</Button><Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm"><DialogTitle>Alternatives to {exercise.exerciseNameSnapshot}</DialogTitle><DialogContent sx={{pt: '12px !important'}}><FormControl fullWidth><InputLabel id={`alternatives-${exercise.id}`}>Replacement exercises</InputLabel><Select multiple labelId={`alternatives-${exercise.id}`} label="Replacement exercises" value={selected} onChange={(event) => setSelected(typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value)}>{options.filter((entry) => entry.id !== exercise.exerciseId).slice(0, 80).map((entry) => <MenuItem key={entry.id} value={entry.id}>{entry.name}</MenuItem>)}</Select></FormControl><Typography variant="caption" color="text.secondary">Alternatives are suggested and never applied without confirmation.</Typography></DialogContent><DialogActions><Button onClick={() => setOpen(false)}>Cancel</Button><PrimaryButton onClick={async () => { await programs.updateExercise(exercise.id, {alternativeExerciseIds: selected}); setOpen(false); }}>Save</PrimaryButton></DialogActions></Dialog></>;
 }
 

@@ -25,13 +25,13 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v4 / 4', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v5 / 5', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
 test('@a11y phone routes have headings, named controls and no overflow', async ({page}) => {
     await bootstrapAnonymousProfile(page);
-    for (const route of ['/', '/programs', '/progress', '/library', '/settings', '/diagnostics']) {
+    for (const route of ['/', '/train/core-videos', '/programs', '/progress', '/library', '/settings', '/diagnostics']) {
         await page.goto(`./#${route}`);
         await expect(page.locator('main, [role="main"]').first()).toBeVisible();
         await expect(page.locator('h1').first()).toBeVisible();
@@ -65,7 +65,7 @@ test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local
     await main.hover();
     await page.mouse.wheel(0, 1200);
     await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-    const lastCard = page.getByRole('heading', {name: 'Warm-up and core'});
+    const lastCard = page.getByRole('heading', {name: 'Core video classes'});
     await lastCard.scrollIntoViewIfNeeded();
     await expect(lastCard).toBeVisible();
 
@@ -87,6 +87,18 @@ test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local
     await page.mouse.wheel(0, 1600);
     await expect.poll(() => activeMain.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
     await expect(page.getByRole('button', {name: 'Finish workout'})).toBeVisible();
+});
+
+test('core video library remains local until a professional class is opened', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/train/core-videos');
+    await expect(page.getByRole('heading', {name: 'Professional video classes'})).toBeVisible();
+    await expect(page.getByText('5 classes · 0 added by you')).toBeVisible();
+    const first = page.getByRole('link', {name: 'Open on YouTube'}).first();
+    await expect(first).toHaveAttribute('href', /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/);
+    await expect(first).toHaveAttribute('target', '_blank');
+    await expect(first).toHaveAttribute('rel', /noopener/);
+    await assertNoHorizontalOverflow(page);
 });
 
 test('a stale completed-set pointer recovers to the next set after reload', async ({page}) => {
@@ -204,6 +216,6 @@ test('representative use contacts only the production origin', async ({page}) =>
         if (url.protocol === 'http:' || url.protocol === 'https:') origins.add(url.origin);
     });
     await bootstrapAnonymousProfile(page);
-    for (const route of ['/library', '/progress/photos', '/backup', '/diagnostics']) await page.goto(`./#${route}`);
+    for (const route of ['/library', '/train/core-videos', '/progress/photos', '/backup', '/diagnostics']) await page.goto(`./#${route}`);
     expect([...origins]).toEqual(['http://127.0.0.1:4173']);
 });

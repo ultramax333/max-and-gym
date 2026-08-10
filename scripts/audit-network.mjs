@@ -16,8 +16,9 @@ const allowedRuntimeOrigins = [
     'self',
     'https://api.github.com (manual Android release check only)',
     'https://github.com (user-confirmed Android release download only)',
+    'https://www.youtube.com (explicit user-initiated external navigation only)',
 ];
-const markdown = `# Network and privacy audit\n\nRuntime allowlist:\n\n- same origin for application assets;\n- \`https://api.github.com/repos/ultramax333/max-and-gym/releases/latest\` only after a manual Android update check;\n- \`https://github.com/ultramax333/max-and-gym/releases/download/…\` only after explicit user confirmation.\n\nThe update check sends no token, cookie, personal data or workout data.\n\nForbidden runtime references: **${forbidden.length}**.\n`;
+const markdown = `# Network and privacy audit\n\nRuntime allowlist:\n\n- same origin for application assets;\n- \`https://api.github.com/repos/ultramax333/max-and-gym/releases/latest\` only after a manual Android update check;\n- \`https://github.com/ultramax333/max-and-gym/releases/download/…\` only after explicit user confirmation;\n- \`https://www.youtube.com/watch\` only as an external destination after an explicit user click. No player, iframe or thumbnail is loaded by the app.\n\nNo token, cookie, personal data or workout data is sent by the app.\n\nForbidden runtime references: **${forbidden.length}**.\n`;
 const report = {generatedAt: new Date().toISOString(), allowedRuntimeOrigins, discoveredLiteralOrigins: [...origins].sort(), forbiddenRuntimeReferences: forbidden};
 await writeAudit('network-origins', report, markdown);
 await writeFile(path.join(root, 'artifacts', 'audit', 'network-audit.md'), markdown);

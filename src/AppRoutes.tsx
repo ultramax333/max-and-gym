@@ -51,6 +51,7 @@ const ExerciseProgressPage = React.lazy(() => import('./pages/progress/ProgressP
 const MeasurementsPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.MeasurementsPage})));
 const PhotosPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.PhotosPage})));
 const BackupPage = React.lazy(() => import('./pages/backup/BackupPage'));
+const CoreVideosPage = React.lazy(() => import('./pages/core/CoreVideosPage'));
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><React.Suspense fallback={<Loader prompt="Loading…"/>}><Routes>
@@ -58,6 +59,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login/>}/>
         <Route path="/" element={<HomeShellPage/>}/>
         <Route path="/train" element={<TrainShellPage/>}/>
+        <Route path="/train/core-videos" element={<CoreVideosPage/>}/>
         <Route path="/programs" element={<ProgramsWithGeneratorPage/>}/>
         <Route path="/programs/generate" element={<GeneratorPage/>}/>
         <Route path="/programs/:programId" element={<ProgramDetailWithGeneratorActions/>}/>

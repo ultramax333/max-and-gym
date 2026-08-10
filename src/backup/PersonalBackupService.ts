@@ -4,6 +4,7 @@ import {DexieDB} from '../db/db';
 import {MediaBlobRecord} from '../progress/types';
 import {CustomExerciseRecord} from '../exerciseCatalog/types';
 import {ArchiveError, decodeZip, encodeZip, ZipEntry} from './zip';
+import {CUSTOM_CORE_VIDEOS_META_KEY} from '../pages/core/coreVideos';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -54,7 +55,7 @@ export async function hasPortablePersonalData(db: DexieDB): Promise<boolean> {
         'mediaBlob', 'progressPhoto',
     ]);
     const counts = await Promise.all(db.tables.filter((table) => personalTableNames.has(table.name)).map((table) => table.count()));
-    return counts.some((count) => count > 0);
+    return counts.some((count) => count > 0) || Boolean(await db.appMeta.get(CUSTOM_CORE_VIDEOS_META_KEY));
 }
 
 export async function backupDryRun(db: DexieDB): Promise<{tableCount: number; recordCount: number; mediaCount: number; missingMediaReferences: number}> {

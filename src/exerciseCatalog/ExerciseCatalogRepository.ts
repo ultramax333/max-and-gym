@@ -72,7 +72,9 @@ export class ExerciseCatalogRepository {
 
     async updatePreference(id: string, change: Partial<Pick<ExercisePreference, 'favourite' | 'neverSuggest'>>): Promise<void> {
         const previous = await this.db.exercisePreference.get(id);
-        await this.db.exercisePreference.put({exerciseId: id, favourite: change.favourite ?? previous?.favourite ?? false, neverSuggest: change.neverSuggest ?? previous?.neverSuggest ?? false, updatedAt: new Date().toISOString()});
+        const neverSuggest = change.neverSuggest ?? previous?.neverSuggest ?? false;
+        const favourite = neverSuggest ? false : (change.favourite ?? previous?.favourite ?? false);
+        await this.db.exercisePreference.put({exerciseId: id, favourite, neverSuggest, updatedAt: new Date().toISOString()});
     }
 
     async createCustom(input: {name: string; equipment: string; primaryMuscle: string; image?: Blob}): Promise<CustomExerciseRecord> {

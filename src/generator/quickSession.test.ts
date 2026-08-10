@@ -41,6 +41,8 @@ describe('quick session generator', () => {
         expect(day.duration.rest).toBeGreaterThan(0);
         if (duration === 50) expect(result.program.days[0].exercises.length).toBeGreaterThan(3);
         expect(result.program.days[0].exercises.every((exercise) => exercise.primaryMuscles.some((muscle) => ['biceps', 'triceps', 'forearms'].includes(muscle)))).toBe(true);
+        expect(result.program.days[0].exercises.some((exercise) => exercise.primaryMuscles.includes('biceps'))).toBe(true);
+        expect(result.program.days[0].exercises.some((exercise) => exercise.primaryMuscles.includes('triceps'))).toBe(true);
         expect(result.program.days[0].exercises.map((exercise) => exercise.exerciseName)).not.toContain('Barbell Lunge');
         expect(result.program.days[0].exercises.map((exercise) => exercise.exerciseName)).not.toContain('Barbell Bench Press - Medium Grip');
     });
@@ -73,6 +75,16 @@ describe('quick session generator', () => {
         }
     });
 
+    it('rotates away from the previous session when the eligible pool is large enough', () => {
+        const first = generateQuickSession({...input(45), seed: 'rotation-1'}, candidates, 'arms');
+        expect(first.ok).toBe(true);
+        if (!first.ok) return;
+        const previousIds = first.program.days[0].exercises.map((exercise) => exercise.exerciseId);
+        const next = generateQuickSession({...input(45), seed: 'rotation-2', blockedExerciseIds: previousIds}, candidates, 'arms');
+        expect(next.ok).toBe(true);
+        if (next.ok) expect(next.program.days[0].exercises.map((exercise) => exercise.exerciseId).filter((id) => previousIds.includes(id))).toEqual([]);
+    });
+
     it('never offers a leg exercise as an arms-session replacement', () => {
         const current = {
             exerciseId: 'current',
@@ -84,5 +96,15 @@ describe('quick session generator', () => {
         expect(options.length).toBeGreaterThan(0);
         expect(options.every((exercise) => exercise.primaryMuscles.some((muscle) => ['biceps', 'triceps', 'forearms'].includes(muscle)))).toBe(true);
         expect(options.map((exercise) => exercise.name)).not.toContain('Barbell Lunge');
+    });
+
+    it('excludes exercises marked Never Suggest from generation and replacements', () => {
+        const blocked = candidates.find((entry) => entry.primaryMuscles.includes('biceps'))!;
+        const marked = candidates.map((entry) => entry.id === blocked.id ? {...entry, effectiveNeverSuggest: true} : entry);
+        const generated = generateQuickSession(input(45), marked, 'arms');
+        expect(generated.ok).toBe(true);
+        if (generated.ok) expect(generated.program.days[0].exercises.map((entry) => entry.exerciseId)).not.toContain(blocked.id);
+        const options = quickSessionReplacementCandidates(marked, 'arms', input(45).equipment, new Set(), {exerciseId: 'current', movementPattern: 'accessory', primaryMuscles: ['biceps'], alternativeExerciseIds: [blocked.id]});
+        expect(options.map((entry) => entry.id)).not.toContain(blocked.id);
     });
 });

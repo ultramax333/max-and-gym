@@ -34,7 +34,7 @@ describe('deterministic program generator', () => {
 
     it('includes generator and seed versions in compatibility identity', () => {
         const current = generateProgram(input(), candidates);
-        const migrated = generateProgram(input({generatorVersion: 'deterministic-v5'}), candidates);
+        const migrated = generateProgram(input({generatorVersion: 'deterministic-v4'}), candidates);
         expect(current.ok && migrated.ok).toBe(true);
         if (current.ok && migrated.ok) expect(current.program.identityHash).not.toBe(migrated.program.identityHash);
     });

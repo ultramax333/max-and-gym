@@ -35,6 +35,8 @@ export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
 ): T[] {
     const eligible = candidates.filter((entry) =>
         !selectedIds.has(entry.id) &&
+        !entry.neverSuggest &&
+        !entry.effectiveNeverSuggest &&
         matchesQuickSessionZone(entry, zone) &&
         (entry.equipmentTags.includes('body only') || entry.equipmentTags.some((tag) => equipment.includes(tag)))
     );
@@ -88,10 +90,17 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const targetScore = zoneDefinition.muscles.length === 0 ? 0 : candidate.primaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
         if (!matchesQuickSessionZone(candidate, zone)) return [];
         const secondaryScore = candidate.secondaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
-        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff;
+        const rotationScore = parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff * 18;
+        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore;
         return [{candidate, role, score, targetScore}];
     }).sort((a, b) => b.targetScore - a.targetScore || b.score - a.score || a.candidate.id.localeCompare(b.candidate.id));
 
+    const muscleCoverage: typeof candidates = [];
+    const rotatedMuscles = [...zoneDefinition.muscles].sort((a, b) => stableHash(`${input.seed}:${zone}:muscle:${a}`).localeCompare(stableHash(`${input.seed}:${zone}:muscle:${b}`)));
+    for (const muscle of rotatedMuscles) {
+        const entry = candidates.find((candidate) => candidate.candidate.primaryMuscles.includes(muscle) && !muscleCoverage.some((selected) => selected.candidate.id === candidate.candidate.id));
+        if (entry) muscleCoverage.push(entry);
+    }
     const diverse: typeof candidates = [];
     const patterns = new Set<string>();
     for (const entry of candidates) {
@@ -99,7 +108,9 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         diverse.push(entry);
         patterns.add(entry.candidate.movementPattern);
     }
-    const ordered = [...diverse, ...candidates.filter((entry) => !diverse.some((diverseEntry) => diverseEntry.candidate.id === entry.candidate.id))];
+    const coverageIds = new Set(muscleCoverage.map((entry) => entry.candidate.id));
+    const diverseIds = new Set(diverse.map((entry) => entry.candidate.id));
+    const ordered = [...muscleCoverage, ...diverse.filter((entry) => !coverageIds.has(entry.candidate.id)), ...candidates.filter((entry) => !coverageIds.has(entry.candidate.id) && !diverseIds.has(entry.candidate.id))];
     const lowerBound = input.durationMinutes * 60 * 0.9;
     const upperBound = input.durationMinutes * 60 * 1.1;
     const minimumExercises = input.durationMinutes <= 20 ? 2 : 3;

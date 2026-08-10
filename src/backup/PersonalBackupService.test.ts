@@ -5,6 +5,7 @@ import {Blob as NodeBlob} from 'node:buffer';
 import {DexieDB} from '../db/db';
 import {CustomExerciseRecord} from '../exerciseCatalog/types';
 import {buildPersonalBackup, BackupError, hasPortablePersonalData, importPersonalBackup, previewPersonalBackup, recordPersonalBackupSuccess} from './PersonalBackupService';
+import {CUSTOM_CORE_VIDEOS_META_KEY} from '../pages/core/CoreVideoRepository';
 
 describe('personal backup', () => {
     let db: DexieDB;
@@ -23,7 +24,7 @@ describe('personal backup', () => {
 
     it('detects whether a first Android launch has portable personal data', async () => {
         expect(await hasPortablePersonalData(db)).toBe(false);
-        await db.trainingProgram.add({id: 'personal-program'} as never);
+        await db.appMeta.add({key: CUSTOM_CORE_VIDEOS_META_KEY, value: '[]', updatedAt: '2026-08-10T00:00:00Z'});
         expect(await hasPortablePersonalData(db)).toBe(true);
     });
 
@@ -37,6 +38,8 @@ describe('personal backup', () => {
 
     it('survives export, clear and Replace restore with photo blobs', async () => {
         await seed();
+        const customVideo = {id: 'video-1', youtubeId: 'dQw4w9WgXcQ', title: 'My class', channel: 'Trainer', durationMinutes: 10, level: 'All levels', equipment: 'No equipment', focus: 'Core', curated: false, createdAt: '2026-08-10T00:00:00Z', updatedAt: '2026-08-10T00:00:00Z'};
+        await db.appMeta.put({key: CUSTOM_CORE_VIDEOS_META_KEY, value: JSON.stringify([customVideo]), updatedAt: '2026-08-10T00:00:00Z'});
         const backup = await buildPersonalBackup(db, {now: new Date('2026-08-06T12:00:00Z'), id: 'backup-1'});
         const preview = await previewPersonalBackup(db, backup);
         expect(preview.manifest).toMatchObject({product: 'max-and-gym', mediaCount: 3});
@@ -48,6 +51,7 @@ describe('personal backup', () => {
         expect(await db.progressPhoto.count()).toBe(1);
         expect(await db.mediaBlob.get('image-1')).toMatchObject({byteSize: 5, checksum: 'source-a', mimeType: 'image/webp'});
         expect(await db.customExercise.get('custom-1')).toMatchObject({customImageMimeType: 'image/webp'});
+        expect(await db.appMeta.get(CUSTOM_CORE_VIDEOS_META_KEY)).toMatchObject({value: JSON.stringify([customVideo])});
         expect(await db.safetySnapshot.count()).toBe(1);
     });
 

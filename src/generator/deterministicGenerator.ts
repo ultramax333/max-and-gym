@@ -51,7 +51,7 @@ function scoreCandidate(candidate: GeneratorCandidate, role: GeneratorRole, inpu
     if (input.favouriteExerciseIds.includes(candidate.id) || candidate.favourite) { score += 15; reasons.push('Favourite exercise.'); }
     if (candidate.media.length >= 2) { score += 5; reasons.push('Reviewed local instructions and media.'); }
     score -= Math.max(0, candidate.setupTags.length - 1) * 3;
-    score += parseInt(stableHash(`${input.seed}:${role}:${candidate.id}`).slice(0, 4), 16) / 0xffff;
+    score += parseInt(stableHash(`${input.seed}:${role}:${candidate.id}`).slice(0, 4), 16) / 0xffff * 18;
     return {score, reasons};
 }
 
