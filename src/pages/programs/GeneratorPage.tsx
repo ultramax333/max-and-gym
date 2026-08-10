@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Alert, Box, Button, Card, CardContent, CardMedia, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
-import {AutoAwesome, Save} from '@mui/icons-material';
+import {AutoAwesome, Favorite, FavoriteBorder, Save, Search} from '@mui/icons-material';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useLiveQuery} from 'dexie-react-hooks';
 import Layout from '../../components/layout';
@@ -12,7 +12,7 @@ import {GENERATOR_VERSION as BUILD_GENERATOR_VERSION, EXERCISE_SEED_VERSION, PRO
 import {generateCoreSession} from '../../generator/coreWarmup';
 import {generateProgram, regenerateAccessories, stableHash} from '../../generator/deterministicGenerator';
 import {GeneratedCoreSession, GeneratedProgram, GeneratorCandidate, GeneratorInput, GoalBlend} from '../../generator/types';
-import {generateQuickSession, QUICK_SESSION_DURATIONS, QUICK_SESSION_ZONES, QuickSessionZone} from '../../generator/quickSession';
+import {generateQuickSession, matchesQuickSessionZone, quickSessionReplacementCandidates, QUICK_SESSION_DURATIONS, QUICK_SESSION_ZONES, QuickSessionZone} from '../../generator/quickSession';
 import {ProgramRepository} from '../../programs/ProgramRepository';
 import {generatedSessionWorkoutInput} from '../../programs/workoutSnapshot';
 import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
@@ -62,6 +62,7 @@ function QuickSessionBuilder() {
     const [preview, setPreview] = useState<GeneratedProgram>();
     const [libraryExercises, setLibraryExercises] = useState<LibraryExercise[]>([]);
     const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
+    const [replacementSearch, setReplacementSearch] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
 
@@ -137,16 +138,24 @@ function QuickSessionBuilder() {
         const currentDay = preview.days[0];
         const existingIds = new Set(currentDay.exercises.map((entry) => entry.exerciseId));
         if (existingIds.has(replacement.id)) return;
+        if (!matchesQuickSessionZone(replacement, zone) || !(replacement.equipmentTags.includes('body only') || replacement.equipmentTags.some((tag) => equipment.includes(tag)))) {
+            setError(`This exercise does not primarily target ${QUICK_SESSION_ZONES.find((entry) => entry.value === zone)?.label.toLowerCase() ?? 'the selected area'} with the available equipment.`);
+            setReplaceIndex(null);
+            return;
+        }
         const current = currentDay.exercises[index];
-        const nextExercise = {
+        const replacementBase = {
             ...current,
             exerciseId: replacement.id,
             exerciseName: replacement.name,
             movementPattern: replacement.movementPattern,
             primaryMuscles: [...replacement.primaryMuscles],
-            alternativeExerciseIds: libraryExercises.filter((entry) => entry.id !== replacement.id && !existingIds.has(entry.id) && (entry.movementPattern === replacement.movementPattern || entry.primaryMuscles.some((muscle) => replacement.primaryMuscles.includes(muscle)))).slice(0, 3).map((entry) => entry.id),
+            alternativeExerciseIds: [],
             reasons: ['Manually selected from the local exercise alternatives.'],
         };
+        const nextSelectedIds = new Set(currentDay.exercises.filter((_, entryIndex) => entryIndex !== index).map((entry) => entry.exerciseId));
+        nextSelectedIds.add(replacement.id);
+        const nextExercise = {...replacementBase, alternativeExerciseIds: quickSessionReplacementCandidates(libraryExercises, zone, equipment, nextSelectedIds, replacementBase).slice(0, 3).map((entry) => entry.id)};
         const nextDay = {...currentDay, exercises: currentDay.exercises.map((entry, entryIndex) => entryIndex === index ? nextExercise : entry)};
         const nextSelections = preview.explanation.selections.map((selection) => selection.exerciseId === current.exerciseId ? {...selection, exerciseId: replacement.id, reasons: nextExercise.reasons} : selection);
         const nextProgram = {...preview, days: [nextDay], explanation: {...preview.explanation, selections: nextSelections}, identityHash: ''};
@@ -155,14 +164,23 @@ function QuickSessionBuilder() {
         setReplaceIndex(null);
     };
 
+    const toggleFavourite = async (exercise: LibraryExercise) => {
+        const favourite = !exercise.favourite;
+        await catalog.updatePreference(exercise.id, {favourite});
+        setLibraryExercises((current) => current
+            .map((entry) => entry.id === exercise.id ? {...entry, favourite} : entry)
+            .sort((a, b) => Number(b.favourite) - Number(a.favourite) || a.name.localeCompare(b.name)));
+    };
+
     const replacementOptions = replaceIndex === null || !preview ? [] : (() => {
         const current = preview.days[0].exercises[replaceIndex];
         const selectedIds = new Set(preview.days[0].exercises.map((entry) => entry.exerciseId));
-        const preferred = current.alternativeExerciseIds.map((id) => libraryExercises.find((entry) => entry.id === id)).filter((entry): entry is LibraryExercise => entry !== undefined && !selectedIds.has(entry.id));
-        if (preferred.length >= 3) return preferred;
-        const fallback = libraryExercises.filter((entry) => !selectedIds.has(entry.id) && !preferred.some((item) => item.id === entry.id) && (entry.movementPattern === current.movementPattern || entry.primaryMuscles.some((muscle) => current.primaryMuscles.includes(muscle))));
-        return [...preferred, ...fallback].slice(0, 5);
+        return quickSessionReplacementCandidates(libraryExercises, zone, equipment, selectedIds, current, 40);
     })();
+    const normalizedReplacementSearch = replacementSearch.trim().toLowerCase();
+    const visibleReplacementOptions = normalizedReplacementSearch
+        ? replacementOptions.filter((entry) => [entry.name, ...entry.primaryMuscles, ...entry.equipmentTags].join(' ').toLowerCase().includes(normalizedReplacementSearch))
+        : replacementOptions;
 
     return <Stack spacing={2}>
         <Card><CardContent><Stack spacing={2}>
@@ -186,12 +204,12 @@ function QuickSessionBuilder() {
                 const endImage = details?.media.find((media) => media.kind === 'end-image');
                 return <Card key={`${exercise.exerciseId}-${index}`} variant="outlined"><CardContent><Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
                     <Box sx={{width: {xs: '100%', sm: 190}, flexShrink: 0, display: 'grid', gridTemplateColumns: endImage ? '1fr 1fr' : '1fr', gap: 0.5, alignContent: 'start'}}>{startImage && <CardMedia component="img" image={catalogMediaUrl(startImage.path)} alt={startImage.altText} loading="lazy" sx={{width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 1}}/>}{endImage && <CardMedia component="img" image={catalogMediaUrl(endImage.path)} alt={endImage.altText} loading="lazy" sx={{width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 1}}/>}{!startImage && <Box sx={{aspectRatio: '1', bgcolor: 'background.default', borderRadius: 1, display: 'grid', placeItems: 'center'}}><Typography variant="caption" color="text.secondary">No local photo</Typography></Box>}</Box>
-                    <Stack spacing={0.75} sx={{minWidth: 0, flex: 1}}><Typography fontWeight={700}>{index + 1}. {exercise.exerciseName}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescription.workingSets} × {exercise.prescription.repsMin}–{exercise.prescription.repsMax} · rest {exercise.prescription.restSeconds} s</Typography><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Box><Button size="small" variant="outlined" disabled={libraryExercises.length === 0} onClick={() => setReplaceIndex(index)}>Replace exercise</Button></Box></Stack>
+                    <Stack spacing={0.75} sx={{minWidth: 0, flex: 1}}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Typography fontWeight={700}>{index + 1}. {exercise.exerciseName}</Typography>{details && <Button size="small" aria-label={details.favourite ? `Remove ${details.name} from favourites` : `Add ${details.name} to favourites`} onClick={() => void toggleFavourite(details)}>{details.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</Button>}</Stack><Typography variant="body2" color="text.secondary">{exercise.prescription.workingSets} × {exercise.prescription.repsMin}–{exercise.prescription.repsMax} · rest {exercise.prescription.restSeconds} s</Typography><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Box><Button size="small" variant="outlined" disabled={libraryExercises.length === 0} onClick={() => { setReplacementSearch(''); setReplaceIndex(index); }}>Replace exercise</Button></Box></Stack>
                 </Stack></CardContent></Card>;
             })}
             <Alert severity="info">You can start it now, or save it to Programs to rename, reorder and edit exercises later.</Alert>
         </Stack></CardContent></Card>}
-        {preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent><Typography color="text.secondary" sx={{mb: 2}}>Choose a compatible local alternative. The current sets, reps and rest are kept.</Typography>{replacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{replacementOptions.map((option) => { const image = option.media.find((media) => media.kind === 'thumbnail') ?? option.media.find((media) => media.kind === 'start-image'); return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}>{image && <CardMedia component="img" image={catalogMediaUrl(image.path)} alt={image.altText} loading="lazy" sx={{width: 96, height: 96, objectFit: 'cover'}}/>}<CardContent sx={{minWidth: 0, flex: 1}}><Typography fontWeight={700}>{option.name}</Typography><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative was found in the local catalog.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
+        {preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>Choose an exercise whose primary muscles match the selected body area. Sets, reps and rest are kept.</Typography><TextField fullWidth label="Search alternatives" value={replacementSearch} onChange={(event) => setReplacementSearch(event.target.value)} InputProps={{startAdornment: <Search sx={{mr: 1, color: 'text.secondary'}}/>}} sx={{mb: 1}}/><Typography variant="caption" color="text.secondary" sx={{display: 'block', mb: 2}}>{visibleReplacementOptions.length} compatible exercise{visibleReplacementOptions.length === 1 ? '' : 's'}</Typography>{visibleReplacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{visibleReplacementOptions.map((option) => { const image = option.media.find((media) => media.kind === 'thumbnail') ?? option.media.find((media) => media.kind === 'start-image'); return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}>{image && <CardMedia component="img" image={catalogMediaUrl(image.path)} alt={image.altText} loading="lazy" sx={{width: 96, height: 96, objectFit: 'cover'}}/>}<CardContent sx={{minWidth: 0, flex: 1}}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Typography fontWeight={700}>{option.name}</Typography><Button size="small" aria-label={option.favourite ? `Remove ${option.name} from favourites` : `Add ${option.name} to favourites`} onClick={() => void toggleFavourite(option)}>{option.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</Button></Stack><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative matches this search.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
     </Stack>;
 }
 

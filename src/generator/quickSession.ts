@@ -19,6 +19,39 @@ export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string;
 
 export const QUICK_SESSION_DURATIONS: ProgramDurationMinutes[] = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
 
+export function matchesQuickSessionZone(candidate: Pick<GeneratorCandidate, 'primaryMuscles'>, zone: QuickSessionZone): boolean {
+    const definition = QUICK_SESSION_ZONES.find((entry) => entry.value === zone);
+    if (!definition) return false;
+    return definition.muscles.length === 0 || candidate.primaryMuscles.some((muscle) => definition.muscles.includes(muscle));
+}
+
+export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
+    candidates: T[],
+    zone: QuickSessionZone,
+    equipment: string[],
+    selectedIds: Set<string>,
+    current: Pick<GeneratedExercise, 'exerciseId' | 'movementPattern' | 'primaryMuscles' | 'alternativeExerciseIds'>,
+    limit = 20,
+): T[] {
+    const eligible = candidates.filter((entry) =>
+        !selectedIds.has(entry.id) &&
+        matchesQuickSessionZone(entry, zone) &&
+        (entry.equipmentTags.includes('body only') || entry.equipmentTags.some((tag) => equipment.includes(tag)))
+    );
+    const preferred = current.alternativeExerciseIds
+        .map((id) => eligible.find((entry) => entry.id === id))
+        .filter((entry): entry is T => entry !== undefined);
+    const compatible = eligible.filter((entry) =>
+        !preferred.some((preferredEntry) => preferredEntry.id === entry.id) &&
+        (entry.movementPattern === current.movementPattern || entry.primaryMuscles.some((muscle) => current.primaryMuscles.includes(muscle)))
+    );
+    const remaining = eligible.filter((entry) =>
+        !preferred.some((preferredEntry) => preferredEntry.id === entry.id) &&
+        !compatible.some((compatibleEntry) => compatibleEntry.id === entry.id)
+    );
+    return [...preferred, ...compatible, ...remaining].slice(0, limit);
+}
+
 function roleFor(candidate: GeneratorCandidate): GeneratorRole {
     if (candidate.movementPattern === 'squat') return 'leg-assistance';
     if (candidate.movementPattern === 'hinge') return 'posterior-assistance';
@@ -55,10 +88,10 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const role = roleFor(candidate);
         const constraint = evaluateHardConstraints(candidate, input, role);
         if (!constraint.allowed) { if (constraint.exclusion) exclusions.push(constraint.exclusion); return []; }
-        const muscles = [...candidate.primaryMuscles, ...candidate.secondaryMuscles];
-        const targetScore = zoneDefinition.muscles.length === 0 ? 0 : muscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
-        if (zoneDefinition.muscles.length > 0 && targetScore === 0) return [];
-        const score = targetScore * 30 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff;
+        const targetScore = zoneDefinition.muscles.length === 0 ? 0 : candidate.primaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
+        if (!matchesQuickSessionZone(candidate, zone)) return [];
+        const secondaryScore = candidate.secondaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
+        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff;
         return [{candidate, role, score, targetScore}];
     }).sort((a, b) => b.targetScore - a.targetScore || b.score - a.score || a.candidate.id.localeCompare(b.candidate.id));
 

@@ -67,7 +67,7 @@ export class ExerciseCatalogRepository {
 
     async alternatives(exercise: LibraryExercise): Promise<LibraryExercise[]> {
         const all = await this.list();
-        return all.filter((entry) => entry.id !== exercise.id && entry.generatorEligible && !entry.effectiveNeverSuggest && (entry.movementPattern === exercise.movementPattern || entry.primaryMuscles.some((muscle) => exercise.primaryMuscles.includes(muscle)))).slice(0, 5);
+        return all.filter((entry) => entry.id !== exercise.id && entry.generatorEligible && !entry.effectiveNeverSuggest && (entry.movementPattern === exercise.movementPattern || entry.primaryMuscles.some((muscle) => exercise.primaryMuscles.includes(muscle)))).slice(0, 20);
     }
 
     async updatePreference(id: string, change: Partial<Pick<ExercisePreference, 'favourite' | 'neverSuggest'>>): Promise<void> {
