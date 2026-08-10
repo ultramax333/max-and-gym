@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(RestAlarmPlugin.class);
         registerPlugin(AndroidUpdatePlugin.class);
+        registerPlugin(BackupDocumentPlugin.class);
         super.onCreate(savedInstanceState);
         configureBackNavigation();
         rememberAlarmAction(getIntent());

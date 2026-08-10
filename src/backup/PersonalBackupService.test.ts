@@ -4,7 +4,7 @@ import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {Blob as NodeBlob} from 'node:buffer';
 import {DexieDB} from '../db/db';
 import {CustomExerciseRecord} from '../exerciseCatalog/types';
-import {buildPersonalBackup, BackupError, hasPortablePersonalData, importPersonalBackup, previewPersonalBackup} from './PersonalBackupService';
+import {buildPersonalBackup, BackupError, hasPortablePersonalData, importPersonalBackup, previewPersonalBackup, recordPersonalBackupSuccess} from './PersonalBackupService';
 
 describe('personal backup', () => {
     let db: DexieDB;
@@ -25,6 +25,14 @@ describe('personal backup', () => {
         expect(await hasPortablePersonalData(db)).toBe(false);
         await db.trainingProgram.add({id: 'personal-program'} as never);
         expect(await hasPortablePersonalData(db)).toBe(true);
+    });
+
+    it('records a successful delivery only after the document was saved', async () => {
+        await buildPersonalBackup(db, {recordSuccess: false});
+        expect(await db.appMeta.get('lastBackupAt')).toBeUndefined();
+        await recordPersonalBackupSuccess(db, {now: new Date('2026-08-10T12:00:00Z'), id: 'delivered-backup'});
+        expect(await db.appMeta.get('lastBackupAt')).toMatchObject({value: '2026-08-10T12:00:00.000Z'});
+        expect(await db.operationJournal.get('delivered-backup')).toMatchObject({status: 'committed'});
     });
 
     it('survives export, clear and Replace restore with photo blobs', async () => {

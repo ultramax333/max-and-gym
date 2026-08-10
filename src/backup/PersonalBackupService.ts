@@ -9,6 +9,7 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const PRODUCT = 'max-and-gym';
 const EXCLUDED_TABLES = new Set(['safetySnapshot']);
+const MAX_PERSONAL_BACKUP_BYTES = 64 * 1024 * 1024;
 
 export interface BackupManifest {
     product: string;
@@ -41,7 +42,7 @@ export interface BackupPreview {
 }
 
 export class BackupError extends Error {
-    constructor(public readonly code: 'BACKUP_BUILD_FAILED' | 'BACKUP_CHECKSUM_MISMATCH' | 'IMPORT_UNSUPPORTED_VERSION' | 'IMPORT_SCHEMA_INVALID' | 'IMPORT_STORAGE_INSUFFICIENT' | 'IMPORT_TRANSACTION_ABORTED' | 'IMPORT_POSTCHECK_FAILED' | 'IMPORT_MERGE_CONFLICT', message: string) { super(message); this.name = 'BackupError'; }
+    constructor(public readonly code: 'BACKUP_BUILD_FAILED' | 'BACKUP_ARCHIVE_TOO_LARGE' | 'BACKUP_CHECKSUM_MISMATCH' | 'IMPORT_UNSUPPORTED_VERSION' | 'IMPORT_SCHEMA_INVALID' | 'IMPORT_STORAGE_INSUFFICIENT' | 'IMPORT_TRANSACTION_ABORTED' | 'IMPORT_POSTCHECK_FAILED' | 'IMPORT_MERGE_CONFLICT', message: string) { super(message); this.name = 'BackupError'; }
 }
 
 export async function hasPortablePersonalData(db: DexieDB): Promise<boolean> {
@@ -127,6 +128,7 @@ async function archiveFromDatabase(db: DexieDB, exportedAt: string): Promise<Blo
     const data = await collectData(db);
     const mediaRows = new Map((await db.mediaBlob.toArray()).map((entry) => [entry.id, entry]));
     const {manifest, entries} = await buildEntries(data, exportedAt);
+    if (manifest.mediaBytes > MAX_PERSONAL_BACKUP_BYTES) throw new BackupError('BACKUP_ARCHIVE_TOO_LARGE', 'Backup media exceeds the safe 64 MB in-memory limit. Remove or export some progress photos first.');
     for (const media of data.media) {
         const source = mediaRows.get(media.id);
         if (!source) throw new BackupError('BACKUP_BUILD_FAILED', 'Referenced media not found.');
@@ -144,6 +146,7 @@ async function archiveFromDatabase(db: DexieDB, exportedAt: string): Promise<Blo
     }
     const manifestEntry = {path: 'manifest.json', bytes: jsonBytes(manifest)};
     const zip = encodeZip([manifestEntry, ...entries]);
+    if (zip.length > MAX_PERSONAL_BACKUP_BYTES) throw new BackupError('BACKUP_ARCHIVE_TOO_LARGE', 'Backup exceeds the safe 64 MB in-memory limit.');
     await parseArchiveBytes(zip);
     return new Blob([Uint8Array.from(zip).buffer], {type: 'application/vnd.maxgym+zip'});
 }
@@ -165,6 +168,16 @@ export async function buildPersonalBackup(db: DexieDB, options: {now?: Date; id?
         if (options.recordSuccess !== false) await db.operationJournal.update(operationId, {status: 'failed', finishedAt: new Date().toISOString(), safeErrorCode: error instanceof BackupError ? error.code : 'BACKUP_BUILD_FAILED'});
         throw error;
     }
+}
+
+export async function recordPersonalBackupSuccess(db: DexieDB, options: {now?: Date; id?: string} = {}): Promise<void> {
+    const now = options.now ?? new Date();
+    const timestamp = now.toISOString();
+    const operationId = options.id ?? globalThis.crypto.randomUUID();
+    await db.transaction('rw', [db.operationJournal, db.appMeta], async () => {
+        await db.operationJournal.put({operationId, type: 'backup', status: 'committed', startedAt: timestamp, finishedAt: timestamp});
+        await db.appMeta.put({key: 'lastBackupAt', value: timestamp, updatedAt: timestamp});
+    });
 }
 
 async function parseArchiveBytes(bytes: Uint8Array): Promise<Omit<BackupPreview, 'conflicts'>> {
@@ -193,6 +206,7 @@ async function parseArchiveBytes(bytes: Uint8Array): Promise<Omit<BackupPreview,
 }
 
 export async function previewPersonalBackup(db: DexieDB, archive: Blob): Promise<BackupPreview> {
+    if (archive.size > MAX_PERSONAL_BACKUP_BYTES) throw new BackupError('BACKUP_ARCHIVE_TOO_LARGE', 'Backup exceeds the safe 64 MB in-memory limit.');
     const parsed = await parseArchiveBytes(await blobBytes(archive));
     const tableNames = new Set(db.tables.map((entry) => entry.name));
     const conflicts: BackupPreview['conflicts'] = [];

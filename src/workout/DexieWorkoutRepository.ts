@@ -2,6 +2,7 @@ import {DexieDB} from '../db/db';
 import {ActiveWorkoutSnapshot, CompleteSetInput, PerformedSetRecord, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
 import {WorkoutRepository} from './WorkoutRepository';
 import {calculateProgression, ProgressionKind} from '../generator/progression';
+import {elapsedSeconds as calculateElapsedSeconds} from './elapsed';
 
 export class WorkoutDomainError extends Error {
     constructor(public readonly code: 'WORKOUT_ACTIVE_SESSION_CONFLICT' | 'WORKOUT_DUPLICATE_SET_BLOCKED' | 'DB_INVARIANT_VIOLATION' | 'TIMER_OWNER_MISMATCH', message: string) {
@@ -103,6 +104,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         if (!input.exercises.length) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'A workout session needs at least one exercise.');
         const validInteger = (value: number, minimum: number) => Number.isFinite(value) && Number.isInteger(value) && value >= minimum;
         if (input.restOverrideSeconds !== undefined && !validInteger(input.restOverrideSeconds, 1)) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session rest override must be a positive whole number of seconds.');
+        if (input.plannedDurationSeconds !== undefined && !validInteger(input.plannedDurationSeconds, 1)) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The planned session duration must be a positive whole number of seconds.');
         const invalidExercise = input.exercises.find((entry) => !validInteger(entry.workingSets, 1)
             || !validInteger(entry.warmupSets ?? 0, 0)
             || !validInteger(entry.dropSets ?? 0, 0)
@@ -141,7 +143,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                 const isIntermediateGroupMember = Boolean(entry.groupId && (entry.groupSequenceIndex ?? 0) < groupMembers.length - 1);
                 return rows.map((row, sequenceIndex) => ({id: this.clock.id(), sessionId, sessionExerciseId: exerciseIds[exerciseIndex], sequenceIndex, setKind: row.kind, status: 'planned' as const, targetRepsMin: entry.repsMin, targetRepsMax: entry.repsMax, targetLoadKg: Math.round(entry.targetLoadKg * row.loadFactor * 10) / 10, targetRir: entry.targetRir, restSeconds: isIntermediateGroupMember ? 0 : entry.restSeconds, createdAt: now, updatedAt: now}));
             });
-            const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, restOverrideSeconds: input.restOverrideSeconds, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
+            const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, plannedDurationSeconds: input.plannedDurationSeconds, restOverrideSeconds: input.restOverrideSeconds, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
             await this.db.workoutSession.add(session);
             await this.db.sessionExercise.bulkAdd(exercises);
             await this.db.performedSet.bulkAdd(sets);
@@ -282,7 +284,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             if (session.status === 'abandoned') return;
             if (session.status !== 'active' && session.status !== 'paused') throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'Only an active workout can be replaced.');
             await this.db.workoutOperation.put({operationId, kind: 'abandon', status: 'started', sessionId, startedAt: now});
-            const elapsedSeconds = Math.max(0, Math.floor((this.clock.now().getTime() - new Date(session.startedAt).getTime()) / 1000) - session.pausedDurationSeconds);
+            const elapsedSeconds = calculateElapsedSeconds(session, this.clock.now().getTime());
             await this.db.workoutSession.update(sessionId, {status: 'abandoned', endedAt: now, elapsedSeconds, updatedAt: now});
             await this.db.restTimer.where('sessionId').equals(sessionId).modify({status: 'cancelled', updatedAt: now});
             await this.db.workoutOperation.put({operationId, kind: 'abandon', status: 'committed', sessionId, startedAt: now, finishedAt: now});
@@ -300,7 +302,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             if (!session) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session does not exist.');
             if (session.status === 'completed' && session.finishOperationId !== operationId) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session is already completed.');
             await this.db.workoutOperation.put({operationId, kind: 'finish', status: 'started', sessionId, startedAt: now});
-            const elapsedSeconds = Math.max(0, Math.floor((this.clock.now().getTime() - new Date(session.startedAt).getTime()) / 1000) - session.pausedDurationSeconds);
+            const elapsedSeconds = calculateElapsedSeconds(session, this.clock.now().getTime());
             await this.db.workoutSession.update(sessionId, {status: 'completed', finishOperationId: operationId, endedAt: now, elapsedSeconds, updatedAt: now});
             if (session.programId) {
                 const sessionExercises = await this.db.sessionExercise.where('sessionId').equals(session.id).toArray();

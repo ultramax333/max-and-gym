@@ -16,6 +16,7 @@ export interface WorkoutSessionRecord {
     pausedAt?: string;
     pausedDurationSeconds: number;
     elapsedSeconds?: number;
+    plannedDurationSeconds?: number;
     restOverrideSeconds?: number;
     currentSessionExerciseId: string;
     currentSetId: string;
@@ -25,6 +26,7 @@ export interface WorkoutSessionRecord {
 
 export interface StartWorkoutInput {
     name: string;
+    plannedDurationSeconds?: number;
     restOverrideSeconds?: number;
     programId?: string;
     programDayId?: string;

@@ -14,3 +14,13 @@ export function formatElapsedDuration(seconds: number): string {
     const remainder = safe % 60;
     return `${hours ? `${hours}:` : ''}${hours ? minutes.toString().padStart(2, '0') : minutes.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
 }
+
+export function durationTargetDelta(actualSeconds: number, plannedSeconds?: number): {label: string; tone: 'success' | 'warning' | 'info'} | undefined {
+    if (plannedSeconds === undefined) return undefined;
+    const deltaMinutes = Math.round((actualSeconds - plannedSeconds) / 60);
+    if (deltaMinutes === 0) return {label: 'On target', tone: 'success'};
+    const magnitude = Math.abs(deltaMinutes);
+    return deltaMinutes < 0
+        ? {label: `${magnitude} min under target`, tone: 'info'}
+        : {label: `${magnitude} min over target`, tone: 'warning'};
+}

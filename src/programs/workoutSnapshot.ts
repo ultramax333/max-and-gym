@@ -31,6 +31,7 @@ function exerciseSnapshot(entry: ProgramExerciseDetail): StartWorkoutInput['exer
 
 export function programDayWorkoutInput(programName: string, day: ProgramDayDetail): StartWorkoutInput {
     return {
+        plannedDurationSeconds: day.targetDurationMinutes * 60,
         name: `${programName} · ${day.name}`,
         programId: day.programId,
         programDayId: day.id,
@@ -40,6 +41,7 @@ export function programDayWorkoutInput(programName: string, day: ProgramDayDetai
 
 export function generatedSessionWorkoutInput(program: GeneratedProgram, day: GeneratedDay = program.days[0]): StartWorkoutInput {
     return {
+        plannedDurationSeconds: day.targetDurationMinutes * 60,
         name: `${program.name} · ${day.name}`,
         restOverrideSeconds: program.sessionRestSeconds,
         exercises: day.exercises.map((entry) => ({

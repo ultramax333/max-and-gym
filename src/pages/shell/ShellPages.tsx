@@ -30,7 +30,7 @@ async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>): Pr
 }
 
 async function startQuickWorkout(definition: QuickWorkoutDefinition, navigate: ReturnType<typeof useNavigate>): Promise<void> {
-    await workout.startProgramDay({name: definition.name, exercises: definition.exercises});
+    await workout.startProgramDay({name: definition.name, plannedDurationSeconds: definition.durationMinutes * 60, exercises: definition.exercises});
     navigate('/workout/active');
 }
 

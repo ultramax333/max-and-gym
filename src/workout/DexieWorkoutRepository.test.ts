@@ -37,6 +37,15 @@ describe('DexieWorkoutRepository', () => {
         await expect(repository.startSample('start-2')).rejects.toMatchObject({code: 'WORKOUT_ACTIVE_SESSION_CONFLICT'});
     });
 
+    it('snapshots planned duration independently from actual elapsed time', async () => {
+        const started = await repository.startProgramDay({name: 'Timed workout', plannedDurationSeconds: 2400, exercises: [{exerciseId: 'curl', exerciseName: 'Curl', prescriptionSnapshot: '1 x 10', workingSets: 1, repsMin: 10, repsMax: 10, targetLoadKg: 10, targetRir: 2, restSeconds: 60}]}, 'timed-start');
+        expect(started.session.plannedDurationSeconds).toBe(2400);
+        nowMs += 35 * 60_000;
+        const finished = await repository.finish(started.session.id, 'timed-finish');
+        expect(finished.session.elapsedSeconds).toBe(2100);
+        expect(finished.session.plannedDurationSeconds).toBe(2400);
+    });
+
     it('completes a set idempotently and advances position with one timestamp timer', async () => {
         const started = await repository.startSample('start');
         const set = started.sets[0];
@@ -128,6 +137,15 @@ describe('DexieWorkoutRepository', () => {
         expect(replay.session.endedAt).toBe(finished.session.endedAt);
         expect(replay.session.elapsedSeconds).toBe(120);
         expect(await repository.findActive()).toBeUndefined();
+    });
+
+    it('excludes an open pause when finishing the workout', async () => {
+        const started = await repository.startSample('paused-finish-start');
+        nowMs += 5 * 60_000;
+        await repository.pause(started.session.id);
+        nowMs += 20 * 60_000;
+        const finished = await repository.finish(started.session.id, 'paused-finish');
+        expect(finished.session.elapsedSeconds).toBe(5 * 60);
     });
 
     it('abandons a replaced workout without deleting its completed sets', async () => {
