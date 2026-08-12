@@ -1,7 +1,7 @@
 import {recordDiagnostic, writeOperationJournal} from '../diagnostics/service';
 import {ErrorCode} from '../diagnostics/types';
 import {DexieWorkoutRepository, WorkoutDomainError} from './DexieWorkoutRepository';
-import {ActiveWorkoutSnapshot, CompleteSetInput, StartWorkoutInput} from './types';
+import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, StartWorkoutInput} from './types';
 import {RestAlarmGateway, restAlarmGateway, syncNativeRestAlarm} from '../native/restAlarmGateway';
 
 export const ACTIVE_WORKOUT_STORAGE_KEY = 'maxgym.activeWorkoutId';
@@ -95,6 +95,18 @@ export class WorkoutApplicationService {
         const result = await this.runCritical('workout-undo-set', operationId, 'WORKOUT_UNDO_FAILED', () => this.repository.undoSet(sessionId, setId, operationId));
         await this.syncAlarm(result, priorTimerId);
         return result;
+    }
+
+    switchExercise(sessionId: string, sessionExerciseId: string): Promise<ActiveWorkoutSnapshot> {
+        return this.repository.switchExercise(sessionId, sessionExerciseId);
+    }
+
+    saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {
+        return this.repository.saveDefaultLoad(sessionId, sessionExerciseId, loadKg);
+    }
+
+    exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined> {
+        return this.repository.exerciseHistory(exerciseId, excludeSessionId);
     }
 
     async pause(sessionId: string): Promise<ActiveWorkoutSnapshot> {

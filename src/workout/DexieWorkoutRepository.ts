@@ -1,5 +1,5 @@
 import {DexieDB} from '../db/db';
-import {ActiveWorkoutSnapshot, CompleteSetInput, PerformedSetRecord, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
+import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, PerformedSetRecord, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
 import {WorkoutRepository} from './WorkoutRepository';
 import {calculateProgression, ProgressionKind} from '../generator/progression';
 import {elapsedSeconds as calculateElapsedSeconds} from './elapsed';
@@ -20,6 +20,16 @@ const defaultClock: RepositoryClock = {
     now: () => new Date(),
     id: () => globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2),
 };
+
+export const DEFAULT_EXERCISE_LOADS_META_KEY = 'defaultExerciseLoads:v1';
+
+function parseDefaultLoads(value: string | undefined): Record<string, number> {
+    if (!value) return {};
+    try {
+        const parsed = JSON.parse(value) as Record<string, unknown>;
+        return Object.fromEntries(Object.entries(parsed).filter((entry): entry is [string, number] => Number.isFinite(entry[1]) && (entry[1] as number) >= 0));
+    } catch { return {}; }
+}
 
 export function orderSetsForExecution(exercises: SessionExerciseRecord[], sets: PerformedSetRecord[]): PerformedSetRecord[] {
     const exerciseOrder = new Map(exercises.map((exercise, index) => [exercise.id, index]));
@@ -71,6 +81,22 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         return sessions[0] ? this.snapshot(sessions[0]) : undefined;
     }
 
+    async exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined> {
+        const matchingExercises = await this.db.sessionExercise.filter((entry) => entry.exerciseId === exerciseId && entry.sessionId !== excludeSessionId).toArray();
+        const candidates = await Promise.all(matchingExercises.map(async (exercise) => {
+            const session = await this.db.workoutSession.get(exercise.sessionId);
+            if (!session || session.status !== 'completed') return undefined;
+            const sets = (await this.db.performedSet.where('sessionExerciseId').equals(exercise.id).toArray())
+                .filter((entry) => entry.status === 'completed' && entry.actualLoadKg !== undefined && entry.actualReps !== undefined)
+                .sort((a, b) => a.sequenceIndex - b.sequenceIndex);
+            const workingSets = sets.filter((entry) => (entry.setKind ?? 'working') === 'working');
+            const suggested = [...workingSets, ...sets].at(-1);
+            if (!sets.length || !suggested?.actualLoadKg && suggested?.actualLoadKg !== 0) return undefined;
+            return {sessionId: session.id, sessionName: session.nameSnapshot, performedAt: session.endedAt ?? session.updatedAt, suggestedLoadKg: suggested.actualLoadKg, sets: sets.map((entry) => ({loadKg: entry.actualLoadKg!, reps: entry.actualReps!, ...(entry.actualRir === undefined ? {} : {rir: entry.actualRir})}))} satisfies ExercisePerformanceSummary;
+        }));
+        return candidates.filter((entry): entry is NonNullable<typeof entry> => entry !== undefined).sort((a, b) => b.performedAt.localeCompare(a.performedAt))[0];
+    }
+
     async repairPosition(sessionId: string): Promise<ActiveWorkoutSnapshot> {
         await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.restTimer], async () => {
             const session = await this.db.workoutSession.get(sessionId);
@@ -116,6 +142,12 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             || !Number.isFinite(entry.targetRir));
         if (invalidExercise) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', `Invalid prescription for ${invalidExercise.exerciseName}.`);
         const now = this.iso();
+        const defaultLoads = parseDefaultLoads((await this.db.appMeta.get(DEFAULT_EXERCISE_LOADS_META_KEY))?.value);
+        const resolvedLoads = new Map<string, number>();
+        for (const entry of input.exercises) {
+            const previous = defaultLoads[entry.exerciseId] === undefined ? await this.exerciseHistory(entry.exerciseId) : undefined;
+            resolvedLoads.set(entry.exerciseId, defaultLoads[entry.exerciseId] ?? previous?.suggestedLoadKg ?? entry.targetLoadKg);
+        }
         const sessionId = this.clock.id();
         await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.workoutOperation], async () => {
             const prior = await this.db.workoutOperation.get(operationId);
@@ -141,7 +173,8 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                 ];
                 const groupMembers = entry.groupId ? input.exercises.filter((candidate) => candidate.groupId === entry.groupId) : [];
                 const isIntermediateGroupMember = Boolean(entry.groupId && (entry.groupSequenceIndex ?? 0) < groupMembers.length - 1);
-                return rows.map((row, sequenceIndex) => ({id: this.clock.id(), sessionId, sessionExerciseId: exerciseIds[exerciseIndex], sequenceIndex, setKind: row.kind, status: 'planned' as const, targetRepsMin: entry.repsMin, targetRepsMax: entry.repsMax, targetLoadKg: Math.round(entry.targetLoadKg * row.loadFactor * 10) / 10, targetRir: entry.targetRir, restSeconds: isIntermediateGroupMember ? 0 : entry.restSeconds, createdAt: now, updatedAt: now}));
+                const baseLoad = resolvedLoads.get(entry.exerciseId) ?? entry.targetLoadKg;
+                return rows.map((row, sequenceIndex) => ({id: this.clock.id(), sessionId, sessionExerciseId: exerciseIds[exerciseIndex], sequenceIndex, setKind: row.kind, status: 'planned' as const, targetRepsMin: entry.repsMin, targetRepsMax: entry.repsMax, targetLoadKg: Math.round(baseLoad * row.loadFactor * 10) / 10, targetRir: entry.targetRir, restSeconds: isIntermediateGroupMember ? 0 : entry.restSeconds, createdAt: now, updatedAt: now}));
             });
             const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, plannedDurationSeconds: input.plannedDurationSeconds, restOverrideSeconds: input.restOverrideSeconds, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
             await this.db.workoutSession.add(session);
@@ -153,6 +186,39 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         const result = operation?.sessionId ? await this.get(operation.sessionId) : undefined;
         if (!result) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The created session could not be loaded.');
         return result;
+    }
+
+    async switchExercise(sessionId: string, sessionExerciseId: string): Promise<ActiveWorkoutSnapshot> {
+        const now = this.iso();
+        await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet], async () => {
+            const session = await this.db.workoutSession.get(sessionId);
+            const exercise = await this.db.sessionExercise.get(sessionExerciseId);
+            if (!session || (session.status !== 'active' && session.status !== 'paused') || !exercise || exercise.sessionId !== sessionId) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The selected exercise is not available in this session.');
+            const next = (await this.db.performedSet.where('sessionExerciseId').equals(sessionExerciseId).sortBy('sequenceIndex')).find((entry) => entry.status !== 'completed');
+            if (!next) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'All sets for this exercise are already complete.');
+            const exercises = await this.db.sessionExercise.where('sessionId').equals(sessionId).toArray();
+            for (const entry of exercises) {
+                const sets = await this.db.performedSet.where('sessionExerciseId').equals(entry.id).toArray();
+                const status = entry.id === exercise.id ? 'active' : sets.every((set) => set.status === 'completed') ? 'completed' : 'pending';
+                if (entry.status !== status) await this.db.sessionExercise.update(entry.id, {status, updatedAt: now});
+            }
+            await this.db.workoutSession.update(sessionId, {currentSessionExerciseId: exercise.id, currentSetId: next.id, updatedAt: now});
+        });
+        return (await this.get(sessionId))!;
+    }
+
+    async saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {
+        if (!Number.isFinite(loadKg) || loadKg < 0) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The default load must be 0 kg or more.');
+        const now = this.iso();
+        await this.db.transaction('rw', [this.db.sessionExercise, this.db.performedSet, this.db.appMeta], async () => {
+            const exercise = await this.db.sessionExercise.get(sessionExerciseId);
+            if (!exercise || exercise.sessionId !== sessionId) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The selected exercise is not available in this session.');
+            const defaults = parseDefaultLoads((await this.db.appMeta.get(DEFAULT_EXERCISE_LOADS_META_KEY))?.value);
+            defaults[exercise.exerciseId] = loadKg;
+            await this.db.appMeta.put({key: DEFAULT_EXERCISE_LOADS_META_KEY, value: JSON.stringify(defaults), updatedAt: now});
+            await this.db.performedSet.where('sessionExerciseId').equals(sessionExerciseId).filter((entry) => entry.status !== 'completed' && (entry.setKind ?? 'working') === 'working').modify({targetLoadKg: loadKg, updatedAt: now});
+        });
+        return (await this.get(sessionId))!;
     }
 
     async completeSet(input: CompleteSetInput): Promise<ActiveWorkoutSnapshot> {
@@ -170,7 +236,10 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             const allSets = await this.db.performedSet.where('sessionId').equals(session.id).toArray();
             const exercises = await this.db.sessionExercise.where('sessionId').equals(session.id).sortBy('sequenceIndex');
             const ordered = orderSetsForExecution(exercises, allSets);
-            const next = ordered.find((entry) => entry.status === 'planned' && entry.id !== set.id);
+            const currentPosition = ordered.findIndex((entry) => entry.id === set.id);
+            const wasManualDetour = currentPosition > 0 && ordered.slice(0, currentPosition).some((entry) => entry.status === 'planned');
+            const nextInDetour = wasManualDetour ? ordered.find((entry) => entry.sessionExerciseId === set.sessionExerciseId && entry.status === 'planned' && entry.id !== set.id) : undefined;
+            const next = nextInDetour ?? ordered.find((entry) => entry.status === 'planned' && entry.id !== set.id);
             const remainingCurrent = ordered.some((entry) => entry.sessionExerciseId === set.sessionExerciseId && entry.status === 'planned' && entry.id !== set.id);
             if (!remainingCurrent) await this.db.sessionExercise.update(set.sessionExerciseId, {status: 'completed', updatedAt: now});
             if (next && next.sessionExerciseId !== set.sessionExerciseId) await this.db.sessionExercise.update(next.sessionExerciseId, {status: 'active', updatedAt: now});

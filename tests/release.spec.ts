@@ -78,8 +78,13 @@ test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local
         await expect(workoutPlan.getByText(exerciseName, {exact: true})).toBeVisible();
     }
     await expect(page.getByRole('heading', {name: 'Dumbbell Bicep Curl'})).toBeVisible();
+    await expect(page.getByRole('heading', {name: 'How to move'})).toBeVisible();
     await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl starting position'})).toBeVisible();
     await expect(page.getByRole('img', {name: 'Dumbbell Bicep Curl finishing position'})).toBeVisible();
+    await expect(page.getByRole('button', {name: /use .* kg as default/i})).toBeVisible();
+    await page.getByRole('button', {name: 'Switch here'}).first().click();
+    await expect(page.getByRole('status')).toContainText('Exercise changed');
+    await expect(page.getByRole('heading', {name: 'Dumbbell One-Arm Triceps Extension'})).toBeVisible();
     const activeMain = page.locator('main');
     const activeDimensions = await activeMain.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
     expect(activeDimensions.scrollHeight).toBeGreaterThan(activeDimensions.clientHeight);

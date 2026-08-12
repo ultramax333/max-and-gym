@@ -1,13 +1,13 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Box, Button, Card, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
-import {Add, FitnessCenter, Flag, NotificationsActive, Pause, PlayArrow, Remove, SkipNext, Undo} from '@mui/icons-material';
+import {Add, FitnessCenter, Flag, NotificationsActive, Pause, PlayArrow, Remove, Save, SkipNext, SwapHoriz, Undo} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../../components/ui/UiPrimitives';
 import {recordDiagnostic} from '../../diagnostics/service';
-import {ActiveWorkoutSnapshot} from '../../workout/types';
+import {ActiveWorkoutSnapshot, ExercisePerformanceSummary} from '../../workout/types';
 import {useWorkoutService} from '../../workout/useWorkoutService';
-import {ExerciseMediaAsset} from '../../exerciseCatalog/types';
+import {ExerciseMediaAsset, LibraryExercise} from '../../exerciseCatalog/types';
 import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
 import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
@@ -74,6 +74,11 @@ export function ActiveWorkoutPage() {
     const [reps, setReps] = useState(0);
     const [rir, setRir] = useState(2);
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
+    const [exerciseDetails, setExerciseDetails] = useState<LibraryExercise>();
+    const [previousPerformance, setPreviousPerformance] = useState<ExercisePerformanceSummary>();
+    const [exerciseChangeNotice, setExerciseChangeNotice] = useState('');
+    const [defaultLoadNotice, setDefaultLoadNotice] = useState('');
+    const previousExerciseId = useRef<string>();
     const [notificationPermission, setNotificationPermission] = useState<RestNotificationPermission>(() => getRestNotificationPermission());
     const [nativeCapabilities, setNativeCapabilities] = useState<RestAlarmCapabilities>();
     const workoutElapsedSeconds = useWorkoutElapsedSeconds(snapshot);
@@ -146,12 +151,29 @@ export function ActiveWorkoutPage() {
     useEffect(() => {
         let cancelled = false;
         setExerciseMedia([]);
+        setExerciseDetails(undefined);
+        setPreviousPerformance(undefined);
         if (!catalog || !currentExercise) return () => { cancelled = true; };
-        void resolveWorkoutExerciseMedia(catalog, currentExercise.exerciseId, currentExercise.exerciseNameSnapshot).then((media) => {
-            if (!cancelled) setExerciseMedia(media);
+        void Promise.all([
+            resolveWorkoutExerciseMedia(catalog, currentExercise.exerciseId, currentExercise.exerciseNameSnapshot),
+            catalog.get(currentExercise.exerciseId),
+            service?.exerciseHistory(currentExercise.exerciseId, snapshot?.session.id),
+        ]).then(([media, details, history]) => {
+            if (!cancelled) { setExerciseMedia(media); setExerciseDetails(details); setPreviousPerformance(history); }
         });
         return () => { cancelled = true; };
-    }, [catalog, currentExercise]);
+    }, [catalog, currentExercise, service, snapshot?.session.id]);
+    useEffect(() => {
+        if (!currentExercise || !snapshot) return;
+        const previous = previousExerciseId.current;
+        previousExerciseId.current = currentExercise.id;
+        if (!previous || previous === currentExercise.id) return;
+        const exerciseNumber = snapshot.exercises.findIndex((entry) => entry.id === currentExercise.id) + 1;
+        const exerciseSets = snapshot.sets.filter((entry) => entry.sessionExerciseId === currentExercise.id);
+        const nextSet = exerciseSets.find((entry) => entry.id === snapshot.session.currentSetId);
+        setExerciseChangeNotice(`Exercise changed — now ${currentExercise.exerciseNameSnapshot} (exercise ${exerciseNumber}/${snapshot.exercises.length}, set ${(nextSet?.sequenceIndex ?? 0) + 1}/${exerciseSets.length}).`);
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }, [currentExercise, snapshot]);
     useEffect(() => {
         if (!currentSet) return;
         setLoadInput(String(currentSet.targetLoadKg));
@@ -164,8 +186,10 @@ export function ActiveWorkoutPage() {
         try {
             setSnapshot(await action());
             setError(undefined);
+            return true;
         } catch {
             setError('The write was not committed. Nothing was lost; you can retry.');
+            return false;
         } finally {
             setBusy(false);
         }
@@ -185,6 +209,8 @@ export function ActiveWorkoutPage() {
         <ScreenContainer>
             <Stack spacing={2}>
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
+                {exerciseChangeNotice && <Alert severity="info" icon={<SwapHoriz/>} onClose={() => setExerciseChangeNotice('')} role="status">{exerciseChangeNotice}</Alert>}
+                {defaultLoadNotice && <Alert severity="success" onClose={() => setDefaultLoadNotice('')} role="status">{defaultLoadNotice}</Alert>}
                 {restAlarmGateway.isNativeAndroid() && nativeCapabilities && (nativeCapabilities.notificationPermission !== 'granted' || !nativeCapabilities.exactAlarmAllowed) && <Alert severity="warning" action={<Stack direction={{xs: 'column', sm: 'row'}} gap={1}>{nativeCapabilities.notificationPermission !== 'granted' && <Button startIcon={<NotificationsActive/>} onClick={() => void restAlarmGateway.requestNotificationPermission().then(setNativeCapabilities)}>Allow notifications</Button>}{!nativeCapabilities.exactAlarmAllowed && <Button onClick={() => void restAlarmGateway.requestExactAlarmPermission().then(() => refreshNativeCapabilities())}>Allow exact alarms</Button>}</Stack>}>Allow Android notifications and exact alarms so rest alerts fire reliably while the app is in the background.</Alert>}
                 {!restAlarmGateway.isNativeAndroid() && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
                 <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
@@ -206,22 +232,25 @@ export function ActiveWorkoutPage() {
                             const exerciseSets = snapshot.sets.filter((entry) => entry.sessionExerciseId === exercise.id);
                             const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
                             const isCurrent = exercise.id === currentExercise?.id && !allSetsDone;
-                            return <Stack key={exercise.id} direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{py: 1}}>
+                            const canSwitch = !isCurrent && completedSets < exerciseSets.length;
+                            return <Stack key={exercise.id} direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1}}>
                                 <Stack minWidth={0}><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography>{exercise.groupTypeSnapshot && exercise.groupTypeSnapshot !== 'single' && <Chip size="small" variant="outlined" label={exercise.groupTypeSnapshot}/>}</Stack><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Stack>
-                                <Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>
+                                <Stack direction="row" gap={1} alignItems="center" justifyContent={{xs: 'space-between', sm: 'flex-end'}}><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => void perform(() => service!.switchExercise(snapshot.session.id, exercise.id))}>Switch here</Button>}</Stack>
                             </Stack>;
                         })}
                     </Stack>
                 </Paper>
                 {!allSetsDone && currentExercise && currentSet && <>
-                    <Card>{exerciseMedia.length ? <Box sx={{display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={media.kind} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: {xs: 180, sm: 260}, objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}<CardContent><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography></CardContent></Card>
-                    <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography><Typography color="text.secondary">No history for this local workout.</Typography></Paper>
+                    <Card>{exerciseMedia.length ? <Box sx={{display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={media.kind} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: {xs: 180, sm: 260}, objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: 180, display: 'grid', placeItems: 'center', bgcolor: 'background.default'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}<CardContent><Typography variant="overline" color="primary">EXERCISE {snapshot.exercises.findIndex((entry) => entry.id === currentExercise.id) + 1} OF {snapshot.exercises.length}</Typography><Typography component="h1" variant="h4">{currentExercise.exerciseNameSnapshot}</Typography><Typography color="text.secondary">{currentExercise.prescriptionSnapshot}</Typography>{exerciseDetails && <Box sx={{mt: 2}}><Typography component="h2" variant="h6">How to move</Typography><Typography variant="body2" sx={{mt: 0.5}}>{exerciseDetails.setupInstructions}</Typography><Box component="ol" sx={{pl: 2.5, mt: 1, mb: 0}}>{exerciseDetails.executionSteps.slice(0, 2).map((step) => <Typography component="li" variant="body2" key={step} sx={{mb: 0.5}}>{step}</Typography>)}</Box>{exerciseDetails.breathingCue && <Typography variant="caption" color="text.secondary">Breathing: {exerciseDetails.breathingCue}</Typography>}</Box>}</CardContent></Card>
+                    <Paper sx={{p: 2}}><Typography component="h2" variant="h6">Previous performance</Typography>{previousPerformance ? <Stack spacing={1} sx={{mt: 0.5}}><Typography color="text.secondary">{new Date(previousPerformance.performedAt).toLocaleDateString()} · {previousPerformance.sessionName}</Typography><Stack direction="row" gap={0.75} flexWrap="wrap">{previousPerformance.sets.map((set, index) => <Chip key={`${index}-${set.loadKg}-${set.reps}`} size="small" label={`${set.loadKg} kg × ${set.reps}`}/>)}</Stack><Typography variant="caption" color="primary">The latest working load ({previousPerformance.suggestedLoadKg} kg) was pre-filled for this session unless you saved another default.</Typography></Stack> : <Typography color="text.secondary">No completed performance for this exercise yet.</Typography>}</Paper>
                     <Paper sx={{p: 2}}><Stack spacing={2}><Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}><Stack direction="row" alignItems="center" gap={1}><Typography component="h2" variant="h6">Set {currentSet.sequenceIndex + 1}</Typography><Chip size="small" color={currentSet.setKind === 'warmup' ? 'info' : currentSet.setKind === 'drop' ? 'secondary' : 'default'} label={currentSet.setKind ?? 'working'}/></Stack><Chip label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/></Stack><Divider/>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}>
                             <TextField fullWidth label="Actual load (kg)" type="number" value={loadInput} onFocus={(event) => event.target.select()} onChange={(event) => setLoadInput(event.target.value)} error={load === undefined} helperText={load === undefined ? 'Enter a load of 0 kg or more.' : undefined} inputProps={{inputMode: 'decimal', min: 0, step: 0.5}}/>
                             <TextField fullWidth label="Actual repetitions" type="number" value={reps} onChange={(event) => setReps(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, step: 1}}/>
                             <TextField fullWidth label="RIR (optionnel)" type="number" value={rir} onChange={(event) => setRir(Number(event.target.value))} inputProps={{inputMode: 'numeric', min: 0, max: 10, step: 1}}/>
                         </Stack>
+                        <Button variant="outlined" startIcon={<Save/>} disabled={busy || load === undefined || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (load === undefined) return; void perform(() => service!.saveDefaultLoad(snapshot.session.id, currentExercise.id, load)).then((saved) => { if (saved) setDefaultLoadNotice(`${load} kg saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {load ?? '—'} kg as default</Button>
+                        <Typography variant="caption" color="text.secondary">This updates every remaining working set for this exercise and pre-fills the same load in future sessions.</Typography>
                         <PrimaryButton disabled={busy || snapshot.session.status === 'paused' || reps < 0 || load === undefined} onClick={() => { if (load === undefined) return; if (!restAlarmGateway.isNativeAndroid()) void prepareRestTimerAudio(); void perform(() => service!.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir})); }}>Complete set</PrimaryButton>
                     </Stack></Paper>
                 </>}

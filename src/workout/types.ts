@@ -133,3 +133,11 @@ export interface CompleteSetInput {
     actualReps: number;
     actualRir?: number;
 }
+
+export interface ExercisePerformanceSummary {
+    sessionId: string;
+    sessionName: string;
+    performedAt: string;
+    suggestedLoadKg: number;
+    sets: Array<{loadKg: number; reps: number; rir?: number}>;
+}
