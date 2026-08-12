@@ -53,6 +53,21 @@ test('@a11y primary workout controls meet the 48px target', async ({page}) => {
     await assertNoHorizontalOverflow(page);
 });
 
+test('Pixel 9a quick generator previews a coherent local session with photos', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/programs/generate');
+    await expect(page.getByRole('heading', {name: 'Workout generator'})).toBeVisible();
+    await expect(page.getByLabel('Body area')).toBeVisible();
+    await expect(page.getByLabel('Duration')).toBeVisible();
+    await expect(page.getByLabel('Recovery between sets')).toBeVisible();
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
+    await expect(page.getByRole('button', {name: 'Start this session'})).toBeVisible();
+    await expect(page.getByRole('img')).not.toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'Replace exercise'}).first()).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+});
+
 test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local photos', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
