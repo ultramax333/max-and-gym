@@ -31,7 +31,7 @@ test('release identity and subpath routes are available', async ({page}) => {
 
 test('@a11y phone routes have headings, named controls and no overflow', async ({page}) => {
     await bootstrapAnonymousProfile(page);
-    for (const route of ['/', '/train/core-videos', '/programs', '/progress', '/library', '/settings', '/diagnostics']) {
+    for (const route of ['/', '/train', '/train/core-videos', '/programs', '/programs/generate', '/progress', '/library', '/settings', '/apps', '/history', '/diagnostics']) {
         await page.goto(`./#${route}`);
         await expect(page.locator('main, [role="main"]').first()).toBeVisible();
         await expect(page.locator('h1').first()).toBeVisible();
@@ -221,7 +221,7 @@ test('@offline shell, workout and diagnostics reopen without network', async ({p
 
 test('@visual representative release screens render at the target viewport', async ({page}, testInfo) => {
     await bootstrapAnonymousProfile(page);
-    for (const route of ['/', '/workout/active', '/progress', '/backup', '/diagnostics']) {
+    for (const route of ['/', '/train', '/programs', '/programs/generate', '/workout/active', '/progress', '/library', '/settings', '/apps', '/backup', '/diagnostics']) {
         await page.goto(`./#${route}`);
         await expect(page.locator('body')).toBeVisible();
         await page.screenshot({path: testInfo.outputPath(`${route.replaceAll('/', '-') || 'home'}.png`), fullPage: true});

@@ -20,14 +20,15 @@ import {useTranslation} from "react-i18next";
 import {DBContext} from "../../context/dbContext";
 import {
     Avatar,
-    Box,
     Button,
     ButtonGroup,
     List,
     ListItemAvatar,
     ListItemButton,
     ListItemText,
+    Paper,
     Slide,
+    Stack,
     useMediaQuery
 } from "@mui/material";
 import {ArrowBack, ArrowForward, Today} from "@mui/icons-material";
@@ -39,10 +40,10 @@ import {compareSetHistoryEntries} from "../../utils/comparators";
 import getId from "../../utils/id";
 import IconButton from "@mui/material/IconButton";
 import Loader from "../../components/Loader";
-import Typography from "@mui/material/Typography";
 import {getLabelForSet} from "../../utils/setUtils";
 import {SettingsContext} from "../../context/settingsContext";
 import {HistoryEntry} from "../../models/history";
+import {ScreenContainer, SectionHeader, StatePanel} from '../../components/ui/UiPrimitives';
 
 
 function ServerDay(props: PickersDayProps<Dayjs> & { daysWithWorkouts?: number[] }) {
@@ -66,7 +67,9 @@ export const HistoryPage = () => {
     const [ daysWithWorkouts, setDaysWithWorkouts ] = useState<number[]>([]);
     const [loading, setLoading ] = useState(false);
     const portrait = (window.screen.orientation.angle % 180 === 0);
-    const isMini = portrait ?  useMediaQuery('(max-height:600px)') : useMediaQuery('(max-width:600px)');
+    const miniPortrait = useMediaQuery('(max-height:600px)');
+    const miniLandscape = useMediaQuery('(max-width:600px)');
+    const isMini = portrait ? miniPortrait : miniLandscape;
 
     useEffect(() => {
         (async () => {
@@ -126,28 +129,21 @@ export const HistoryPage = () => {
         setDate(dayjs(new Date(closest)));
     }
 
-    const getLabelForEntry = useCallback((sets: ExerciseSet[]) => sets.map((set) => getLabelForSet(set, useLbs, t, false)).join(", "), []);
+    const getLabelForEntry = useCallback((sets: ExerciseSet[]) => sets.map((set) => getLabelForSet(set, useLbs, t, false)).join(", "), [t, useLbs]);
 
-    return <Layout hideNav title={t("history")} toolItems={<IconButton color="inherit" onClick={() => setDate(dayjs(new Date()))}><Today/></IconButton>}><Box sx={{width: '100%', height: 'calc(100% - 16px)', display: "flex", alignItems: "center", flexDirection: "column", overflowY: "auto", overflowX: "hidden", paddingTop: "8px"}}>
-        <Slide direction="down" in={showCalendar} mountOnEnter unmountOnExit style={{flexGrow: 1}}>
-            <DateCalendar views={["day"]} value={date} onChange={(d) => { setDate(d); setShowCalendar(false) }}
-                          slots={{
-                              day: ServerDay,
-                          }}
-                          slotProps={{
-                              day: {
-                                  daysWithWorkouts,
-                              } as any,
-                          }}/>
-        </Slide>
-        <ButtonGroup sx={{width: "calc(100% - 16px)", height: "32px", display: "flex", flexShrink: 1}} variant="contained" aria-label="Basic button group">
-            <Button sx={{flexShrink: 1, height: "32px"}} onClick={() => prevDay()}><ArrowBack/></Button>
-            <Button sx={{flexGrow: 1, height: "32px"}} variant={showCalendar ? "outlined" : "contained"} onClick={() => setShowCalendar((prev) => !prev)}>{date.format("L")}</Button>
-            <Button sx={{flexShrink: 1, height: "32px"}} onClick={() => nextDay()}><ArrowForward/></Button>
+    return <Layout hideNav title={t("history")} toolItems={<IconButton color="inherit" aria-label="Today" onClick={() => setDate(dayjs(new Date()))}><Today/></IconButton>}><ScreenContainer><SectionHeader eyebrow="TRAINING LOG" title={t("history")}/><Stack spacing={2}>
+        <ButtonGroup fullWidth variant="contained" aria-label="History date navigation" sx={{height: 52}}>
+            <Button aria-label="Previous workout day" onClick={() => prevDay()}><ArrowBack/></Button>
+            <Button sx={{flexGrow: 1}} variant={showCalendar ? "outlined" : "contained"} onClick={() => setShowCalendar((prev) => !prev)}>{date.format("L")}</Button>
+            <Button aria-label="Next workout day" onClick={() => nextDay()}><ArrowForward/></Button>
         </ButtonGroup>
-        <List sx={{ width: "100%", maxHeight: showCalendar ? "calc(100vh - 450px)"  : undefined, overflowY: "scroll"}}>
+        <Paper sx={{overflow: 'hidden', borderRadius: '20px'}}><Slide direction="down" in={showCalendar} mountOnEnter unmountOnExit style={{flexGrow: 1}}>
+            <DateCalendar views={["day"]} value={date} onChange={(d) => { setDate(d); setShowCalendar(false) }}
+                          slots={{day: (props) => <ServerDay {...props} daysWithWorkouts={daysWithWorkouts}/>}}/>
+        </Slide>
+        <List sx={{width: '100%', maxHeight: showCalendar ? 'calc(100vh - 450px)' : undefined, overflowY: 'auto', p: 0.75}}>
             {loading && <Loader/>}
-            {!loading && <>{history.length > 0 && (!showCalendar || !isMini) ? history.map((entry) =>  <ListItemButton key={entry.id} component="a">
+            {!loading && <>{history.length > 0 && (!showCalendar || !isMini) ? history.map((entry) =>  <ListItemButton key={entry.id} component="a" sx={{mb: 0.5}}>
                 <ListItemAvatar>
                     {!entry.exercise?.picture && <Avatar>
                         <FitnessCenterIcon/>
@@ -155,8 +151,11 @@ export const HistoryPage = () => {
                     {entry.exercise?.picture && <Avatar src={entry.exercise.picture} />}
                 </ListItemAvatar>
                 <ListItemText primary={entry.exercise?.name} secondary={getLabelForEntry(entry.sets)}/>
-            </ListItemButton>) : <Typography sx={{textAlign: "center", margin: "10px" }}>{ history.length === 0 ? t("noHistoryEntries") : ""}</Typography>}</>}
-        </List>
-    </Box>
+            </ListItemButton>) : null}</>}
+        </List></Paper>
+        {!loading && history.length === 0 &&
+            <StatePanel title={t("noHistoryEntries")} description="Completed exercises will appear here, grouped by training day." icon={<FitnessCenterIcon/>}/>
+        }
+    </Stack></ScreenContainer>
     </Layout>;
 }

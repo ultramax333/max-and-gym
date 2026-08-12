@@ -7,5 +7,7 @@ describe('maxGymTheme', () => {
         expect(maxGymTheme.palette.primary.main).toBe('#53C7B7');
         expect(maxGymTheme.components?.MuiButton?.styleOverrides?.root).toMatchObject({minHeight: 48, borderRadius: 12});
         expect(maxGymTheme.components?.MuiIconButton?.styleOverrides?.root).toMatchObject({minWidth: 48, minHeight: 48});
+        expect(maxGymTheme.components?.MuiCard?.styleOverrides?.root).toMatchObject({borderRadius: 20});
+        expect(maxGymTheme.components?.MuiOutlinedInput?.styleOverrides?.root).toMatchObject({minHeight: 52, borderRadius: 14});
     });
 });

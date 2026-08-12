@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {Alert, Button, Card, CardActionArea, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography} from '@mui/material';
-import {Add, Bolt, CalendarMonth, FitnessCenter, PlayArrow, Timeline} from '@mui/icons-material';
+import {Alert, Box, Button, Card, CardActionArea, CardContent, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography} from '@mui/material';
+import {Add, ArrowForwardRounded, Bolt, CalendarMonth, FitnessCenter, PlayArrow, Timeline} from '@mui/icons-material';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {useNavigate} from 'react-router-dom';
 import {PrimaryButton, ScreenContainer, SectionHeader, StatePanel} from '../../components/ui/UiPrimitives';
@@ -15,8 +15,8 @@ import {ARM_WORKOUT_45, QuickWorkoutDefinition} from '../../workout/quickWorkout
 const programs = new ProgramRepository(db);
 const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
 
-function ShellCard({title, text, icon, onClick}: {title: string; text: string; icon: React.ReactNode; onClick?: () => void}) {
-    return <Card><CardActionArea onClick={onClick} disabled={!onClick} sx={{minHeight: 132}}><CardContent><Stack direction="row" gap={2} alignItems="flex-start"><Chip icon={icon as React.ReactElement} label="Ready" color="primary"/><Stack><Typography component="h2" variant="h6">{title}</Typography><Typography color="text.secondary">{text}</Typography></Stack></Stack></CardContent></CardActionArea></Card>;
+function ShellCard({title, text, icon, onClick, featured = false}: {title: string; text: string; icon: React.ReactNode; onClick?: () => void; featured?: boolean}) {
+    return <Card sx={featured ? {borderColor: 'rgba(83,199,183,.32)', background: 'radial-gradient(circle at 100% 0%, rgba(83,199,183,.16), transparent 45%), #101720'} : undefined}><CardActionArea onClick={onClick} disabled={!onClick} sx={{minHeight: featured ? 156 : 132}}><CardContent><Stack direction="row" gap={2} alignItems="center"><Box sx={{width: featured ? 60 : 52, height: featured ? 60 : 52, borderRadius: featured ? '20px' : '17px', display: 'grid', placeItems: 'center', flexShrink: 0, color: 'primary.main', bgcolor: 'rgba(83,199,183,.12)', border: '1px solid rgba(83,199,183,.18)', '& svg': {fontSize: featured ? 30 : 26}}}>{icon}</Box><Stack sx={{minWidth: 0, flex: 1}} spacing={0.5}>{featured && <Typography variant="overline" color="primary.main">NEXT UP</Typography>}<Typography component="h2" variant={featured ? 'h5' : 'h6'}>{title}</Typography><Typography color="text.secondary">{text}</Typography></Stack>{onClick && <ArrowForwardRounded sx={{color: 'text.secondary', flexShrink: 0}}/>}</Stack></CardContent></CardActionArea></Card>;
 }
 
 function useActiveProgram() { return useLiveQuery(() => programs.active(), []); }
@@ -38,8 +38,12 @@ export function HomeShellPage() {
     const navigate = useNavigate();
     const active = useActiveProgram();
     const next = active?.days[active.currentDayIndex % active.days.length];
-    return <Layout title="Home" hideAppBar hideBack><ScreenContainer><SectionHeader eyebrow="MAX & GYM" title="Ready to train"/><Stack spacing={2}>
-        {active && next ? <ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · ${next.targetDurationMinutes}-minute target. Start in one tap.`} icon={<PlayArrow/>} onClick={() => startNextProgramDay(navigate)}/> : <ShellCard title="Build your first program" text="Choose a simple structure to see your next workout here." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
+    return <Layout title="Home" hideAppBar hideBack><ScreenContainer><SectionHeader eyebrow="MAX & GYM · LOCAL TRAINING" title="Ready to train"/><Stack spacing={2}>
+        {active && next
+            ? <ShellCard featured title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · ${next.targetDurationMinutes}-minute target. Start in one tap.`} icon={<PlayArrow/>} onClick={() => startNextProgramDay(navigate)}/>
+            : <ShellCard featured title="Build your first program" text="Choose a simple structure to see your next workout here." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>
+        }
+        <Typography variant="overline" color="text.secondary" sx={{mt: 0.5}}>QUICK ACTIONS</Typography>
         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}><ShellCard title="Essential workout" text="Start or resume the reliable offline flow." icon={<PlayArrow/>} onClick={() => navigate('/workout/active')}/><ShellCard title="Core video classes" text="Professional 10 to 30-minute classes and your own YouTube links." icon={<Bolt/>} onClick={() => navigate('/train/core-videos')}/></Stack>
         {!active && (
             <StatePanel title="No workout planned" description="Create a program or start a free workout. Your data stays on this device." action={<PrimaryButton startIcon={<Add/>} onClick={() => navigate('/programs')}>Create a program</PrimaryButton>}/>
@@ -80,7 +84,7 @@ export function TrainShellPage() {
     return <Layout title="Training" hideBack><ScreenContainer><SectionHeader eyebrow="TRAINING" title="Choose your workout"/><Stack spacing={2}>
         {error && <Alert severity="error">{error}</Alert>}
         {active && next && <ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · prescription is fixed when you start.`} icon={<CalendarMonth/>} onClick={() => startNextProgramDay(navigate)}/>}
-        <ShellCard title={ARM_WORKOUT_45.name} text={ARM_WORKOUT_45.summary} icon={<FitnessCenter/>} onClick={() => void chooseArmWorkout()}/>
+        <ShellCard featured title={ARM_WORKOUT_45.name} text={ARM_WORKOUT_45.summary} icon={<FitnessCenter/>} onClick={() => void chooseArmWorkout()}/>
         <ShellCard title="Essential workout" text="Start or resume a reliable local workout." icon={<FitnessCenter/>} onClick={() => navigate('/workout/active')}/>
         <ShellCard title="Previous workouts" text="Open the editor and your existing RepQuest workouts." icon={<FitnessCenter/>} onClick={() => navigate('/workouts')}/>
         {!active && <ShellCard title="Create a planned workout" text="Activate a program with two or three days." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}

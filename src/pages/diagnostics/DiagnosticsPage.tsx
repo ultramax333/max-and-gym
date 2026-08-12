@@ -13,6 +13,7 @@ import {buildDiagnosticExport} from '../../diagnostics/export';
 import {describeBatteryOptimization, describeNativeAlarmCapability, describeWorkoutRecovery, scheduleAndroidDiagnosticAlarm, WorkoutRecoveryDiagnostic} from '../../diagnostics/androidRuntime';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 import {useWorkoutService} from '../../workout/useWorkoutService';
+import {ScreenContainer, SectionHeader} from '../../components/ui/UiPrimitives';
 
 function IdentityRow({label, value}: {label: string; value: string | number}) {
     return <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" gap={{xs: 0, sm: 2}} sx={{minWidth: 0, py: .25}}><Typography color="text.secondary">{label}</Typography><Typography sx={{fontFamily: 'monospace', overflowWrap: 'anywhere', textAlign: {sm: 'right'}}}>{value}</Typography></Stack>;
@@ -90,9 +91,9 @@ export default function DiagnosticsPage() {
         }
     };
 
-    return <Layout title="Diagnostics" hideNav scroll>
-        <Stack spacing={2} sx={{p: 2, pb: 4, maxWidth: 820, mx: 'auto'}}>
-            <Typography component="h1" variant="h4">Diagnostics</Typography>
+    return <Layout title="Diagnostics" hideNav scroll><ScreenContainer>
+        <Stack spacing={2} sx={{maxWidth: 860, mx: 'auto'}}>
+            <SectionHeader eyebrow="LOCAL HEALTH CHECK" title="Diagnostics"/>
             <Alert severity="info">Diagnostics remain on this device and exclude notes, loads, repetitions and measurements.</Alert>
             <Card><CardContent><Typography variant="h6" gutterBottom>Build identity</Typography>
                 <IdentityRow label="Version" value={buildIdentity.appVersion}/><IdentityRow label="Git SHA" value={buildIdentity.gitSha}/>
@@ -142,7 +143,7 @@ export default function DiagnosticsPage() {
                 </Box>)}</Stack>
             </CardContent></Card>
             <Button color="warning" variant="outlined" startIcon={<BugReport/>} onClick={() => navigate('/diagnostics/error-test')}>Test route boundary</Button>
-        </Stack>
+        </Stack></ScreenContainer>
     </Layout>;
 }
 
