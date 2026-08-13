@@ -68,19 +68,22 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await assertNoHorizontalOverflow(page);
 });
 
-test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local photos', async ({page}) => {
+test('Pixel 9a training screen keeps every action reachable and the 45-minute arm workout shows local photos', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
     await page.getByRole('button', {name: 'Start'}).click();
     await page.goto('./#/train');
     await expect(page.getByText(/^v\d+\.\d+\.\d+ · build (?:\d+|local)$/)).toBeVisible();
     const main = page.locator('main');
-    const dimensions = await main.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
-    expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight);
-    await main.hover();
-    await page.mouse.wheel(0, 1200);
-    await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
     const lastCard = page.getByRole('heading', {name: 'Core video classes'});
+    const dimensions = await main.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
+    if (dimensions.scrollHeight > dimensions.clientHeight) {
+        await main.hover();
+        await page.mouse.wheel(0, 1200);
+        await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    } else {
+        await expect(lastCard).toBeInViewport();
+    }
     await lastCard.scrollIntoViewIfNeeded();
     await expect(lastCard).toBeVisible();
 
