@@ -1,6 +1,6 @@
 import Layout from "../../components/layout";
 import {useTranslation} from "react-i18next";
-import {Box, Button, MobileStepper, Step, StepContent, StepLabel, Stepper} from "@mui/material";
+import {Box, Button, MobileStepper, Paper, Stack, Step, StepContent, StepLabel, Stepper, Typography} from "@mui/material";
 import React, {ReactElement, useContext, useState} from "react";
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -24,6 +24,8 @@ export enum ImportMode {
     IMPORT_DATASET,
 }
 
+type ImportedExercise = {name: string; equipment: string | null; category: string; primaryMuscles: string[]};
+
 const Onboarding = () => {
     const {t} = useTranslation();
     const steps = [t("onboarding.language.title"), t("onboarding.welcome.title"), t("onboarding.license.title"),
@@ -39,7 +41,6 @@ const Onboarding = () => {
     const { saveOnboardingCompleted } = useContext(SettingsContext);
     const navigate = useNavigate();
     const { db } = useContext(DBContext);
-    const {theme: appTheme} = useContext(SettingsContext);
 
     const scrollToStep = (stepNumber: number) => {
         const step = document.getElementById(`step-${stepNumber}`);
@@ -47,12 +48,13 @@ const Onboarding = () => {
         if (step && stepper) stepper.scroll({top: step.offsetTop - 60, behavior: "smooth"});
     }
 
-    const getTags = (exercise: any) => {
+    const getTags = (exercise: ImportedExercise) => {
         const tags: ExerciseTag[] = [];
-        if (exercise.equipment === "body only" && exercise.category === "strength") tags.push(ExerciseTag.BODY_WEIGHT);
-        if (exercise.equipment === "machine" && exercise.category === "strength") tags.push(ExerciseTag.MACHINE);
-        if (exercise.equipment === "cable" && exercise.category === "strength") tags.push(ExerciseTag.CABLE_MACHINE);
-        if (["dumbbell", "barbell", "kettlebells", "medicine ball"].includes(exercise.equipment)) tags.push(ExerciseTag.FREE_WEIGHT);
+        const equipment = exercise.equipment ?? '';
+        if (equipment === "body only" && exercise.category === "strength") tags.push(ExerciseTag.BODY_WEIGHT);
+        if (equipment === "machine" && exercise.category === "strength") tags.push(ExerciseTag.MACHINE);
+        if (equipment === "cable" && exercise.category === "strength") tags.push(ExerciseTag.CABLE_MACHINE);
+        if (["dumbbell", "barbell", "kettlebells", "medicine ball"].includes(equipment)) tags.push(ExerciseTag.FREE_WEIGHT);
         if (exercise.primaryMuscles.includes("biceps")) tags.push(ExerciseTag.BICEPS);
         if (exercise.primaryMuscles.includes("chest")) tags.push(ExerciseTag.CHEST);
         if (exercise.primaryMuscles.includes("triceps")) tags.push(ExerciseTag.TRICEPS);
@@ -107,16 +109,8 @@ const Onboarding = () => {
         })
     }
 
-    return <Layout hideBack hideNav title={t("onboarding.title")} sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        width: "calc(100% - 24px)",
-        paddingLeft: "12px",
-        paddingRight: "12px",
-        backgroundImage: {dark: "url('/logofadenoback.png')", light: "url('/logofadelight.png')"}[appTheme], backgroundSize: "contain", backgroundPosition: "right bottom", backgroundRepeat: "no-repeat"
-    }}>
-        <Box id="stepperBox" sx={{paddingTop: "8px",height: "calc(100% - 80px)", paddingBottom: "20px", overflowY: "scroll"}}><Stepper activeStep={activeStep} orientation="vertical">
+    return <Layout hideBack hideNav title={t("onboarding.title")} sx={{display: 'flex', flexDirection: 'column', height: '100%', width: '100%'}}>
+        <Box id="stepperBox" sx={{width: '100%', maxWidth: 760, mx: 'auto', px: 2, pt: 2.5, height: 'calc(100% - 88px)', pb: 3, overflowY: 'auto'}}><Stack spacing={2.5}><Box><Typography variant="overline" color="primary.main">MAX & GYM · PRIVATE BY DESIGN</Typography><Typography component="h1" variant="h4">Set up your training space</Typography><Typography color="text.secondary" sx={{mt: 0.75}}>Seven short steps. Everything stays editable after setup.</Typography></Box><Paper sx={{p: {xs: 1.5, sm: 2.5}, borderRadius: '24px', background: 'radial-gradient(circle at 100% 0%, rgba(83,199,183,.1), transparent 35%), #101720'}}><Stepper activeStep={activeStep} orientation="vertical">
             {steps.map((label, index) => {
                 return (
                     <Step id={`step-${index.toString()}`} key={label}>
@@ -125,9 +119,9 @@ const Onboarding = () => {
                     </Step>
                 );
             })}
-        </Stepper></Box>
+        </Stepper></Paper></Stack></Box>
         <MobileStepper
-            sx={{ boxShadow: 4, backgroundColor: (theme) => theme.palette.background.paper, position: "fixed", width: "100vw", left: 0}}
+            sx={{backgroundColor: 'rgba(16,23,32,.95)', backdropFilter: 'blur(18px)', borderTop: '1px solid', borderColor: 'divider', position: 'fixed', width: '100vw', left: 0, bottom: 0, minHeight: 76, px: 1.5, pb: 'env(safe-area-inset-bottom)'}}
             variant="dots"
             steps={steps.length}
             position="static"

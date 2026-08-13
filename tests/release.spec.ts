@@ -31,7 +31,7 @@ test('release identity and subpath routes are available', async ({page}) => {
 
 test('@a11y phone routes have headings, named controls and no overflow', async ({page}) => {
     await bootstrapAnonymousProfile(page);
-    for (const route of ['/', '/train/core-videos', '/programs', '/progress', '/library', '/settings', '/diagnostics']) {
+    for (const route of ['/', '/train', '/train/core-videos', '/programs', '/programs/generate', '/progress', '/library', '/settings', '/apps', '/history', '/diagnostics']) {
         await page.goto(`./#${route}`);
         await expect(page.locator('main, [role="main"]').first()).toBeVisible();
         await expect(page.locator('h1').first()).toBeVisible();
@@ -53,19 +53,37 @@ test('@a11y primary workout controls meet the 48px target', async ({page}) => {
     await assertNoHorizontalOverflow(page);
 });
 
-test('Pixel 9a training screen scrolls and the 45-minute arm workout shows local photos', async ({page}) => {
+test('Pixel 9a quick generator previews a coherent local session with photos', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/programs/generate');
+    await expect(page.getByRole('heading', {name: 'Workout generator'})).toBeVisible();
+    await expect(page.getByLabel('Body area')).toBeVisible();
+    await expect(page.getByLabel('Duration')).toBeVisible();
+    await expect(page.getByLabel('Recovery between sets')).toBeVisible();
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
+    await expect(page.getByRole('button', {name: 'Start this session'})).toBeVisible();
+    await expect(page.getByRole('img')).not.toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'Replace exercise'}).first()).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+});
+
+test('Pixel 9a training screen keeps every action reachable and the 45-minute arm workout shows local photos', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/workout/active');
     await page.getByRole('button', {name: 'Start'}).click();
     await page.goto('./#/train');
     await expect(page.getByText(/^v\d+\.\d+\.\d+ · build (?:\d+|local)$/)).toBeVisible();
     const main = page.locator('main');
-    const dimensions = await main.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
-    expect(dimensions.scrollHeight).toBeGreaterThan(dimensions.clientHeight);
-    await main.hover();
-    await page.mouse.wheel(0, 1200);
-    await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
     const lastCard = page.getByRole('heading', {name: 'Core video classes'});
+    const dimensions = await main.evaluate((element) => ({clientHeight: element.clientHeight, scrollHeight: element.scrollHeight}));
+    if (dimensions.scrollHeight > dimensions.clientHeight) {
+        await main.hover();
+        await page.mouse.wheel(0, 1200);
+        await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    } else {
+        await expect(lastCard).toBeInViewport();
+    }
     await lastCard.scrollIntoViewIfNeeded();
     await expect(lastCard).toBeVisible();
 
@@ -206,7 +224,7 @@ test('@offline shell, workout and diagnostics reopen without network', async ({p
 
 test('@visual representative release screens render at the target viewport', async ({page}, testInfo) => {
     await bootstrapAnonymousProfile(page);
-    for (const route of ['/', '/workout/active', '/progress', '/backup', '/diagnostics']) {
+    for (const route of ['/', '/train', '/programs', '/programs/generate', '/workout/active', '/progress', '/library', '/settings', '/apps', '/backup', '/diagnostics']) {
         await page.goto(`./#${route}`);
         await expect(page.locator('body')).toBeVisible();
         await page.screenshot({path: testInfo.outputPath(`${route.replaceAll('/', '-') || 'home'}.png`), fullPage: true});
