@@ -6,8 +6,9 @@ This task is invoked when a defect, regression, unexplained data state, deployme
 
 - `MODE=DIAGNOSE` — default. Read-only investigation and report. No product-code changes.
 - `MODE=FIX` — diagnose first, then implement the smallest evidence-based correction and its regression test.
+- `Go` — project-owner shorthand for `MODE=FIX` when sent as a standalone instruction, matched case-insensitively.
 
-Never infer `MODE=FIX` from urgency. It must be explicit.
+Never infer fix authorization from urgency. `MODE=FIX` or standalone `Go` must be explicit.
 
 ## Required context
 
@@ -133,7 +134,7 @@ Stop after:
 
 Do not modify product code and do not open a corrective pull request.
 
-## MODE=FIX implementation
+## MODE=FIX / Go implementation
 
 Only after the report supports a cause:
 

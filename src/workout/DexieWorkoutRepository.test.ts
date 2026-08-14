@@ -93,6 +93,20 @@ describe('DexieWorkoutRepository', () => {
         expect(next.sets.filter((entry) => entry.sessionExerciseId === next.exercises[0].id).map((entry) => entry.targetLoadKg)).toEqual([24, 24, 24]);
     });
 
+    it('records exact actual repetitions and applies a saved repetition default only to remaining working sets', async () => {
+        let snapshot = await repository.startSample('default-reps-start');
+        const firstSet = snapshot.sets[0];
+        snapshot = await repository.completeSet({sessionId: snapshot.session.id, setId: firstSet.id, operationId: 'actual-five', actualLoadKg: 16, actualReps: 5});
+        snapshot = await repository.saveDefaultReps(snapshot.session.id, snapshot.exercises[0].id, 6);
+
+        expect(snapshot.sets.find((entry) => entry.id === firstSet.id)).toMatchObject({status: 'completed', actualReps: 5, targetRepsMin: 8, targetRepsMax: 10});
+        expect(snapshot.sets.filter((entry) => entry.sessionExerciseId === snapshot.exercises[0].id && entry.status !== 'completed').map((entry) => [entry.targetRepsMin, entry.targetRepsMax])).toEqual([[6, 6], [6, 6]]);
+
+        await repository.finish(snapshot.session.id, 'default-reps-finish');
+        const next = await repository.startSample('default-reps-next');
+        expect(next.sets.filter((entry) => entry.sessionExerciseId === next.exercises[0].id).map((entry) => [entry.targetRepsMin, entry.targetRepsMax])).toEqual([[6, 6], [6, 6], [6, 6]]);
+    });
+
     it('repairs a stale pointer to a completed set without losing progress', async () => {
         const started = await repository.startSample('start');
         const completed = await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'complete', actualLoadKg: 16, actualReps: 10});

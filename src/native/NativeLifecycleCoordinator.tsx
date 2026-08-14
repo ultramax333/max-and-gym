@@ -7,6 +7,7 @@ import {REST_TIMER_COMPLETE_EVENT, RestTimerAlarmRepository} from '../pwa/restTi
 import {useWorkoutService} from '../workout/useWorkoutService';
 import {restAlarmGateway, RestAlarmActionResult} from './restAlarmGateway';
 import {hasNativeMigrationDecision, recordNativeMigrationDecision} from './nativeMigrationDecision';
+import {NATIVE_BACK_EVENT, resolveNativeBackTarget} from './nativeBackNavigation';
 
 export function NativeLifecycleCoordinator() {
     const service = useWorkoutService();
@@ -19,6 +20,15 @@ export function NativeLifecycleCoordinator() {
     useEffect(() => {
         routeRef.current = location.pathname;
     }, [location.pathname]);
+
+    useEffect(() => {
+        const handleNativeBack = () => {
+            const target = resolveNativeBackTarget(routeRef.current);
+            if (target) navigate(target);
+        };
+        window.addEventListener(NATIVE_BACK_EVENT, handleNativeBack);
+        return () => window.removeEventListener(NATIVE_BACK_EVENT, handleNativeBack);
+    }, [navigate]);
 
     useEffect(() => {
         if (!service || !db) return;

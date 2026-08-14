@@ -78,8 +78,10 @@ if (!manifest.includes('android.permission.REQUEST_INSTALL_PACKAGES')) {
 
 if (!mainActivity.includes('getOnBackPressedDispatcher()') ||
     !mainActivity.includes('webView.canGoBack()') ||
-    !mainActivity.includes('webView.goBack()')) {
-    throw new Error('Android back navigation must consume WebView history before exiting at the root.');
+    !mainActivity.includes('webView.goBack()') ||
+    !mainActivity.includes("new CustomEvent('maxgym:native-back')") ||
+    mainActivity.includes('setEnabled(false)')) {
+    throw new Error('Android back navigation must consume WebView history and delegate empty-history routing to the app without finishing the sole activity.');
 }
 
 if (!viteConfig.includes("isAndroidBuild ? process.env.ANDROID_VERSION_CODE ?? '120000000'")) {

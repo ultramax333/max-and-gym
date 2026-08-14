@@ -356,6 +356,18 @@ Controls:
 
 CP1 status: reproduced during Diagnostics verification and removed before checkpoint evidence was captured.
 
+## FM-36 — Android Back closes the sole activity
+
+Likely cause: native WebView history can be empty after a hash-route launch or activity recreation even while the app is displaying a nested route.
+
+Controls:
+
+- consume genuine WebView history when it exists;
+- otherwise dispatch a bounded native-back event to the React router;
+- map nested screens to deterministic safe parents;
+- keep Home open instead of delegating empty-history Back to the Android activity exit;
+- cover the route mapping and Android source contract with automated tests.
+
 ## CP3 control status
 
 - FM-03: durable active-workout marker now defers an update.

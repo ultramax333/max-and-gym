@@ -13,7 +13,7 @@ import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
-import {parseNonNegativeDecimal} from './numericInput';
+import {parseNonNegativeDecimal, shouldInitializeNumericDraft} from './numericInput';
 import {remainingRestSeconds} from './restTimerDisplay';
 import {CompleteSetAction, ExerciseRail, MetricStepper, RestAction, WorkoutActionBar, WorkoutProgressHeader} from './ActiveWorkoutUi';
 
@@ -65,10 +65,11 @@ export function ActiveWorkoutPage() {
     const [exerciseDetails, setExerciseDetails] = useState<LibraryExercise>();
     const [previousPerformance, setPreviousPerformance] = useState<ExercisePerformanceSummary>();
     const [exerciseChangeNotice, setExerciseChangeNotice] = useState('');
-    const [defaultLoadNotice, setDefaultLoadNotice] = useState('');
+    const [defaultValueNotice, setDefaultValueNotice] = useState('');
     const [instructionsOpen, setInstructionsOpen] = useState(false);
     const [planOpen, setPlanOpen] = useState(true);
     const previousExerciseId = useRef<string>();
+    const initializedSetId = useRef<string>();
     const [notificationPermission, setNotificationPermission] = useState<RestNotificationPermission>(() => getRestNotificationPermission());
     const [nativeCapabilities, setNativeCapabilities] = useState<RestAlarmCapabilities>();
     const workoutElapsedSeconds = useWorkoutElapsedSeconds(snapshot);
@@ -166,7 +167,8 @@ export function ActiveWorkoutPage() {
     }, [currentExercise, snapshot]);
 
     useEffect(() => {
-        if (!currentSet) return;
+        if (!currentSet || !shouldInitializeNumericDraft(initializedSetId.current, currentSet.id)) return;
+        initializedSetId.current = currentSet.id;
         setLoadInput(String(currentSet.targetLoadKg));
         setRepsInput(String(currentSet.targetRepsMin));
         setRir(currentSet.targetRir);
@@ -231,7 +233,7 @@ export function ActiveWorkoutPage() {
             <Stack spacing={1.5}>
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
                 {exerciseChangeNotice && <Alert severity="info" icon={<SwapHoriz/>} onClose={() => setExerciseChangeNotice('')} role="status">{exerciseChangeNotice}</Alert>}
-                {defaultLoadNotice && <Alert severity="success" onClose={() => setDefaultLoadNotice('')} role="status">{defaultLoadNotice}</Alert>}
+                {defaultValueNotice && <Alert severity="success" onClose={() => setDefaultValueNotice('')} role="status">{defaultValueNotice}</Alert>}
                 {restAlarmGateway.isNativeAndroid() && nativeCapabilities && (nativeCapabilities.notificationPermission !== 'granted' || !nativeCapabilities.exactAlarmAllowed) && <Alert severity="warning" action={<Stack direction={{xs: 'column', sm: 'row'}} gap={1}>{nativeCapabilities.notificationPermission !== 'granted' && <Button startIcon={<NotificationsActive/>} onClick={() => void restAlarmGateway.requestNotificationPermission().then(setNativeCapabilities)}>Allow notifications</Button>}{!nativeCapabilities.exactAlarmAllowed && <Button onClick={() => void restAlarmGateway.requestExactAlarmPermission().then(() => refreshNativeCapabilities())}>Allow exact alarms</Button>}</Stack>}>Allow Android notifications and exact alarms so rest alerts fire reliably while the app is in the background.</Alert>}
                 {!restAlarmGateway.isNativeAndroid() && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
 
@@ -260,14 +262,17 @@ export function ActiveWorkoutPage() {
                         <Collapse in={instructionsOpen}><Box component="ol" sx={{pl: 3, mb: 0}}>{exerciseDetails.executionSteps.slice(0, 3).map((step) => <Typography component="li" variant="body2" key={step} sx={{mt: 1}}>{step}</Typography>)}{exerciseDetails.breathingCue && <Typography component="li" variant="body2" sx={{mt: 1}}>Breathing: {exerciseDetails.breathingCue}</Typography>}</Box></Collapse>
                     </Paper>}
 
-                    <Stack direction="row" gap={1.25}>
+                    <Stack direction={{xs: 'column', sm: 'row'}} gap={1.25}>
                         <MetricStepper label="Load" value={loadInput} unit="kg" step={0.5} error={load === undefined} onChange={setLoadInput}/>
                         <MetricStepper label="Repetitions" value={repsInput} unit="reps" step={1} error={!validReps} onChange={setRepsInput}/>
                     </Stack>
                     {(load === undefined || !validReps) && <Typography variant="caption" color="error.main">Enter a valid load and a whole number of repetitions.</Typography>}
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} flexWrap="wrap">
+                    <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} justifyContent="space-between" gap={1}>
                         <TextField select size="small" label="RIR" value={rir} onChange={(event) => setRir(Number(event.target.value))} sx={{width: 110}}>{Array.from({length: 11}, (_, value) => <MenuItem key={value} value={value}>{value}</MenuItem>)}</TextField>
-                        <Button variant="text" startIcon={<Save/>} disabled={busy || load === undefined || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (load === undefined) return; void perform(() => service!.saveDefaultLoad(snapshot.session.id, currentExercise.id, load)).then((saved) => { if (saved) setDefaultLoadNotice(`${load} kg saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {load ?? '—'} kg as default</Button>
+                        <Stack direction={{xs: 'column', sm: 'row'}} gap={0.5} alignItems={{xs: 'stretch', sm: 'center'}}>
+                            <Button variant="text" startIcon={<Save/>} disabled={busy || load === undefined || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (load === undefined) return; void perform(() => service!.saveDefaultLoad(snapshot.session.id, currentExercise.id, load)).then((saved) => { if (saved) setDefaultValueNotice(`${load} kg saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {load ?? '—'} kg as default</Button>
+                            <Button variant="text" startIcon={<Save/>} disabled={busy || !validReps || reps === undefined || reps < 1 || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (reps === undefined || reps < 1) return; void perform(() => service!.saveDefaultReps(snapshot.session.id, currentExercise.id, reps)).then((saved) => { if (saved) setDefaultValueNotice(`${reps} repetitions saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {validReps && reps !== undefined ? reps : '—'} reps as default</Button>
+                        </Stack>
                     </Stack>
                 </>}
 

@@ -8,6 +8,12 @@ Date: release candidate prepared 2026-08-14. Production publication follows acce
 - recognizes the existing Monster Walk and Thigh Abductor records as useful glute alternatives;
 - increases the Glutes replacement pool while deliberately rejecting stretches, unsupported equipment, jumping variants and redundant bridge or squat variations;
 - bundles two reviewed local images for every newly added exercise, preserving complete offline use.
+- lets you record the exact repetitions actually performed with larger minus/plus controls or direct entry, even when the result is below the target;
+- saves repetitions as an optional per-exercise default and applies them only to remaining and future working sets;
+- keeps unsaved load and repetition edits stable when Android refreshes the current workout screen;
+- shows an active workout on Home with clear Resume and confirmed Stop actions;
+- resolves planned-workout conflicts explicitly instead of allowing a silent start failure;
+- makes Android Back return to a safe app screen and keeps Home open instead of closing the sole activity.
 
 ## Identity and compatibility
 
@@ -25,7 +31,8 @@ The reviewed catalogue contains 302 exercises, of which 273 are generator-eligib
 
 - catalogue generation and all 604 local exercise images are audited;
 - the focused Glutes pool and all replacement candidates are covered by automated tests;
-- the complete quality, production-build, GitHub Pages, browser and Android release gates run for this release candidate;
+- 49 test files and 193 tests pass, including new Home, repetition-default and native-back regressions;
+- the complete quality, production-build, GitHub Pages and Android web-bundle release gates pass for this release candidate;
 - the trusted `master` workflow builds and verifies the signed APK before creating the matching `v1.5.0` GitHub Release.
 
 ## Known limitations
@@ -41,7 +48,7 @@ Export a current `.maxgym` backup and keep it outside the app before installing 
 
 ## Fixed error codes
 
-No diagnostic error code was added, removed or redefined in this release.
+No diagnostic error code was added, removed or redefined in this release. The existing `WORKOUT_ACTIVE_SESSION_CONFLICT` condition now receives an explicit Home-screen choice instead of surfacing as a silent failure.
 
 ## Privacy, sources and licences
 

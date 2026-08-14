@@ -71,6 +71,10 @@ export class WorkoutApplicationService {
         }
     }
 
+    findActive(): Promise<ActiveWorkoutSnapshot | undefined> {
+        return this.repository.findActive();
+    }
+
     async start(operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
         const result = await this.runCritical('workout-start', operationId, 'WORKOUT_START_FAILED', () => this.repository.startSample(operationId));
         localStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, result.session.id);
@@ -103,6 +107,10 @@ export class WorkoutApplicationService {
 
     saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {
         return this.repository.saveDefaultLoad(sessionId, sessionExerciseId, loadKg);
+    }
+
+    saveDefaultReps(sessionId: string, sessionExerciseId: string, repetitions: number): Promise<ActiveWorkoutSnapshot> {
+        return this.repository.saveDefaultReps(sessionId, sessionExerciseId, repetitions);
     }
 
     exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined> {
