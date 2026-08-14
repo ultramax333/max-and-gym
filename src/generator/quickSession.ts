@@ -13,7 +13,7 @@ export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string;
     {value: 'back', label: 'Back', muscles: ['middle back', 'lats', 'lower back', 'traps']},
     {value: 'shoulders', label: 'Shoulders', muscles: ['shoulders']},
     {value: 'arms', label: 'Arms', muscles: ['biceps', 'triceps', 'forearms']},
-    {value: 'glutes', label: 'Glutes', muscles: ['glutes']},
+    {value: 'glutes', label: 'Glutes', muscles: ['glutes', 'abductors']},
     {value: 'core', label: 'Core', muscles: ['abdominals']},
 ];
 

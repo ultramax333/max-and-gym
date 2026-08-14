@@ -33,11 +33,11 @@ const curatedExpansionNames = new Set([
     'Weighted Pull Ups', 'Wide-Grip Lat Pulldown', 'Leverage High Row', 'One-Arm Dumbbell Row', 'Seated Cable Rows',
     'T-Bar Row with Handle', 'Suspended Row', 'Barbell Shrug', 'Dumbbell Shrug', 'Leverage Shrug',
     // Lower body: machines, unilateral work and distinct posterior-chain patterns.
-    'Barbell Step Ups', 'Dumbbell Step Ups', 'Leg Extensions', 'Leg Press', 'Narrow Stance Leg Press',
+    'Barbell Hip Thrust', 'Barbell Step Ups', 'Dumbbell Step Ups', 'Leg Extensions', 'Leg Press', 'Narrow Stance Leg Press',
     'Single-Leg Leg Extension', 'Smith Machine Squat', 'Split Squat with Dumbbells', 'Trap Bar Deadlift', 'Wide Stance Barbell Squat',
     'Kettlebell One-Legged Deadlift', 'Lying Leg Curls', 'Natural Glute Ham Raise', 'Platform Hamstring Slides',
     'Romanian Deadlift', 'Seated Band Hamstring Curl', 'Seated Leg Curl', 'Standing Leg Curl',
-    'Butt Lift (Bridge)', 'One-Legged Cable Kickback', 'Pull Through', 'Single Leg Glute Bridge',
+    'Butt Lift (Bridge)', 'One-Legged Cable Kickback', 'Pull Through', 'Single Leg Glute Bridge', 'Step-up with Knee Raise',
     'Seated Calf Raise', 'Standing Calf Raises', 'Thigh Adductor', 'Thigh Abductor', 'Monster Walk',
     // Core: anti-rotation, flexion, stability and loaded options without cosmetic duplicates.
     'Ab Roller', 'Air Bike', 'Alternate Heel Touchers', 'Barbell Ab Rollout - On Knees', 'Dead Bug', 'Dumbbell Side Bend',
@@ -85,7 +85,7 @@ function movementPattern(entry) {
     const lower = entry.name.toLowerCase();
     if ((entry.primaryMuscles ?? []).includes('abdominals')) return 'core';
     if (/(squat|lunge|leg press|step[ -]?ups?)/.test(lower)) return 'squat';
-    if (/(deadlift|good morning|hip thrust|glute)/.test(lower)) return 'hinge';
+    if (/(deadlift|good morning|hip thrust|glute|butt lift|hip lift|hip extension|kickback|pull through)/.test(lower)) return 'hinge';
     if (/(row|pull[ -]?ups?|pullups?|pulldown|chin[ -]?ups?|bench pull)/.test(lower)) return 'pull';
     if (/(press|push-up|dip)/.test(lower)) return 'push';
     if (/(carry|walk)/.test(lower)) return 'carry';
@@ -141,8 +141,9 @@ function buildExercise(entry) {
 }
 
 const raw = JSON.parse(await readFile(sourceFile, 'utf8'));
-const candidates = raw.filter((entry) => supportedEquipment.has(entry.equipment) && ['strength', 'cardio', 'stretching'].includes(entry.category) && !excluded.test(entry.name) && Array.isArray(entry.images) && entry.images.length >= 2);
+const candidates = raw.filter((entry) => supportedEquipment.has(entry.equipment) && (['strength', 'cardio', 'stretching'].includes(entry.category) || curatedExpansionNames.has(entry.name)) && !excluded.test(entry.name) && Array.isArray(entry.images) && entry.images.length >= 2);
 const initialEntries = candidates
+    .filter((entry) => !curatedExpansionNames.has(entry.name))
     .map((entry) => ({entry, score: priority.test(entry.name) ? 0 : 1}))
     .sort((a, b) => a.score - b.score || a.entry.name.localeCompare(b.entry.name))
     .slice(0, 180)
@@ -157,7 +158,7 @@ if (missingExpansionNames.length > 0 || expansionEntries.length !== curatedExpan
 }
 const reviewed = [...initialEntries, ...expansionEntries].map((entry) => buildExercise(entry));
 const duplicateNames = reviewed.filter((entry, index) => reviewed.findIndex((other) => other.name.toLowerCase() === entry.name.toLowerCase()) !== index);
-if (reviewed.length !== 300 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
+if (reviewed.length !== 302 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
 await mkdir(path.dirname(outputFile), {recursive: true});
 await mkdir(path.dirname(reportFile), {recursive: true});
 await writeFile(outputFile, JSON.stringify(reviewed, null, 2) + '\n');

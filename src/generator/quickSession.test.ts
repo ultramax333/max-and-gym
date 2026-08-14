@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import reviewed from '../exerciseCatalog/reviewed-exercises.json';
-import {generateQuickSession, quickSessionReplacementCandidates} from './quickSession';
+import {generateQuickSession, matchesQuickSessionZone, quickSessionReplacementCandidates} from './quickSession';
 import {GENERATOR_VERSION, GeneratorCandidate, GeneratorInput, PROGRAM_SEED_VERSION} from './types';
 
 const candidates = reviewed as GeneratorCandidate[];
@@ -98,6 +98,25 @@ describe('quick session generator', () => {
         expect(options.map((exercise) => exercise.name)).not.toContain('Barbell Lunge');
     });
 
+    it('keeps the glute pool focused while covering heavy, unilateral and abduction work', () => {
+        const glutePool = candidates.filter((entry) => entry.generatorEligible && !entry.archived && matchesQuickSessionZone(entry, 'glutes'));
+        const names = glutePool.map((entry) => entry.name);
+        expect(names).toEqual(expect.arrayContaining(['Barbell Hip Thrust', 'Step-up with Knee Raise', 'Thigh Abductor', 'Monster Walk']));
+        expect(names).not.toEqual(expect.arrayContaining(['Barbell Glute Bridge', 'Hip Lift with Band', 'Kneeling Squat', 'Leg Lift']));
+        expect(glutePool).toHaveLength(10);
+
+        const generated = generateQuickSession({...input(45), seed: 'glute-pool'}, candidates, 'glutes');
+        expect(generated.ok).toBe(true);
+        if (!generated.ok) return;
+        expect(generated.program.days[0].exercises.every((exercise) => exercise.primaryMuscles.some((muscle) => ['glutes', 'abductors'].includes(muscle)))).toBe(true);
+        expect(new Set(generated.program.days[0].exercises.map((exercise) => exercise.movementPattern)).size).toBeGreaterThanOrEqual(3);
+
+        const hipThrust = candidates.find((entry) => entry.name === 'Barbell Hip Thrust')!;
+        const options = quickSessionReplacementCandidates(candidates, 'glutes', input(45).equipment, new Set([hipThrust.id]), {exerciseId: hipThrust.id, movementPattern: hipThrust.movementPattern, primaryMuscles: hipThrust.primaryMuscles, alternativeExerciseIds: []}, 40);
+        expect(options).toHaveLength(9);
+        expect(options.every((exercise) => exercise.primaryMuscles.some((muscle) => ['glutes', 'abductors'].includes(muscle)))).toBe(true);
+    });
+
     it('excludes exercises marked Never Suggest from generation and replacements', () => {
         const blocked = candidates.find((entry) => entry.primaryMuscles.includes('biceps'))!;
         const marked = candidates.map((entry) => entry.id === blocked.id ? {...entry, effectiveNeverSuggest: true} : entry);
@@ -113,7 +132,7 @@ describe('quick session generator', () => {
         expect(excluded).toHaveLength(29);
         let successfulGenerations = 0;
         for (const duration of [15, 30, 45, 60] as const) {
-            for (const zone of ['full-body', 'upper-body', 'lower-body', 'chest', 'back', 'shoulders', 'arms', 'core'] as const) {
+            for (const zone of ['full-body', 'upper-body', 'lower-body', 'chest', 'back', 'shoulders', 'arms', 'glutes', 'core'] as const) {
                 for (let variation = 1; variation <= 5; variation += 1) {
                     const result = generateQuickSession({...input(duration), seed: `catalogue-cleanup:${zone}:${duration}:${variation}`}, candidates, zone);
                     if (result.ok) {
