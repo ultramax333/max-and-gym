@@ -1,5 +1,5 @@
 import {DexieDB} from '../db/db';
-import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, PerformedSetRecord, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
+import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, PerformedSetRecord, ReplaceSessionExerciseInput, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
 import {WorkoutRepository} from './WorkoutRepository';
 import {calculateProgression, ProgressionKind} from '../generator/progression';
 import {elapsedSeconds as calculateElapsedSeconds} from './elapsed';
@@ -216,6 +216,42 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             await this.db.workoutSession.update(sessionId, {currentSessionExerciseId: exercise.id, currentSetId: next.id, updatedAt: now});
         });
         return (await this.get(sessionId))!;
+    }
+
+    async replaceExercise(input: ReplaceSessionExerciseInput): Promise<ActiveWorkoutSnapshot> {
+        if (!input.replacementExerciseId.trim() || !input.replacementExerciseName.trim()) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'A replacement exercise needs a stable identity and name.');
+        const defaultLoads = parseDefaultLoads((await this.db.appMeta.get(DEFAULT_EXERCISE_LOADS_META_KEY))?.value);
+        const previous = defaultLoads[input.replacementExerciseId] === undefined ? await this.exerciseHistory(input.replacementExerciseId, input.sessionId) : undefined;
+        const replacementLoad = defaultLoads[input.replacementExerciseId] ?? previous?.suggestedLoadKg ?? 0;
+        const now = this.iso();
+        await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.workoutOperation], async () => {
+            const prior = await this.db.workoutOperation.get(input.operationId);
+            if (prior?.status === 'committed') return;
+            const [session, exercise] = await Promise.all([
+                this.db.workoutSession.get(input.sessionId),
+                this.db.sessionExercise.get(input.sessionExerciseId),
+            ]);
+            if (!session || (session.status !== 'active' && session.status !== 'paused') || !exercise || exercise.sessionId !== input.sessionId) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The selected exercise is not available in this session.');
+            const duplicate = await this.db.sessionExercise.where('sessionId').equals(input.sessionId).filter((entry) => entry.id !== exercise.id && entry.exerciseId === input.replacementExerciseId).first();
+            if (duplicate) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The replacement exercise is already in this session.');
+            const sets = await this.db.performedSet.where('sessionExerciseId').equals(exercise.id).toArray();
+            if (sets.some((entry) => entry.status === 'completed' || entry.completionOperationId || entry.actualLoadKg !== undefined || entry.actualReps !== undefined)) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'Replace this exercise before logging its first set. Use Do later after progress has been recorded.');
+            await this.db.workoutOperation.put({operationId: input.operationId, kind: 'replace-exercise', status: 'started', sessionId: input.sessionId, entityId: exercise.id, startedAt: now});
+            await this.db.sessionExercise.update(exercise.id, {
+                exerciseId: input.replacementExerciseId,
+                exerciseNameSnapshot: input.replacementExerciseName.trim(),
+                originalExerciseIdSnapshot: exercise.originalExerciseIdSnapshot ?? exercise.exerciseId,
+                originalExerciseNameSnapshot: exercise.originalExerciseNameSnapshot ?? exercise.exerciseNameSnapshot,
+                substitutionReason: input.reason,
+                alternativeExerciseIdsSnapshot: [...new Set(input.alternativeExerciseIds ?? [])].filter((id) => id !== input.replacementExerciseId),
+                updatedAt: now,
+            });
+            await this.db.performedSet.where('sessionExerciseId').equals(exercise.id).filter((entry) => entry.status !== 'completed').modify({targetLoadKg: replacementLoad, updatedAt: now});
+            await this.db.workoutOperation.put({operationId: input.operationId, kind: 'replace-exercise', status: 'committed', sessionId: input.sessionId, entityId: exercise.id, startedAt: now, finishedAt: now});
+        });
+        const result = await this.get(input.sessionId);
+        if (!result) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session disappeared after exercise replacement.');
+        return result;
     }
 
     async saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {

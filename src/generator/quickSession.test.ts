@@ -111,9 +111,13 @@ describe('quick session generator', () => {
         expect(first.ok).toBe(true);
         if (!first.ok) return;
         const previousIds = first.program.days[0].exercises.map((exercise) => exercise.exerciseId);
-        const next = generateQuickSession({...input(45), seed: 'rotation-2', blockedExerciseIds: previousIds}, candidates, 'arms');
+        const next = generateQuickSession({...input(45), seed: 'rotation-2', recentExerciseIds: previousIds}, candidates, 'arms');
         expect(next.ok).toBe(true);
-        if (next.ok) expect(next.program.days[0].exercises.map((exercise) => exercise.exerciseId).filter((id) => previousIds.includes(id))).toEqual([]);
+        if (next.ok) {
+            const overlap = next.program.days[0].exercises.map((exercise) => exercise.exerciseId).filter((id) => previousIds.includes(id));
+            expect(overlap.length).toBeLessThan(previousIds.length);
+            expect(next.program.explanation.normalizedInput.recentExerciseIds).toEqual([...previousIds].sort());
+        }
     });
 
     it('never offers a leg exercise as an arms-session replacement', () => {

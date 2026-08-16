@@ -12,7 +12,7 @@ export function stableHash(value: string): string {
 const uniqueSorted = (values: string[]) => [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 
 export function normalizeGeneratorInput(input: GeneratorInput): NormalizedGeneratorInput {
-    const normalized: GeneratorInput = {...input, equipment: uniqueSorted(input.equipment), priorityMuscles: uniqueSorted(input.priorityMuscles), blockedExerciseIds: uniqueSorted(input.blockedExerciseIds), blockedTags: uniqueSorted(input.blockedTags), favouriteExerciseIds: uniqueSorted(input.favouriteExerciseIds), neverSuggestExerciseIds: uniqueSorted(input.neverSuggestExerciseIds), stableExercises: [...input.stableExercises].sort((a, b) => a.dayIndex - b.dayIndex || a.role.localeCompare(b.role) || a.exerciseId.localeCompare(b.exerciseId)), seed: input.seed.trim() || 'maxgym-default'};
+    const normalized: GeneratorInput = {...input, equipment: uniqueSorted(input.equipment), priorityMuscles: uniqueSorted(input.priorityMuscles), blockedExerciseIds: uniqueSorted(input.blockedExerciseIds), blockedTags: uniqueSorted(input.blockedTags), favouriteExerciseIds: uniqueSorted(input.favouriteExerciseIds), neverSuggestExerciseIds: uniqueSorted(input.neverSuggestExerciseIds), recentExerciseIds: uniqueSorted(input.recentExerciseIds ?? []), stableExercises: [...input.stableExercises].sort((a, b) => a.dayIndex - b.dayIndex || a.role.localeCompare(b.role) || a.exerciseId.localeCompare(b.exerciseId)), seed: input.seed.trim() || 'maxgym-default'};
     return {...normalized, inputHash: stableHash(JSON.stringify(normalized))};
 }
 
@@ -62,6 +62,7 @@ function scoreCandidate(candidate: GeneratorCandidate, role: GeneratorRole, inpu
     if (input.priorityMuscles.some((muscle) => candidate.primaryMuscles.includes(muscle))) { score += 20; reasons.push('Covers a priority muscle.'); }
     if (input.favouriteExerciseIds.includes(candidate.id) || candidate.favourite) { score += 15; reasons.push('Favourite exercise.'); }
     if (candidate.media.length >= 2) { score += 5; reasons.push('Reviewed local instructions and media.'); }
+    if (input.recentExerciseIds?.includes(candidate.id)) { score -= 40; reasons.push('Used recently, so equally suitable alternatives are preferred.'); }
     score -= Math.max(0, candidate.setupTags.length - 1) * 3;
     score += parseInt(stableHash(`${input.seed}:${role}:${candidate.id}`).slice(0, 4), 16) / 0xffff * 18;
     return {score, reasons};

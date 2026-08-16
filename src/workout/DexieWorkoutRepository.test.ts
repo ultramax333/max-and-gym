@@ -72,6 +72,28 @@ describe('DexieWorkoutRepository', () => {
         expect(completed.sets.find((entry) => entry.id === completed.session.currentSetId)?.sequenceIndex).toBe(1);
     });
 
+    it('replaces an unstarted exercise transactionally while preserving its original identity and set plan', async () => {
+        const started = await repository.startSample('replace-start');
+        const current = started.exercises[0];
+        const replacement = {sessionId: started.session.id, sessionExerciseId: current.id, operationId: 'replace-operation', replacementExerciseId: 'fedb:Leg_Press', replacementExerciseName: 'Leg Press', alternativeExerciseIds: ['fedb:Hack_Squat'], reason: 'equipment-unavailable' as const};
+        const replaced = await repository.replaceExercise(replacement);
+        const replay = await repository.replaceExercise(replacement);
+        expect(replaced.exercises[0]).toMatchObject({exerciseId: 'fedb:Leg_Press', exerciseNameSnapshot: 'Leg Press', originalExerciseIdSnapshot: current.exerciseId, originalExerciseNameSnapshot: current.exerciseNameSnapshot, substitutionReason: 'equipment-unavailable'});
+        expect(replaced.sets.filter((entry) => entry.sessionExerciseId === current.id)).toHaveLength(3);
+        expect(replaced.sets.filter((entry) => entry.sessionExerciseId === current.id).every((entry) => entry.targetLoadKg === 0 && entry.status === 'planned')).toBe(true);
+        expect(replay.exercises[0]).toEqual(replaced.exercises[0]);
+        expect(await db.workoutOperation.where('kind').equals('replace-exercise').count()).toBe(1);
+    });
+
+    it('refuses to rewrite an exercise after its first set has been logged', async () => {
+        const started = await repository.startSample('replace-after-set-start');
+        await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'first-set', actualLoadKg: 16, actualReps: 8});
+        await expect(repository.replaceExercise({sessionId: started.session.id, sessionExerciseId: started.exercises[0].id, operationId: 'unsafe-replace', replacementExerciseId: 'fedb:Leg_Press', replacementExerciseName: 'Leg Press', reason: 'equipment-unavailable'})).rejects.toMatchObject({code: 'DB_INVARIANT_VIOLATION'});
+        const unchanged = await repository.get(started.session.id);
+        expect(unchanged?.exercises[0].exerciseId).toBe(started.exercises[0].exerciseId);
+        expect(unchanged?.sets.filter((entry) => entry.status === 'completed')).toHaveLength(1);
+    });
+
     it('uses the latest completed working load on the next session', async () => {
         let snapshot = await repository.startSample('history-start');
         for (let index = 0; index < 3; index += 1) {

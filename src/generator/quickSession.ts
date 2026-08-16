@@ -107,7 +107,8 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         if (!matchesQuickSessionZone(candidate, zone)) return [];
         const secondaryScore = candidate.secondaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
         const rotationScore = parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff * 18;
-        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore;
+        const recentPenalty = input.recentExerciseIds?.includes(candidate.id) ? 45 : 0;
+        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore - recentPenalty;
         return [{candidate, role, score, targetScore}];
     }).sort((a, b) => b.targetScore - a.targetScore || b.score - a.score || a.candidate.id.localeCompare(b.candidate.id));
 
@@ -139,7 +140,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const primaryZoneMatch = entry.candidate.primaryMuscles.some((muscle) => zoneDefinition.muscles.includes(muscle));
         const reasons = [primaryZoneMatch || zoneDefinition.muscles.length === 0
             ? `Targets ${zoneDefinition.label.toLowerCase()}.`
-            : `Curated for meaningful ${zoneDefinition.label.toLowerCase()} involvement; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, 'Fits the selected time budget, including rest, and available equipment.'];
+            : `Curated for meaningful ${zoneDefinition.label.toLowerCase()} involvement; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, 'Fits the selected time budget, including rest, and available equipment.', ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : [])];
         const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && other.targetScore > 0).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
         const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
         if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
