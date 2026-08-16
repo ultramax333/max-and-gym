@@ -71,6 +71,18 @@ const libraryArchivedIds = new Set([
     'Dumbbell_Alternate_Bicep_Curl',
 ]);
 
+// These compound lifts materially train glutes even though the pinned source
+// correctly lists another muscle as primary. The opt-in list keeps focused
+// generation useful without admitting every exercise with incidental glute work.
+const generatorFocusZones = new Map([
+    ['Romanian Deadlift', ['glutes']],
+    ['Split Squat with Dumbbells', ['glutes']],
+    ['Dumbbell Rear Lunge', ['glutes']],
+    ['Kettlebell One-Legged Deadlift', ['glutes']],
+    ['Wide Stance Barbell Squat', ['glutes']],
+    ['Leg Press', ['glutes']],
+]);
+
 function slug(value) {
     return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -112,6 +124,7 @@ function buildExercise(entry) {
         equipmentTags: [entry.equipment ?? 'other'],
         primaryMuscles: entry.primaryMuscles ?? [],
         secondaryMuscles: entry.secondaryMuscles ?? [],
+        ...(generatorFocusZones.has(entry.name) ? {generatorFocusZones: generatorFocusZones.get(entry.name)} : {}),
         movementPattern: movementPattern(entry),
         positionTags: /plank|floor|sit-up|crunch/i.test(entry.name) ? ['floor'] : ['standing-or-supported'],
         transitionTags: /jump|burpee/i.test(entry.name) ? ['high-impact-transition'] : [],

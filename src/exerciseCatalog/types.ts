@@ -17,6 +17,7 @@ export interface ReviewedExercise {
     equipmentTags: string[];
     primaryMuscles: string[];
     secondaryMuscles: string[];
+    generatorFocusZones?: string[];
     movementPattern: string;
     positionTags: string[];
     transitionTags: string[];

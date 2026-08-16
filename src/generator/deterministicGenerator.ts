@@ -18,9 +18,17 @@ export function normalizeGeneratorInput(input: GeneratorInput): NormalizedGenera
 
 function prescriptionFor(role: GeneratorRole, duration: ProgramDurationMinutes, goal: GeneratorInput['goal'], id: string) {
     const primary = ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(role);
-    const sets = primary ? (duration >= 60 ? 4 : 3) : role === 'accessory' ? 2 : 3;
-    const strength = primary && goal !== 'hypertrophy';
-    return {id, workingSets: sets, repsMin: strength ? 4 : 8, repsMax: strength ? 6 : 12, targetRir: 2, restSeconds: primary ? (duration >= 60 ? 180 : 150) : role === 'accessory' ? 60 : duration >= 60 ? 120 : 90, loadReferenceKg: 0};
+    const sets = goal === 'endurance'
+        ? 3
+        : primary ? (duration >= 60 ? 4 : 3) : role === 'accessory' ? 2 : 3;
+    const profile = goal === 'strength'
+        ? {repsMin: primary ? 4 : 6, repsMax: primary ? 6 : 8, restSeconds: primary ? (duration >= 60 ? 180 : 150) : 90}
+        : goal === 'endurance'
+            ? {repsMin: 15, repsMax: primary ? 20 : 25, restSeconds: primary ? 60 : 45}
+            : goal === 'balanced'
+                ? {repsMin: primary ? 6 : 8, repsMax: primary ? 10 : 12, restSeconds: primary ? 120 : 75}
+                : {repsMin: primary ? 8 : 10, repsMax: primary ? 12 : 15, restSeconds: primary ? 90 : 60};
+    return {id, workingSets: sets, repsMin: profile.repsMin, repsMax: profile.repsMax, targetRir: 2, restSeconds: profile.restSeconds, loadReferenceKg: 0};
 }
 
 function warmup(lowBackComfort: boolean, duration: ProgramDurationMinutes): WarmupStep[] {
@@ -36,7 +44,11 @@ function warmup(lowBackComfort: boolean, duration: ProgramDurationMinutes): Warm
 
 export function estimateGeneratedDay(exercises: GeneratedExercise[], warmupSeconds: number, conditioningSeconds: number, targetMinutes: ProgramDurationMinutes): GeneratorDurationBreakdown {
     const ramp = exercises.filter((entry) => ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(entry.role)).length * 180;
-    const execution = exercises.reduce((sum, entry) => sum + entry.prescription.workingSets * 40, 0);
+    const execution = exercises.reduce((sum, entry) => {
+        const averageReps = (entry.prescription.repsMin + entry.prescription.repsMax) / 2;
+        const secondsPerSet = Math.min(85, Math.max(40, Math.round(10 + averageReps * 3)));
+        return sum + entry.prescription.workingSets * secondsPerSet;
+    }, 0);
     const rest = exercises.reduce((sum, entry) => sum + Math.max(0, entry.prescription.workingSets - 1) * entry.prescription.restSeconds, 0);
     const setup = exercises.length * 75;
     const transitions = Math.max(0, exercises.length - 1) * 45;

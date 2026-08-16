@@ -2,6 +2,10 @@ import {CandidateExclusion, GeneratorCandidate, GeneratorInput, GeneratorRole} f
 
 export interface ConstraintResult {allowed: boolean; exclusion?: CandidateExclusion}
 
+export function hasAvailableEquipment(candidate: Pick<GeneratorCandidate, 'equipmentTags'>, equipment: string[]): boolean {
+    return candidate.equipmentTags.some((tag) => equipment.includes(tag));
+}
+
 function excludes(role: GeneratorRole | 'core', candidate: GeneratorCandidate, reasonCode: string, reason: string): ConstraintResult {
     return {allowed: false, exclusion: {exerciseId: candidate.id, role, reasonCode, reason}};
 }
@@ -13,8 +17,7 @@ export function evaluateHardConstraints(candidate: GeneratorCandidate, input: Ge
     const tags = [...candidate.impactTags, ...candidate.positionTags, ...candidate.transitionTags, ...candidate.setupTags];
     const blockedTag = tags.find((tag) => input.blockedTags.includes(tag));
     if (blockedTag) return excludes(role, candidate, 'TAG_BLOCKED', `Contrainte bloquante : ${blockedTag}.`);
-    const hasEquipment = candidate.equipmentTags.includes('body only') || candidate.equipmentTags.some((tag) => input.equipment.includes(tag));
-    if (!hasEquipment) return excludes(role, candidate, 'EQUIPMENT_UNAVAILABLE', 'Equipment is unavailable.');
+    if (!hasAvailableEquipment(candidate, input.equipment)) return excludes(role, candidate, 'EQUIPMENT_UNAVAILABLE', 'Equipment is unavailable.');
     return {allowed: true};
 }
 

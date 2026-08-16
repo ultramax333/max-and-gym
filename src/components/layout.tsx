@@ -19,6 +19,7 @@ import WLAppBar from "./app_bar";
 import WLNav from "./nav";
 import {Box} from "@mui/material";
 import {ConnectivityBanner} from './ui/StatusBanners';
+import {ActiveWorkoutDock} from './ActiveWorkoutDock';
 
 const Layout = (props: {
     children: ReactNode,
@@ -41,6 +42,7 @@ const Layout = (props: {
         <Box sx={{display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, height: '100dvh', minHeight: 0, ...(hideNav ? {} : {ml: {md: '88px'}})}}>
         {!hideAppBar && <WLAppBar title={title} showAccountMenu={showAccountMenu} leftToolItems={leftToolItems} toolItems={toolItems} hideBack={hideBack} onBack={onBack}/>}
         <Box component="main" sx={{flexGrow: nogrow ? undefined : 1, minHeight: 0, mt: hideAppBar ? 0 : '72px', overflowY: scroll === false ? 'visible' : 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', overscrollBehaviorY: 'contain', scrollbarGutter: 'stable', ...sx}}>{children}</Box>
+        <ActiveWorkoutDock navigationVisible={!hideNav}/>
         {!hideNav && <WLNav/>}
         </Box>
     </Box>;

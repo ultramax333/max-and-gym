@@ -75,6 +75,37 @@ describe('quick session generator', () => {
         }
     });
 
+    it('uses distinct Strength, Hypertrophy and Endurance prescriptions while keeping the time budget coherent', () => {
+        const strength = generateQuickSession({...input(45), goal: 'strength', sessionRestSeconds: 180}, candidates, 'arms');
+        const hypertrophy = generateQuickSession({...input(45), goal: 'hypertrophy', sessionRestSeconds: 90}, candidates, 'arms');
+        const endurance = generateQuickSession({...input(45), goal: 'endurance', sessionRestSeconds: 60}, candidates, 'arms');
+        expect(strength.ok && hypertrophy.ok && endurance.ok).toBe(true);
+        if (!strength.ok || !hypertrophy.ok || !endurance.ok) return;
+        expect(strength.program.days[0].exercises.every((entry) => entry.prescription.repsMax <= 8 && entry.prescription.restSeconds === 180)).toBe(true);
+        expect(hypertrophy.program.days[0].exercises.every((entry) => entry.prescription.repsMin >= 8 && entry.prescription.repsMax <= 15 && entry.prescription.restSeconds === 90)).toBe(true);
+        expect(endurance.program.days[0].exercises.every((entry) => entry.prescription.repsMin >= 15 && entry.prescription.restSeconds === 60)).toBe(true);
+        for (const result of [strength, hypertrophy, endurance]) {
+            expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(45 * 60 * 0.9);
+            expect(result.program.days[0].duration.total).toBeLessThanOrEqual(45 * 60 * 1.1);
+        }
+    });
+
+    it('does not generate or offer bodyweight exercises when body only is unchecked', () => {
+        const available = ['barbell', 'dumbbell', 'cable', 'machine', 'bands', 'kettlebells', 'other'];
+        const generated = generateQuickSession({...input(45), equipment: available}, candidates, 'chest');
+        expect(generated.ok).toBe(true);
+        if (!generated.ok) return;
+        expect(generated.program.days[0].exercises.every((entry) => {
+            const candidate = candidates.find((item) => item.id === entry.exerciseId)!;
+            return !candidate.equipmentTags.includes('body only');
+        })).toBe(true);
+        const options = quickSessionReplacementCandidates(candidates, 'chest', available, new Set(), {
+            exerciseId: 'current', movementPattern: 'push', primaryMuscles: ['chest'], alternativeExerciseIds: [],
+        }, 80);
+        expect(options.some((entry) => entry.name === 'Pushups')).toBe(false);
+        expect(options.every((entry) => !entry.equipmentTags.includes('body only'))).toBe(true);
+    });
+
     it('rotates away from the previous session when the eligible pool is large enough', () => {
         const first = generateQuickSession({...input(45), seed: 'rotation-1'}, candidates, 'arms');
         expect(first.ok).toBe(true);
@@ -103,18 +134,19 @@ describe('quick session generator', () => {
         const names = glutePool.map((entry) => entry.name);
         expect(names).toEqual(expect.arrayContaining(['Barbell Hip Thrust', 'Step-up with Knee Raise', 'Thigh Abductor', 'Monster Walk']));
         expect(names).not.toEqual(expect.arrayContaining(['Barbell Glute Bridge', 'Hip Lift with Band', 'Kneeling Squat', 'Leg Lift']));
-        expect(glutePool).toHaveLength(10);
+        expect(names).toEqual(expect.arrayContaining(['Romanian Deadlift', 'Split Squat with Dumbbells', 'Dumbbell Rear Lunge', 'Kettlebell One-Legged Deadlift', 'Wide Stance Barbell Squat', 'Leg Press']));
+        expect(glutePool).toHaveLength(16);
 
         const generated = generateQuickSession({...input(45), seed: 'glute-pool'}, candidates, 'glutes');
         expect(generated.ok).toBe(true);
         if (!generated.ok) return;
-        expect(generated.program.days[0].exercises.every((exercise) => exercise.primaryMuscles.some((muscle) => ['glutes', 'abductors'].includes(muscle)))).toBe(true);
+        expect(generated.program.days[0].exercises.every((exercise) => matchesQuickSessionZone(candidates.find((entry) => entry.id === exercise.exerciseId)!, 'glutes'))).toBe(true);
         expect(new Set(generated.program.days[0].exercises.map((exercise) => exercise.movementPattern)).size).toBeGreaterThanOrEqual(3);
 
         const hipThrust = candidates.find((entry) => entry.name === 'Barbell Hip Thrust')!;
         const options = quickSessionReplacementCandidates(candidates, 'glutes', input(45).equipment, new Set([hipThrust.id]), {exerciseId: hipThrust.id, movementPattern: hipThrust.movementPattern, primaryMuscles: hipThrust.primaryMuscles, alternativeExerciseIds: []}, 40);
-        expect(options).toHaveLength(9);
-        expect(options.every((exercise) => exercise.primaryMuscles.some((muscle) => ['glutes', 'abductors'].includes(muscle)))).toBe(true);
+        expect(options).toHaveLength(15);
+        expect(options.every((exercise) => matchesQuickSessionZone(exercise, 'glutes'))).toBe(true);
     });
 
     it('excludes exercises marked Never Suggest from generation and replacements', () => {

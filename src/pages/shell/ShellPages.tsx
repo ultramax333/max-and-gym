@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Alert, Box, Button, Card, CardActionArea, CardActions, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress, Stack, Typography} from '@mui/material';
-import {Add, ArrowForwardRounded, Bolt, CalendarMonth, FitnessCenter, PlayArrow, StopCircle, Timeline} from '@mui/icons-material';
+import {Add, ArrowForwardRounded, Bolt, BookmarkAdded, CalendarMonth, FitnessCenter, PlayArrow, StopCircle, Timeline} from '@mui/icons-material';
 import {useLiveQuery} from 'dexie-react-hooks';
 import {useNavigate} from 'react-router-dom';
 import {PrimaryButton, ScreenContainer, SectionHeader, StatePanel} from '../../components/ui/UiPrimitives';
@@ -133,6 +133,7 @@ export function TrainShellPage() {
         {error && <Alert severity="error">{error}</Alert>}
         {active && next && <ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · prescription is fixed when you start.`} icon={<CalendarMonth/>} onClick={() => void startNextProgramDay(navigate).catch(() => setError('The planned workout could not be started. Resume or stop the current workout first.'))}/>}
         <ShellCard featured title={ARM_WORKOUT_45.name} text={ARM_WORKOUT_45.summary} icon={<FitnessCenter/>} onClick={() => void chooseArmWorkout()}/>
+        <ShellCard title="Saved sessions" text="Restart or edit the single sessions you chose to keep." icon={<BookmarkAdded/>} onClick={() => navigate('/programs?view=sessions')}/>
         <ShellCard title="Essential workout" text="Start or resume a reliable local workout." icon={<FitnessCenter/>} onClick={() => navigate('/workout/active')}/>
         <ShellCard title="Previous workouts" text="Open the editor and your existing RepQuest workouts." icon={<FitnessCenter/>} onClick={() => navigate('/workouts')}/>
         {!active && <ShellCard title="Create a planned workout" text="Activate a program with two or three days." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
