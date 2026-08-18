@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v6 / 5', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v7 / 5', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -65,7 +65,38 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await expect(page.getByRole('button', {name: 'Start this session'})).toBeVisible();
     await expect(page.getByRole('img')).not.toHaveCount(0);
     await expect(page.getByRole('button', {name: 'Replace exercise'}).first()).toBeVisible();
+    await expect(page.getByRole('heading', {name: 'Session time plan'})).toBeVisible();
+    await expect(page.getByRole('button', {name: /Move .* later/}).first()).toBeEnabled();
     await assertNoHorizontalOverflow(page);
+});
+
+test('an occupied machine can be deferred or replaced without losing the session', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name: 'Start'}).click();
+    await expect(page.getByRole('heading', {name: 'Machine occupied?'})).toBeVisible();
+    await page.getByRole('button', {name: 'Do later'}).click();
+    await expect(page.getByRole('status').filter({hasText: 'moved to later'})).toBeVisible();
+    const chooseAlternative = page.getByRole('button', {name: 'Choose alternative'});
+    await expect(chooseAlternative).toBeEnabled();
+    await chooseAlternative.click();
+    await expect(page.getByRole('heading', {name: 'Choose an alternative', exact: true})).toBeVisible();
+    await page.getByRole('button', {name: 'Use this exercise'}).first().click();
+    await expect(page.getByRole('status').filter({hasText: 'was replaced with'})).toBeVisible();
+    await expect(page.getByText('0/6 sets completed')).toBeVisible();
+});
+
+test('completed workout summary compares time and recaps every exercise', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name: 'Start'}).click();
+    await page.getByRole('button', {name: 'Complete set'}).click();
+    await page.getByRole('button', {name: 'Finish workout'}).click();
+    await page.getByRole('button', {name: 'Finish', exact: true}).click();
+    await expect(page.getByRole('heading', {name: 'Exercise recap'})).toBeVisible();
+    await expect(page.getByText('1/6')).toBeVisible();
+    await expect(page.getByText(/Last 16 kg × 8/)).toBeVisible();
+    await expect(page.getByText(/no automatic load increase is applied/i)).toBeVisible();
 });
 
 test('Pixel 9a training screen keeps every action reachable and the 45-minute arm workout shows local photos', async ({page}) => {
@@ -233,6 +264,7 @@ test('@visual representative release screens render at the target viewport', asy
 });
 
 test('representative use contacts only the production origin', async ({page}) => {
+    const expectedOrigin = new URL(test.info().project.use.baseURL as string).origin;
     const origins = new Set<string>();
     page.on('request', (request) => {
         const url = new URL(request.url());
@@ -240,5 +272,5 @@ test('representative use contacts only the production origin', async ({page}) =>
     });
     await bootstrapAnonymousProfile(page);
     for (const route of ['/library', '/train/core-videos', '/progress/photos', '/backup', '/diagnostics']) await page.goto(`./#${route}`);
-    expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+    expect([...origins]).toEqual([expectedOrigin]);
 });

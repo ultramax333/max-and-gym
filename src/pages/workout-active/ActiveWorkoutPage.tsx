@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
-import {Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SwapHoriz, Undo} from '@mui/icons-material';
+import {Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SkipNext, SwapHoriz, Undo} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../../components/ui/UiPrimitives';
@@ -68,7 +68,10 @@ export function ActiveWorkoutPage() {
     const [defaultValueNotice, setDefaultValueNotice] = useState('');
     const [instructionsOpen, setInstructionsOpen] = useState(false);
     const [planOpen, setPlanOpen] = useState(true);
+    const [alternativesOpen, setAlternativesOpen] = useState(false);
+    const [replacementOptions, setReplacementOptions] = useState<LibraryExercise[]>([]);
     const previousExerciseId = useRef<string>();
+    const pendingExerciseChangeNotice = useRef<string>();
     const initializedSetId = useRef<string>();
     const [notificationPermission, setNotificationPermission] = useState<RestNotificationPermission>(() => getRestNotificationPermission());
     const [nativeCapabilities, setNativeCapabilities] = useState<RestAlarmCapabilities>();
@@ -161,7 +164,8 @@ export function ActiveWorkoutPage() {
         const exerciseNumber = snapshot.exercises.findIndex((entry) => entry.id === currentExercise.id) + 1;
         const exerciseSets = snapshot.sets.filter((entry) => entry.sessionExerciseId === currentExercise.id);
         const nextSet = exerciseSets.find((entry) => entry.id === snapshot.session.currentSetId);
-        setExerciseChangeNotice(`Exercise changed — now ${currentExercise.exerciseNameSnapshot} (exercise ${exerciseNumber}/${snapshot.exercises.length}, set ${(nextSet?.sequenceIndex ?? 0) + 1}/${exerciseSets.length}).`);
+        setExerciseChangeNotice(pendingExerciseChangeNotice.current ?? `Exercise changed — now ${currentExercise.exerciseNameSnapshot} (exercise ${exerciseNumber}/${snapshot.exercises.length}, set ${(nextSet?.sequenceIndex ?? 0) + 1}/${exerciseSets.length}).`);
+        pendingExerciseChangeNotice.current = undefined;
         setInstructionsOpen(false);
         document.querySelector('main')?.scrollTo({top: 0, behavior: 'smooth'});
     }, [currentExercise, snapshot]);
@@ -202,6 +206,7 @@ export function ActiveWorkoutPage() {
     const currentUnfinishedIndex = currentExercise ? unfinishedExercises.findIndex((exercise) => exercise.id === currentExercise.id) : -1;
     const canSwitchExercise = unfinishedExercises.length > 1 && currentUnfinishedIndex >= 0;
     const currentExerciseSets = currentExercise ? snapshot.sets.filter((entry) => entry.sessionExerciseId === currentExercise.id) : [];
+    const canReplaceCurrent = currentExerciseSets.every((entry) => entry.status !== 'completed' && !entry.completionOperationId && entry.actualLoadKg === undefined && entry.actualReps === undefined);
 
     const switchToExercise = (exercise: SessionExerciseRecord) => {
         if (service) void perform(() => service.switchExercise(snapshot.session.id, exercise.id));
@@ -210,6 +215,47 @@ export function ActiveWorkoutPage() {
         if (!canSwitchExercise) return;
         const nextIndex = (currentUnfinishedIndex + direction + unfinishedExercises.length) % unfinishedExercises.length;
         switchToExercise(unfinishedExercises[nextIndex]);
+    };
+    const deferCurrentExercise = async () => {
+        if (!service || !currentExercise || !canSwitchExercise) return;
+        const nextIndex = (currentUnfinishedIndex + 1) % unfinishedExercises.length;
+        const deferredName = currentExercise.exerciseNameSnapshot;
+        const next = unfinishedExercises[nextIndex];
+        pendingExerciseChangeNotice.current = `${deferredName} was moved to later. Now ${next.exerciseNameSnapshot}; all logged sets are unchanged.`;
+        const saved = await perform(() => service.switchExercise(snapshot.session.id, next.id));
+        if (!saved) pendingExerciseChangeNotice.current = undefined;
+    };
+    const openAlternatives = async () => {
+        if (!catalog || !currentExercise || !exerciseDetails || !canReplaceCurrent) return;
+        setBusy(true);
+        try {
+            const preferred = (await Promise.all(currentExercise.alternativeExerciseIdsSnapshot.map((id) => catalog.get(id)))).filter((entry): entry is LibraryExercise => Boolean(entry));
+            const compatible = await catalog.alternatives(exerciseDetails);
+            const sessionExerciseIds = new Set(snapshot.exercises.map((entry) => entry.exerciseId));
+            const unique = new Map([...preferred, ...compatible].filter((entry) => !entry.effectiveNeverSuggest && !sessionExerciseIds.has(entry.id)).map((entry) => [entry.id, entry]));
+            setReplacementOptions([...unique.values()].slice(0, 20));
+            setAlternativesOpen(true);
+        } catch {
+            setError('Exercise alternatives could not be loaded. Your workout is unchanged.');
+        } finally {
+            setBusy(false);
+        }
+    };
+    const replaceCurrentExercise = async (replacement: LibraryExercise) => {
+        if (!service || !currentExercise) return;
+        const previousName = currentExercise.exerciseNameSnapshot;
+        const saved = await perform(() => service.replaceExercise({
+            sessionId: snapshot.session.id,
+            sessionExerciseId: currentExercise.id,
+            replacementExerciseId: replacement.id,
+            replacementExerciseName: replacement.name,
+            alternativeExerciseIds: replacementOptions.filter((entry) => entry.id !== replacement.id).slice(0, 5).map((entry) => entry.id),
+            reason: 'equipment-unavailable',
+        }));
+        if (saved) {
+            setAlternativesOpen(false);
+            setExerciseChangeNotice(`${previousName} was replaced with ${replacement.name}. Sets, repetitions and recovery were kept; check the load before starting.`);
+        }
     };
     const completeCurrentSet = () => {
         if (!service || !currentSet || load === undefined || reps === undefined || !Number.isInteger(reps)) return;
@@ -261,6 +307,16 @@ export function ActiveWorkoutPage() {
                         <Stack direction="row" gap={1} alignItems="flex-start"><InfoOutlined color="primary" fontSize="small"/><Box sx={{flex: 1}}><Typography component="h2" fontWeight={750}>How to move</Typography><Typography variant="body2" color="text.secondary">{shortInstruction(exerciseDetails.setupInstructions)}</Typography></Box><IconButton aria-label={instructionsOpen ? 'Hide technique' : 'Show technique'} onClick={() => setInstructionsOpen((open) => !open)}>{instructionsOpen ? <Close/> : <ExpandMore/>}</IconButton></Stack>
                         <Collapse in={instructionsOpen}><Box component="ol" sx={{pl: 3, mb: 0}}>{exerciseDetails.executionSteps.slice(0, 3).map((step) => <Typography component="li" variant="body2" key={step} sx={{mt: 1}}>{step}</Typography>)}{exerciseDetails.breathingCue && <Typography component="li" variant="body2" sx={{mt: 1}}>Breathing: {exerciseDetails.breathingCue}</Typography>}</Box></Collapse>
                     </Paper>}
+
+                    <Paper sx={{p: 1.5, bgcolor: 'rgba(83,199,183,.05)'}}>
+                        <Typography component="h2" fontWeight={750}>Machine occupied?</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{mt: 0.25}}>Do this exercise later without losing progress, or choose a compatible alternative before logging its first set.</Typography>
+                        <Stack direction={{xs: 'column', sm: 'row'}} gap={1} sx={{mt: 1.25}}>
+                            <Button variant="outlined" startIcon={<SkipNext/>} disabled={busy || !canSwitchExercise} onClick={() => void deferCurrentExercise()}>Do later</Button>
+                            <Button variant="outlined" startIcon={<SwapHoriz/>} disabled={busy || !canReplaceCurrent || !exerciseDetails} onClick={() => void openAlternatives()}>Choose alternative</Button>
+                        </Stack>
+                        {!canReplaceCurrent && <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 1}}>An exercise with logged sets cannot be rewritten. Use Do later instead.</Typography>}
+                    </Paper>
 
                     <Stack direction={{xs: 'column', sm: 'row'}} gap={1.25}>
                         <MetricStepper label="Load" value={loadInput} unit="kg" step={0.5} error={load === undefined} onChange={setLoadInput}/>
@@ -329,5 +385,12 @@ export function ActiveWorkoutPage() {
         />}</WorkoutActionBar>}
 
         <Dialog open={finishOpen} onClose={() => setFinishOpen(false)}><DialogTitle>Finish workout?</DialogTitle><DialogContent><Typography>Remaining sets will stay incomplete in this summary.</Typography></DialogContent><DialogActions><Button onClick={() => setFinishOpen(false)}>Continue</Button><Button variant="contained" color="error" startIcon={<Flag/>} onClick={() => void perform(async () => { const result = await service!.finish(snapshot.session.id); navigate(`/workout/summary/${snapshot.session.id}`); return result; })}>Finish</Button></DialogActions></Dialog>
+        <Dialog open={alternativesOpen} onClose={() => !busy && setAlternativesOpen(false)} fullScreen>
+            <DialogTitle component="div"><Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}><Box><Typography variant="overline" color="primary.main">MACHINE OCCUPIED</Typography><Typography variant="h5" component="h2">Choose an alternative</Typography></Box><IconButton aria-label="Close alternatives" disabled={busy} onClick={() => setAlternativesOpen(false)}><Close/></IconButton></Stack></DialogTitle>
+            <DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {
+                const media = option.media.find((entry) => entry.kind === 'thumbnail') ?? option.media.find((entry) => entry.kind === 'start-image');
+                return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center">{media && <Box component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: 96, height: 96, objectFit: 'contain', bgcolor: 'background.default', flexShrink: 0}}/>}<Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
+            })}{replacementOptions.length === 0 && <StatePanel title="No compatible alternative" description="Use Do later and return when the equipment becomes available." icon={<FitnessCenter/>}/>}</Stack></DialogContent>
+        </Dialog>
     </Layout>;
 }

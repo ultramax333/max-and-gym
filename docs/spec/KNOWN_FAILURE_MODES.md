@@ -387,3 +387,15 @@ Controls:
   bounded to avoid precaching the full 24 MB source image set.
 - FM-31: source seed, user preference and custom exercise records are separated, so a
   seed refresh does not overwrite user choices.
+
+## FM-37 — Exercise replacement rewrites already logged work
+
+Likely cause: mutating the live session-exercise identity after one or more performed sets have been recorded.
+
+Controls:
+
+- preserve the original exercise identity and replacement reason in the session snapshot;
+- allow in-place replacement only before the first set is logged;
+- keep sets, repetitions and recovery while resetting an unknown replacement load to zero;
+- offer `Do later` after progress exists instead of rewriting history;
+- commit replacement and its operation identifier in one transaction.

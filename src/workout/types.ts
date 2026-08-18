@@ -57,6 +57,9 @@ export interface SessionExerciseRecord {
     sessionId: string;
     exerciseId: string;
     exerciseNameSnapshot: string;
+    originalExerciseIdSnapshot?: string;
+    originalExerciseNameSnapshot?: string;
+    substitutionReason?: 'equipment-unavailable' | 'user-choice';
     prescriptionSnapshot: string;
     programExerciseId?: string;
     lockedSnapshot: boolean;
@@ -109,7 +112,7 @@ export interface RestTimerRecord {
 
 export interface WorkoutOperationRecord {
     operationId: string;
-    kind: 'start' | 'complete-set' | 'undo-set' | 'finish' | 'abandon';
+    kind: 'start' | 'complete-set' | 'undo-set' | 'replace-exercise' | 'finish' | 'abandon';
     status: 'started' | 'committed' | 'failed';
     sessionId?: string;
     entityId?: string;
@@ -132,6 +135,16 @@ export interface CompleteSetInput {
     actualLoadKg: number;
     actualReps: number;
     actualRir?: number;
+}
+
+export interface ReplaceSessionExerciseInput {
+    sessionId: string;
+    sessionExerciseId: string;
+    operationId: string;
+    replacementExerciseId: string;
+    replacementExerciseName: string;
+    alternativeExerciseIds?: string[];
+    reason: 'equipment-unavailable' | 'user-choice';
 }
 
 export interface ExercisePerformanceSummary {

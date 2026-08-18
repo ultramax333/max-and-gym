@@ -2,7 +2,7 @@ import {DexieDB} from '../db/db';
 import {QuickSessionZone} from './quickSession';
 
 const PREFIX = 'quickSessionGenerationState:';
-const RECENT_GENERATION_LIMIT = 2;
+const RECENT_GENERATION_LIMIT = 4;
 
 export interface QuickSessionGenerationState {
     nextVariation: number;

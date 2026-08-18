@@ -1,7 +1,7 @@
 import {recordDiagnostic, writeOperationJournal} from '../diagnostics/service';
 import {ErrorCode} from '../diagnostics/types';
 import {DexieWorkoutRepository, WorkoutDomainError} from './DexieWorkoutRepository';
-import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, StartWorkoutInput} from './types';
+import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, ReplaceSessionExerciseInput, StartWorkoutInput} from './types';
 import {RestAlarmGateway, restAlarmGateway, syncNativeRestAlarm} from '../native/restAlarmGateway';
 
 export const ACTIVE_WORKOUT_STORAGE_KEY = 'maxgym.activeWorkoutId';
@@ -103,6 +103,10 @@ export class WorkoutApplicationService {
 
     switchExercise(sessionId: string, sessionExerciseId: string): Promise<ActiveWorkoutSnapshot> {
         return this.repository.switchExercise(sessionId, sessionExerciseId);
+    }
+
+    replaceExercise(input: Omit<ReplaceSessionExerciseInput, 'operationId'>, operationId = createOperationId()): Promise<ActiveWorkoutSnapshot> {
+        return this.runCritical('workout-replace-exercise', operationId, 'WORKOUT_EXERCISE_REPLACE_FAILED', () => this.repository.replaceExercise({...input, operationId}));
     }
 
     saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {
