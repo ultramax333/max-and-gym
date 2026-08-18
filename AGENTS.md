@@ -14,7 +14,7 @@ Every task uses this sequence:
 
 Never skip the audit because a change appears small. Never start the next task automatically. Never merge your own pull request.
 
-When a defect appears, use `CODEX_TASKS/90_DIAGNOSTIC_AUDIT.md`. It is read-only by default; product code may change only under explicit `MODE=FIX` after root-cause evidence exists.
+When a defect appears, use `CODEX_TASKS/90_DIAGNOSTIC_AUDIT.md`. It is read-only by default; product code may change only after root-cause evidence exists and the project owner explicitly authorizes the fix with either `MODE=FIX` or the standalone instruction `Go` (case-insensitive).
 
 ## Scope boundaries
 

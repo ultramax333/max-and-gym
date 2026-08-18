@@ -27,9 +27,12 @@ public class MainActivity extends BridgeActivity {
                     webView.goBack();
                     return;
                 }
-
-                setEnabled(false);
-                getOnBackPressedDispatcher().onBackPressed();
+                if (webView != null) {
+                    webView.evaluateJavascript(
+                        "window.dispatchEvent(new CustomEvent('maxgym:native-back'))",
+                        null
+                    );
+                }
             }
         });
     }

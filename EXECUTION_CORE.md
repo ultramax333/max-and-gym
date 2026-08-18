@@ -68,7 +68,7 @@ For one task only:
 
 Never merge or begin the next task automatically.
 
-For incidents, Task 90 is read-only by default; `MODE=FIX` is required before product code changes.
+For incidents, Task 90 is read-only by default; explicit authorization with either `MODE=FIX` or the standalone instruction `Go` (case-insensitive) is required before product code changes.
 
 ## Definition of task completion
 

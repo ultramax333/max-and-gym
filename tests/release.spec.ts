@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v5 / 5', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v6 / 5', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 

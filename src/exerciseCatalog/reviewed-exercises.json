@@ -9769,6 +9769,9 @@
       "glutes",
       "hamstrings"
     ],
+    "generatorFocusZones": [
+      "glutes"
+    ],
     "movementPattern": "squat",
     "positionTags": [
       "standing-or-supported"
@@ -15772,6 +15775,9 @@
       "glutes",
       "lower back"
     ],
+    "generatorFocusZones": [
+      "glutes"
+    ],
     "movementPattern": "hinge",
     "positionTags": [
       "standing-or-supported"
@@ -16378,6 +16384,9 @@
       "calves",
       "glutes",
       "hamstrings"
+    ],
+    "generatorFocusZones": [
+      "glutes"
     ],
     "movementPattern": "squat",
     "positionTags": [
@@ -19647,6 +19656,9 @@
       "glutes",
       "lower back"
     ],
+    "generatorFocusZones": [
+      "glutes"
+    ],
     "movementPattern": "hinge",
     "positionTags": [
       "standing-or-supported"
@@ -21088,6 +21100,9 @@
     "secondaryMuscles": [
       "glutes",
       "hamstrings"
+    ],
+    "generatorFocusZones": [
+      "glutes"
     ],
     "movementPattern": "squat",
     "positionTags": [
@@ -22771,6 +22786,9 @@
       "glutes",
       "hamstrings",
       "lower back"
+    ],
+    "generatorFocusZones": [
+      "glutes"
     ],
     "movementPattern": "squat",
     "positionTags": [

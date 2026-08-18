@@ -12,7 +12,7 @@ const input = (change: Partial<GeneratorInput> = {}): GeneratorInput => ({freque
 describe('deterministic program generator', () => {
     it.each([[2, 40], [2, 60], [3, 40], [3, 60]] as const)('generates a valid %i-day %i-minute structure', (frequency, durationMinutes) => {
         const result = generateProgram(input({frequency, durationMinutes}), candidates);
-        expect(result.ok).toBe(true);
+        expect(result.ok, JSON.stringify(result)).toBe(true);
         if (!result.ok) return;
         expect(result.program.days).toHaveLength(frequency);
         for (const day of result.program.days) expect(day.duration.total / 60).toBeGreaterThanOrEqual(durationMinutes * 0.9);
@@ -37,6 +37,20 @@ describe('deterministic program generator', () => {
         const migrated = generateProgram(input({generatorVersion: 'deterministic-v4'}), candidates);
         expect(current.ok && migrated.ok).toBe(true);
         if (current.ok && migrated.ok) expect(current.program.identityHash).not.toBe(migrated.program.identityHash);
+    });
+
+    it('uses goal-specific weekly prescriptions while retaining legacy balanced snapshots', () => {
+        const strength = generateProgram(input({goal: 'strength'}), candidates);
+        const hypertrophy = generateProgram(input({goal: 'hypertrophy'}), candidates);
+        const endurance = generateProgram(input({goal: 'endurance'}), candidates);
+        const balanced = generateProgram(input({goal: 'balanced'}), candidates);
+        expect(strength.ok && hypertrophy.ok && endurance.ok && balanced.ok).toBe(true);
+        if (!strength.ok || !hypertrophy.ok || !endurance.ok || !balanced.ok) return;
+        const firstPrimary = (result: typeof strength) => result.program.days[0].exercises.find((entry) => ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(entry.role))!;
+        expect(firstPrimary(strength).prescription).toMatchObject({repsMin: 4, repsMax: 6});
+        expect(firstPrimary(hypertrophy).prescription).toMatchObject({repsMin: 8, repsMax: 12});
+        expect(firstPrimary(endurance).prescription).toMatchObject({repsMin: 15, repsMax: 20});
+        expect(firstPrimary(balanced).prescription).toMatchObject({repsMin: 6, repsMax: 10});
     });
 
     it('fails closed when equipment constraints make a required role impossible', () => {

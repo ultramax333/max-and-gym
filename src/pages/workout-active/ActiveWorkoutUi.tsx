@@ -86,7 +86,7 @@ export function MetricStepper({label, value, unit, step, maximum, error, onChang
     return <Paper sx={{flex: 1, minWidth: 0, p: 1.25, bgcolor: '#111A24', borderColor: error ? 'error.main' : 'rgba(255,255,255,.08)'}}>
         <Typography variant="caption" color={error ? 'error.main' : 'text.secondary'}>{label}</Typography>
         <Stack direction="row" alignItems="center" justifyContent="space-between" gap={0.5} sx={{mt: 0.5}}>
-            <IconButton aria-label={`Decrease ${label.toLowerCase()}`} onClick={() => onChange(clampNumericValue(value, -1, step, maximum))} sx={{bgcolor: 'rgba(255,255,255,.05)', flexShrink: 0}}><Remove fontSize="small"/></IconButton>
+            <IconButton aria-label={`Decrease ${label.toLowerCase()}`} onClick={() => onChange(clampNumericValue(value, -1, step, maximum))} sx={{bgcolor: 'rgba(255,255,255,.05)', flexShrink: 0, width: 48, height: 48}}><Remove fontSize="small"/></IconButton>
             <Box sx={{minWidth: 0, textAlign: 'center'}}>
                 <TextField
                     variant="standard"
@@ -100,7 +100,7 @@ export function MetricStepper({label, value, unit, step, maximum, error, onChang
                 />
                 <Typography variant="caption" color="text.secondary" sx={{display: 'block'}}>{unit}</Typography>
             </Box>
-            <IconButton aria-label={`Increase ${label.toLowerCase()}`} onClick={() => onChange(clampNumericValue(value, 1, step, maximum))} sx={{bgcolor: 'rgba(83,199,183,.12)', color: 'primary.main', flexShrink: 0}}><Add fontSize="small"/></IconButton>
+            <IconButton aria-label={`Increase ${label.toLowerCase()}`} onClick={() => onChange(clampNumericValue(value, 1, step, maximum))} sx={{bgcolor: 'rgba(83,199,183,.12)', color: 'primary.main', flexShrink: 0, width: 48, height: 48}}><Add fontSize="small"/></IconButton>
         </Stack>
     </Paper>;
 }

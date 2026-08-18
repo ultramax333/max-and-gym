@@ -11,7 +11,7 @@ describe('version 1 onboarding defaults', () => {
             frequency: 3,
             durationMinutes: 60,
             coreMinutes: 15,
-            goal: 'balanced',
+            goal: 'hypertrophy',
             equipmentProfile: 'full-gym',
             hardExclusionsEnabled: true,
         });

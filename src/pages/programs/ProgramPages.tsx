@@ -1,15 +1,15 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Add, Archive, ContentCopy, FitnessCenter, Lock, LockOpen, PlayArrow} from '@mui/icons-material';
+import {Add, Archive, BookmarkAdded, ContentCopy, FitnessCenter, Lock, LockOpen, PlayArrow} from '@mui/icons-material';
 import {Alert, Box, Button, Card, CardActions, CardContent, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, Tab, Tabs, TextField, Typography} from '@mui/material';
 import {useLiveQuery} from 'dexie-react-hooks';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import Layout from '../../components/layout';
 import {PrimaryButton, ReorderControls, ScreenContainer, SecondaryButton, SectionHeader, StatePanel} from '../../components/ui/UiPrimitives';
 import {db} from '../../db/db';
 import {ExerciseCatalogRepository} from '../../exerciseCatalog/ExerciseCatalogRepository';
 import {ProgramRepository} from '../../programs/ProgramRepository';
 import {estimateProgramDay, weeklyBalance} from '../../programs/duration';
-import {ExerciseGroupType, ExerciseSetScheme, ProgramDayDetail, ProgramExerciseDetail, ProgramFrequency, ProgramStatus} from '../../programs/types';
+import {ExerciseGroupType, ExerciseSetScheme, ProgramDayDetail, ProgramExerciseDetail, ProgramFrequency, ProgramStatus, TrainingProgramRecord} from '../../programs/types';
 import {programDayWorkoutInput} from '../../programs/workoutSnapshot';
 import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
 import {WorkoutApplicationService} from '../../workout/WorkoutApplicationService';
@@ -35,13 +35,39 @@ function CreateProgramDialog({open, onClose}: {open: boolean; onClose: () => voi
 }
 
 export function ProgramListPage() {
-    const [status, setStatus] = useState<ProgramStatus>('active');
+    type ProgramView = 'sessions' | ProgramStatus;
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [view, setView] = useState<ProgramView>(searchParams.get('view') === 'sessions' ? 'sessions' : 'active');
     const [open, setOpen] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     useEffect(() => { void programs.importLegacyPlans(); }, []);
     const items = useLiveQuery(() => programs.list(), []) ?? [];
-    const filtered = items.filter((entry) => entry.status === status);
-    return <Layout title="Programs" hideBack><ScreenContainer><SectionHeader eyebrow="PROGRAMS" title="Structure your progress" action={<PrimaryButton startIcon={<Add/>} onClick={() => setOpen(true)}>Create</PrimaryButton>}/><Typography color="text.secondary" sx={{mt: -1, mb: 2}}>Build repeatable training days, then adjust every exercise whenever you need.</Typography><Tabs value={status} onChange={(_, value: ProgramStatus) => setStatus(value)} aria-label="Program status" variant="fullWidth" sx={{mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: '16px', px: 0.5}}><Tab value="active" label="Active"/><Tab value="draft" label="Drafts"/><Tab value="archived" label="Archived"/></Tabs>{filtered.length ? <Stack spacing={1.5}>{filtered.map((program) => <Card key={program.id} sx={program.status === 'active' ? {borderColor: 'rgba(83,199,183,.3)', background: 'radial-gradient(circle at 100% 0%, rgba(83,199,183,.11), transparent 42%), #101720'} : undefined}><CardContent><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}><Box><Typography variant="overline" color="primary.main">{statusLabel(program.status)}</Typography><Typography variant="h5" component="h2">{program.name}</Typography><Stack direction="row" gap={0.75} flexWrap="wrap" sx={{mt: 1.25}}><Chip label={`${program.weeklyFrequency} days/week`}/><Chip variant="outlined" label={`${program.defaultDurationMinutes} min/session`}/></Stack></Box><Chip label={statusLabel(program.status)} color={program.status === 'active' ? 'success' : 'default'}/></Stack></CardContent><CardActions sx={{px: 2, pb: 2, pt: 0, flexWrap: 'wrap', gap: 0.5}}><PrimaryButton onClick={() => navigate(`/programs/${program.id}`)}>Open</PrimaryButton><Button startIcon={<ContentCopy/>} onClick={() => programs.duplicate(program.id)}>Duplicate</Button>{program.status !== 'active' && program.status !== 'archived' && <Button startIcon={<PlayArrow/>} onClick={() => programs.activate(program.id)}>Activate</Button>}{program.status !== 'archived' && <Button startIcon={<Archive/>} onClick={() => programs.archive(program.id)}>Archive</Button>}</CardActions></Card>)}</Stack> : <StatePanel title={`No ${statusLabel(status).toLowerCase()} program`} description="Create a manual two- or three-day structure, then add your exercises." action={<PrimaryButton onClick={() => setOpen(true)}>Create a program</PrimaryButton>}/>}<CreateProgramDialog open={open} onClose={() => setOpen(false)}/></ScreenContainer></Layout>;
+    const filtered = view === 'sessions'
+        ? items.filter((entry) => entry.weeklyFrequency === 1 && entry.status !== 'archived')
+        : view === 'archived'
+            ? items.filter((entry) => entry.status === 'archived')
+            : items.filter((entry) => entry.weeklyFrequency > 1 && entry.status === view);
+    const selectView = (next: ProgramView) => {
+        setView(next);
+        setSearchParams(next === 'sessions' ? {view: 'sessions'} : {});
+    };
+    const startSavedSession = async (program: TrainingProgramRecord) => {
+        setError('');
+        const detail = await programs.get(program.id);
+        const day = detail?.days[0];
+        if (!detail || !day?.exercises.length) { setError('This saved session has no exercises yet.'); return; }
+        try {
+            await workout.startProgramDay(programDayWorkoutInput(detail.name, day));
+            navigate('/workout/active');
+        } catch {
+            setError('A workout is already in progress. Resume or finish it from the workout bar before starting this saved session.');
+        }
+    };
+    const empty = view === 'sessions'
+        ? {title: 'No saved session', description: 'Generate a session and choose “Save to My sessions” to find it here.', action: <PrimaryButton onClick={() => navigate('/programs/generate')}>Generate a session</PrimaryButton>}
+        : {title: `No ${statusLabel(view).toLowerCase()} program`, description: 'Create a repeatable two- or three-day structure, then add your exercises.', action: <PrimaryButton onClick={() => setOpen(true)}>Create a program</PrimaryButton>};
+    return <Layout title="Programs" hideBack><ScreenContainer><SectionHeader eyebrow="PROGRAMS & SESSIONS" title="Your training plans" action={<PrimaryButton startIcon={<Add/>} onClick={() => setOpen(true)}>Create program</PrimaryButton>}/><Typography color="text.secondary" sx={{mt: -1, mb: 2}}>Saved one-off sessions stay separate from weekly programs and can be restarted or edited at any time.</Typography>{error && <Alert severity="warning" sx={{mb: 2}}>{error}</Alert>}<Tabs value={view} onChange={(_, value: ProgramView) => selectView(value)} aria-label="Saved sessions and program status" variant="scrollable" allowScrollButtonsMobile sx={{mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: '16px', px: 0.5}}><Tab value="sessions" label="Saved sessions" icon={<BookmarkAdded/>} iconPosition="start"/><Tab value="active" label="Active programs"/><Tab value="draft" label="Draft programs"/><Tab value="archived" label="Archived"/></Tabs>{filtered.length ? <Stack spacing={1.5}>{filtered.map((program) => { const savedSession = program.weeklyFrequency === 1; const archived = program.status === 'archived'; return <Card key={program.id} sx={!archived && (savedSession || program.status === 'active') ? {borderColor: 'rgba(83,199,183,.3)', background: 'radial-gradient(circle at 100% 0%, rgba(83,199,183,.11), transparent 42%), #101720'} : undefined}><CardContent><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}><Box><Typography variant="overline" color="primary.main">{archived ? 'ARCHIVED' : savedSession ? 'SAVED SESSION' : statusLabel(program.status)}</Typography><Typography variant="h5" component="h2">{program.name}</Typography><Stack direction="row" gap={0.75} flexWrap="wrap" sx={{mt: 1.25}}>{savedSession ? <Chip label="Reusable session"/> : <Chip label={`${program.weeklyFrequency} days/week`}/>}<Chip variant="outlined" label={`${program.defaultDurationMinutes} min`}/></Stack></Box><Chip label={archived ? 'Archived' : savedSession ? 'Saved' : statusLabel(program.status)} color={!archived && (savedSession || program.status === 'active') ? 'success' : 'default'}/></Stack></CardContent><CardActions sx={{px: 2, pb: 2, pt: 0, flexWrap: 'wrap', gap: 0.5}}>{savedSession && !archived && <PrimaryButton startIcon={<PlayArrow/>} onClick={() => void startSavedSession(program)}>Start</PrimaryButton>}<Button onClick={() => navigate(`/programs/${program.id}`)}>Open & edit</Button><Button startIcon={<ContentCopy/>} onClick={() => programs.duplicate(program.id)}>Duplicate</Button>{!savedSession && program.status !== 'active' && !archived && <Button startIcon={<PlayArrow/>} onClick={() => programs.activate(program.id)}>Activate</Button>}{!archived && <Button startIcon={<Archive/>} onClick={() => programs.archive(program.id)}>Archive</Button>}</CardActions></Card>; })}</Stack> : <StatePanel title={empty.title} description={empty.description} action={empty.action}/>}<CreateProgramDialog open={open} onClose={() => setOpen(false)}/></ScreenContainer></Layout>;
 }
 
 function OpenAddExerciseDialog({day, open, onClose}: {day: ProgramDayDetail; open: boolean; onClose: () => void}) {
@@ -96,7 +122,9 @@ export function ProgramDetailPage() {
     const balance = useMemo(() => program ? weeklyBalance(program.days) : undefined, [program]);
     if (program === undefined) return <Layout title="Program" hideNav><ScreenContainer><Typography>Loading…</Typography></ScreenContainer></Layout>;
     if (!program) return <Layout title="Program" hideNav><ScreenContainer><StatePanel title="Program not found" description="It may have been archived or deleted." action={<Button onClick={() => navigate('/programs')}>Back</Button>}/></ScreenContainer></Layout>;
+    const savedSession = program.weeklyFrequency === 1;
     const activate = async () => { try { setError(''); await programs.activate(program.id); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not activate program.'); } };
     const start = async () => { const day = program.days[program.currentDayIndex % program.days.length]; if (!day?.exercises.length) { setError('The next day contains no exercises.'); return; } try { await workout.startProgramDay(programDayWorkoutInput(program.name, day)); navigate('/workout/active'); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not start workout.'); } };
-    return <Layout title={program.name} hideNav><ScreenContainer><SectionHeader eyebrow={statusLabel(program.status).toUpperCase()} title={program.name} action={<Stack direction="row" gap={1}>{program.status !== 'active' && <SecondaryButton onClick={activate}>Activate</SecondaryButton>}{program.status === 'active' && <PrimaryButton startIcon={<FitnessCenter/>} onClick={start}>Start {program.days[program.currentDayIndex % program.days.length]?.name}</PrimaryButton>}</Stack>}/>{error && <Alert severity="error" sx={{mb: 2}}>{error}</Alert>}<Stack direction="row" gap={1} flexWrap="wrap" sx={{mb: 2}}><Chip label={`${program.weeklyFrequency} days/week`}/><Chip label={`${program.defaultDurationMinutes} min`}/><Chip label={`${Object.keys(balance?.patterns ?? {}).length} movement patterns covered`}/></Stack>{balance?.warnings.map((warning) => <Alert key={warning} severity="info" sx={{mb: 1}}>{warning}</Alert>)}<Stack spacing={2} sx={{mt: 2}}>{program.days.map((day) => <DayEditor key={day.id} day={day}/>)}</Stack><Divider sx={{my: 3}}/><Stack direction="row" justifyContent="space-between"><Button onClick={() => navigate('/programs')}>Back to programs</Button><Button color="error" startIcon={<Archive/>} onClick={async () => { await programs.archive(program.id); navigate('/programs'); }}>Archive</Button></Stack></ScreenContainer></Layout>;
+    const archived = program.status === 'archived';
+    return <Layout title={program.name} hideNav><ScreenContainer><SectionHeader eyebrow={archived ? 'ARCHIVED' : savedSession ? 'SAVED SESSION' : statusLabel(program.status).toUpperCase()} title={program.name} action={<Stack direction="row" gap={1}>{!savedSession && !archived && program.status !== 'active' && <SecondaryButton onClick={activate}>Activate</SecondaryButton>}{!archived && (savedSession || program.status === 'active') && <PrimaryButton startIcon={<FitnessCenter/>} onClick={start}>Start {savedSession ? 'session' : program.days[program.currentDayIndex % program.days.length]?.name}</PrimaryButton>}</Stack>}/>{error && <Alert severity="error" sx={{mb: 2}}>{error}</Alert>}<Stack direction="row" gap={1} flexWrap="wrap" sx={{mb: 2}}><Chip label={savedSession ? 'Reusable session' : `${program.weeklyFrequency} days/week`}/><Chip label={`${program.defaultDurationMinutes} min`}/><Chip label={`${Object.keys(balance?.patterns ?? {}).length} movement patterns covered`}/></Stack>{balance?.warnings.map((warning) => <Alert key={warning} severity="info" sx={{mb: 1}}>{warning}</Alert>)}<Stack spacing={2} sx={{mt: 2}}>{program.days.map((day) => <DayEditor key={day.id} day={day}/>)}</Stack><Divider sx={{my: 3}}/><Stack direction="row" justifyContent="space-between"><Button onClick={() => navigate(savedSession && !archived ? '/programs?view=sessions' : '/programs')}>Back to {savedSession && !archived ? 'saved sessions' : 'programs'}</Button>{!archived && <Button color="error" startIcon={<Archive/>} onClick={async () => { await programs.archive(program.id); navigate(savedSession ? '/programs?view=sessions' : '/programs'); }}>Archive</Button>}</Stack></ScreenContainer></Layout>;
 }

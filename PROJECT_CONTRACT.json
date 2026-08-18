@@ -114,6 +114,10 @@
     "id": "90",
     "defaultMode": "DIAGNOSE",
     "fixRequiresExplicitMode": true,
+    "explicitFixAuthorizations": [
+      "MODE=FIX",
+      "Go"
+    ],
     "advancesCheckpoint": false
   }
 }

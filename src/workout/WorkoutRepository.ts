@@ -8,6 +8,7 @@ export interface WorkoutRepository {
     completeSet(input: CompleteSetInput): Promise<ActiveWorkoutSnapshot>;
     switchExercise(sessionId: string, sessionExerciseId: string): Promise<ActiveWorkoutSnapshot>;
     saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot>;
+    saveDefaultReps(sessionId: string, sessionExerciseId: string, repetitions: number): Promise<ActiveWorkoutSnapshot>;
     exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined>;
     undoSet(sessionId: string, setId: string, operationId: string): Promise<ActiveWorkoutSnapshot>;
     pause(sessionId: string): Promise<ActiveWorkoutSnapshot>;

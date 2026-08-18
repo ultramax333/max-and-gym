@@ -1,9 +1,9 @@
 import {ExercisePrescriptionRecord, ProgramDurationMinutes, ProgramFrequency} from '../programs/types';
 
-export const GENERATOR_VERSION = 'deterministic-v5';
+export const GENERATOR_VERSION = 'deterministic-v6';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 
-export type GoalBlend = 'strength' | 'balanced' | 'hypertrophy';
+export type GoalBlend = 'strength' | 'balanced' | 'hypertrophy' | 'endurance';
 export type VariationLevel = 'low' | 'moderate' | 'high';
 export type GeneratorRole = 'knee-dominant' | 'hinge' | 'horizontal-push' | 'vertical-push' | 'vertical-pull' | 'supported-pull' | 'posterior-assistance' | 'leg-assistance' | 'accessory';
 
@@ -14,6 +14,7 @@ export interface GeneratorCandidate {
     equipmentTags: string[];
     primaryMuscles: string[];
     secondaryMuscles: string[];
+    generatorFocusZones?: string[];
     positionTags: string[];
     transitionTags: string[];
     impactTags: string[];
