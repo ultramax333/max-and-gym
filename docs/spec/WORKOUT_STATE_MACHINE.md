@@ -121,7 +121,20 @@ On failure:
 - error code recorded;
 - Retry creates/reuses correct operation policy.
 
-## 7. Finish transaction
+## 7. Working-set trade transaction
+
+An active or paused session may add one working set to its current exercise while preserving the planned session target:
+
+1. validate the current exercise and idempotency operation ID;
+2. find an untouched pending exercise with more than two working sets;
+3. choose the donor whose set-time estimate is closest to the added set;
+4. copy the current exercise's final working-set target before any drop set;
+5. remove only the donor's final unstarted working set;
+6. update both prescription snapshots and commit one `adjust-sets` operation.
+
+Completed, undone, started, warm-up and drop sets are never donated. If no safe donor exists, the transaction rolls back and the user keeps the original plan.
+
+## 8. Finish transaction
 
 1. reject duplicate finish operation by returning prior result;
 2. validate active/paused ownership;

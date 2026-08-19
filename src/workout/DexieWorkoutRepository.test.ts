@@ -85,6 +85,35 @@ describe('DexieWorkoutRepository', () => {
         expect(await db.workoutOperation.where('kind').equals('replace-exercise').count()).toBe(1);
     });
 
+    it('trades one untouched future working set for an extra current set idempotently', async () => {
+        const started = await repository.startProgramDay({name: 'Flexible session', plannedDurationSeconds: 2700, exercises: [
+            {exerciseId: 'curl', exerciseName: 'Curl', prescriptionSnapshot: '3 × 8–12 · rest 90 s', workingSets: 3, repsMin: 8, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 90},
+            {exerciseId: 'extension', exerciseName: 'Extension', prescriptionSnapshot: '3 × 8–12 · rest 90 s', workingSets: 3, repsMin: 8, repsMax: 12, targetLoadKg: 10, targetRir: 2, restSeconds: 90},
+            {exerciseId: 'hammer', exerciseName: 'Hammer Curl', prescriptionSnapshot: '2 × 10–15 · rest 60 s', workingSets: 2, repsMin: 10, repsMax: 15, targetLoadKg: 10, targetRir: 2, restSeconds: 60},
+        ]}, 'flex-start');
+        const operation = {sessionId: started.session.id, currentSessionExerciseId: started.exercises[0].id, operationId: 'trade-set'};
+
+        const adjusted = await repository.adjustWorkingSets(operation);
+        const replay = await repository.adjustWorkingSets(operation);
+
+        expect(adjusted.snapshot.sets).toHaveLength(started.sets.length);
+        expect(adjusted.snapshot.sets.filter((entry) => entry.sessionExerciseId === started.exercises[0].id)).toHaveLength(4);
+        expect(adjusted.snapshot.sets.filter((entry) => entry.sessionExerciseId === started.exercises[1].id)).toHaveLength(2);
+        expect(adjusted.snapshot.session.plannedDurationSeconds).toBe(2700);
+        expect(adjusted).toMatchObject({addedExerciseName: 'Curl', reducedExerciseName: 'Extension'});
+        expect(replay.snapshot.sets).toHaveLength(started.sets.length);
+        expect(await db.workoutOperation.where('kind').equals('adjust-sets').count()).toBe(1);
+    });
+
+    it('refuses a set trade when no untouched exercise can remain at two working sets', async () => {
+        const started = await repository.startProgramDay({name: 'Short session', exercises: [
+            {exerciseId: 'curl', exerciseName: 'Curl', prescriptionSnapshot: '2 × 10', workingSets: 2, repsMin: 10, repsMax: 10, targetLoadKg: 12, targetRir: 2, restSeconds: 60},
+            {exerciseId: 'extension', exerciseName: 'Extension', prescriptionSnapshot: '2 × 10', workingSets: 2, repsMin: 10, repsMax: 10, targetLoadKg: 10, targetRir: 2, restSeconds: 60},
+        ]}, 'short-start');
+        await expect(repository.adjustWorkingSets({sessionId: started.session.id, currentSessionExerciseId: started.exercises[0].id, operationId: 'unsafe-trade'})).rejects.toMatchObject({code: 'DB_INVARIANT_VIOLATION'});
+        expect((await repository.get(started.session.id))?.sets).toHaveLength(4);
+    });
+
     it('refuses to rewrite an exercise after its first set has been logged', async () => {
         const started = await repository.startSample('replace-after-set-start');
         await repository.completeSet({sessionId: started.session.id, setId: started.sets[0].id, operationId: 'first-set', actualLoadKg: 16, actualReps: 8});

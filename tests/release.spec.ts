@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v7 / 5', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v8 / 6', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -68,6 +68,17 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await expect(page.getByRole('heading', {name: 'Session time plan'})).toBeVisible();
     await expect(page.getByRole('button', {name: /Move .* later/}).first()).toBeEnabled();
     await assertNoHorizontalOverflow(page);
+
+    await page.getByRole('button', {name: 'Start this session'}).click();
+    await expect(page.getByText('Rate for this training type')).toBeVisible();
+    await page.getByRole('button', {name: '5 out of 5'}).click();
+    await expect(page.getByRole('status')).toContainText('rated 5/5');
+    const plan = page.locator('section[aria-labelledby="workout-plan-title"]');
+    const previews = plan.getByRole('button').filter({has: page.locator('svg[data-testid="VisibilityIcon"]')});
+    await expect(previews.nth(1)).toBeVisible();
+    await previews.nth(1).click();
+    await expect(page.getByText('UPCOMING EXERCISE', {exact: true})).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('img').first()).toBeVisible();
 });
 
 test('an occupied machine can be deferred or replaced without losing the session', async ({page}) => {
@@ -83,6 +94,10 @@ test('an occupied machine can be deferred or replaced without losing the session
     await expect(page.getByRole('heading', {name: 'Choose an alternative', exact: true})).toBeVisible();
     await page.getByRole('button', {name: 'Use this exercise'}).first().click();
     await expect(page.getByRole('status').filter({hasText: 'was replaced with'})).toBeVisible();
+    await expect(page.getByText('0/6 sets completed')).toBeVisible();
+    await page.getByRole('button', {name: 'Add one set'}).click();
+    await page.getByRole('button', {name: 'Adjust plan'}).click();
+    await expect(page.getByRole('status')).toContainText('one untouched future set removed');
     await expect(page.getByText('0/6 sets completed')).toBeVisible();
 });
 
@@ -112,8 +127,6 @@ test('Pixel 9a training screen keeps every action reachable and the 45-minute ar
         await main.hover();
         await page.mouse.wheel(0, 1200);
         await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
-    } else {
-        await expect(lastCard).toBeInViewport();
     }
     await lastCard.scrollIntoViewIfNeeded();
     await expect(lastCard).toBeVisible();

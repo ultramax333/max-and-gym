@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import reviewed from '../exerciseCatalog/reviewed-exercises.json';
-import {generateQuickSession, matchesQuickSessionZone, quickSessionReplacementCandidates} from './quickSession';
+import {generateQuickSession, matchesQuickSessionZone, primaryEquipment, quickSessionReplacementCandidates} from './quickSession';
 import {GENERATOR_VERSION, GeneratorCandidate, GeneratorInput, PROGRAM_SEED_VERSION} from './types';
 
 const candidates = reviewed as GeneratorCandidate[];
@@ -88,6 +88,34 @@ describe('quick session generator', () => {
             expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(45 * 60 * 0.9);
             expect(result.program.days[0].duration.total).toBeLessThanOrEqual(45 * 60 * 1.1);
         }
+    });
+
+    it('uses variable set counts and keeps equal equipment together', () => {
+        const result = generateQuickSession({...input(50), seed: 'variable-sets-and-equipment'}, candidates, 'arms');
+        expect(result.ok).toBe(true);
+        if (!result.ok) return;
+        const sets = result.program.days[0].exercises.map((entry) => entry.prescription.workingSets);
+        expect(new Set(sets).size).toBeGreaterThan(1);
+        expect(sets.every((count) => count >= 2 && count <= 5)).toBe(true);
+        const equipment = result.program.days[0].exercises.map((entry) => primaryEquipment(entry.equipmentTags));
+        for (const group of new Set(equipment)) {
+            const positions = equipment.map((entry, index) => entry === group ? index : -1).filter((index) => index >= 0);
+            expect(Math.max(...positions) - Math.min(...positions) + 1).toBe(positions.length);
+        }
+    });
+
+    it('uses a contextual rating to rank and slightly extend a liked exercise prescription', () => {
+        const base = generateQuickSession({...input(45), seed: 'rating-context'}, candidates, 'arms');
+        expect(base.ok).toBe(true);
+        if (!base.ok) return;
+        const liked = base.program.days[0].exercises[0].exerciseId;
+        const rated = generateQuickSession({...input(45), seed: 'rating-context', contextualExerciseRatings: [{exerciseId: liked, rating: 5}]}, candidates, 'arms');
+        expect(rated.ok).toBe(true);
+        if (!rated.ok) return;
+        const selected = rated.program.days[0].exercises.find((entry) => entry.exerciseId === liked);
+        expect(selected).toBeDefined();
+        expect(selected?.reasons.join(' ')).toContain('Rated 5/5');
+        expect(selected?.prescription.repsMax).toBeGreaterThan(base.program.days[0].exercises.find((entry) => entry.exerciseId === liked)!.prescription.repsMax);
     });
 
     it('does not generate or offer bodyweight exercises when body only is unchecked', () => {

@@ -66,9 +66,32 @@ function roleFor(candidate: GeneratorCandidate): GeneratorRole {
     return 'accessory';
 }
 
-function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorRole, goal: GeneratorInput['goal'], index: number, sessionRestSeconds?: number) {
+export function primaryEquipment(equipmentTags: string[] | undefined): string {
+    return equipmentTags?.find((tag) => tag.trim()) ?? 'body only';
+}
+
+export function groupExercisesByEquipment(exercises: GeneratedExercise[]): GeneratedExercise[] {
+    const groupOrder = new Map<string, number>();
+    for (const exercise of exercises) {
+        const equipment = primaryEquipment(exercise.equipmentTags);
+        if (!groupOrder.has(equipment)) groupOrder.set(equipment, groupOrder.size);
+    }
+    return exercises.map((exercise, index) => ({exercise, index})).sort((left, right) => {
+        const groupDifference = (groupOrder.get(primaryEquipment(left.exercise.equipmentTags)) ?? 0) - (groupOrder.get(primaryEquipment(right.exercise.equipmentTags)) ?? 0);
+        return groupDifference || left.index - right.index;
+    }).map(({exercise}) => exercise);
+}
+
+function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorRole, goal: GeneratorInput['goal'], index: number, sessionRestSeconds?: number, contextualRating?: number) {
     const primary = ['horizontal-push', 'vertical-push', 'supported-pull', 'vertical-pull', 'leg-assistance', 'posterior-assistance'].includes(role);
-    const workingSets = duration <= 20 ? 2 : goal === 'strength' && primary && duration >= 50 ? 4 : 3;
+    let workingSets: number;
+    if (duration <= 20) workingSets = 2;
+    else if (goal === 'strength') workingSets = primary ? (duration >= 50 ? 5 : 4) : (index % 2 === 0 ? 3 : 2);
+    else if (goal === 'endurance') workingSets = primary ? (duration >= 45 ? 4 : 3) : (duration >= 40 && index % 2 === 0 ? 4 : 3);
+    else if (goal === 'hypertrophy') workingSets = primary ? (duration >= 35 ? 4 : 3) : (index % 2 === 0 ? 3 : 2);
+    else workingSets = primary ? (duration >= 45 ? 4 : 3) : (index % 2 === 0 ? 3 : 2);
+    if (contextualRating === 5 && duration >= 30) workingSets = Math.min(5, workingSets + 1);
+    if (contextualRating !== undefined && contextualRating <= 2) workingSets = Math.max(2, workingSets - 1);
     const profile = goal === 'strength'
         ? {repsMin: primary ? 4 : 6, repsMax: primary ? 6 : 8, restSeconds: primary ? 180 : 120}
         : goal === 'endurance'
@@ -76,7 +99,8 @@ function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorR
             : goal === 'balanced'
                 ? {repsMin: primary ? 6 : 8, repsMax: primary ? 10 : 12, restSeconds: primary ? 120 : 75}
                 : {repsMin: primary ? 8 : 10, repsMax: primary ? 12 : 15, restSeconds: primary ? 90 : 60};
-    return {id: `quick:${duration}:${goal}:${index}`, workingSets, repsMin: profile.repsMin, repsMax: profile.repsMax, targetRir: 2, restSeconds: sessionRestSeconds ?? profile.restSeconds, loadReferenceKg: 0};
+    const optionalRepIncrease = contextualRating !== undefined && contextualRating >= 4 && goal !== 'strength' ? 1 : 0;
+    return {id: `quick:${duration}:${goal}:${index}`, workingSets, repsMin: profile.repsMin, repsMax: profile.repsMax + optionalRepIncrease, targetRir: 2, restSeconds: sessionRestSeconds ?? profile.restSeconds, loadReferenceKg: 0};
 }
 
 function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: ProgramDurationMinutes) {
@@ -108,8 +132,9 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const secondaryScore = candidate.secondaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle)).length;
         const rotationScore = parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff * 18;
         const recentPenalty = input.recentExerciseIds?.includes(candidate.id) ? 45 : 0;
-        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore - recentPenalty;
-        return [{candidate, role, score, targetScore}];
+        const contextualRating = input.contextualExerciseRatings?.find((entry) => entry.exerciseId === candidate.id)?.rating;
+        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore - recentPenalty + (contextualRating === undefined ? 0 : (contextualRating - 3) * 12);
+        return [{candidate, role, score, targetScore, contextualRating}];
     }).sort((a, b) => b.targetScore - a.targetScore || b.score - a.score || a.candidate.id.localeCompare(b.candidate.id));
 
     const muscleCoverage: typeof candidates = [];
@@ -136,29 +161,30 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         if (exercises.length >= 10) break;
         if (exercises.length >= minimumExercises && quickSessionDuration(exercises, input.durationMinutes).total >= lowerBound) break;
         const index = exercises.length;
-        const prescription = exercisePrescription(input.durationMinutes, entry.role, input.goal, index, input.sessionRestSeconds);
+        const prescription = exercisePrescription(input.durationMinutes, entry.role, input.goal, index, input.sessionRestSeconds, entry.contextualRating);
         const primaryZoneMatch = entry.candidate.primaryMuscles.some((muscle) => zoneDefinition.muscles.includes(muscle));
         const reasons = [primaryZoneMatch || zoneDefinition.muscles.length === 0
             ? `Targets ${zoneDefinition.label.toLowerCase()}.`
-            : `Curated for meaningful ${zoneDefinition.label.toLowerCase()} involvement; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, 'Fits the selected time budget, including rest, and available equipment.', ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : [])];
-        const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && other.targetScore > 0).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
+            : `Curated for meaningful ${zoneDefinition.label.toLowerCase()} involvement; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : [])];
+        const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], equipmentTags: [...entry.candidate.equipmentTags], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && other.targetScore > 0).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
         const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
         if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
         exercises.push(exercise);
         selections.push({exerciseId: entry.candidate.id, role: entry.role, score: entry.score, reasons});
     }
     if (exercises.length < minimumExercises) return {ok: false, code: 'NO_VALID_CANDIDATE', message: `Not enough eligible exercises for a ${input.durationMinutes}-minute ${zoneDefinition.label.toLowerCase()} session. Adjust equipment or exercise exclusions.`, exclusions};
-    const duration = quickSessionDuration(exercises, input.durationMinutes);
+    const groupedExercises = groupExercisesByEquipment(exercises);
+    const duration = quickSessionDuration(groupedExercises, input.durationMinutes);
     if (duration.total < lowerBound || duration.total > upperBound) return {ok: false, code: 'VALIDATION_FAILED', message: `Could not build a coherent ${input.durationMinutes}-minute session with the selected equipment.`, exclusions};
     const goalLabel = input.goal === 'strength' ? 'Strength' : input.goal === 'endurance' ? 'Endurance' : input.goal === 'hypertrophy' ? 'Hypertrophy' : 'Balanced';
-    const day = {name: `${zoneDefinition.label} session`, emphasis: `${goalLabel} · focused ${zoneDefinition.label.toLowerCase()} training`, targetDurationMinutes: input.durationMinutes, warmup: [], conditioning: {kind: 'low-impact' as const, name: 'No finisher added', seconds: 0}, exercises, duration, warnings: []};
+    const day = {name: `${zoneDefinition.label} session`, emphasis: `${goalLabel} · focused ${zoneDefinition.label.toLowerCase()} training`, targetDurationMinutes: input.durationMinutes, warmup: [], conditioning: {kind: 'low-impact' as const, name: 'No finisher added', seconds: 0}, exercises: groupedExercises, duration, warnings: []};
     const weeklyPatterns: Record<string, number> = {};
     const weeklyMuscles: Record<string, number> = {};
-    for (const exercise of exercises) {
+    for (const exercise of groupedExercises) {
         weeklyPatterns[exercise.movementPattern] = (weeklyPatterns[exercise.movementPattern] ?? 0) + exercise.prescription.workingSets;
         for (const muscle of exercise.primaryMuscles) weeklyMuscles[muscle] = (weeklyMuscles[muscle] ?? 0) + exercise.prescription.workingSets;
     }
     const explanation = {normalizedInput: input, selections, exclusions, warnings: [], weeklyPatterns, weeklyMuscles};
-    const program: GeneratedProgram = {name: `${zoneDefinition.label} · ${goalLabel} · ${input.durationMinutes} min`, frequency: 1, durationMinutes: input.durationMinutes, seed: input.seed, generatorVersion: input.generatorVersion, sessionRestSeconds: input.sessionRestSeconds, identityHash: stableHash(JSON.stringify({input, day, explanation})), days: [day], explanation};
+    const program: GeneratedProgram = {name: `${zoneDefinition.label} · ${goalLabel} · ${input.durationMinutes} min`, frequency: 1, durationMinutes: input.durationMinutes, seed: input.seed, generatorVersion: input.generatorVersion, sessionRestSeconds: input.sessionRestSeconds, sessionContext: {zone, goal: input.goal}, identityHash: stableHash(JSON.stringify({input, day, explanation})), days: [day], explanation};
     return {ok: true, program};
 }

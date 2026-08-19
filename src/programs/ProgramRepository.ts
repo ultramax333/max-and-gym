@@ -50,12 +50,12 @@ export class ProgramRepository {
 
     async createGenerated(generated: GeneratedProgram): Promise<ProgramDetail> {
         const created = await this.create({name: generated.name, weeklyFrequency: generated.frequency, defaultDurationMinutes: generated.durationMinutes});
-        await this.db.trainingProgram.update(created.id, {source: 'generator', generatorVersion: generated.generatorVersion, generatorSeed: generated.seed, generatorInputSnapshot: JSON.stringify(generated.explanation.normalizedInput), generatorExplanationSnapshot: JSON.stringify(generated.explanation), generatorProgramSnapshot: JSON.stringify(generated)});
+        await this.db.trainingProgram.update(created.id, {source: 'generator', trainingContext: generated.sessionContext, generatorVersion: generated.generatorVersion, generatorSeed: generated.seed, generatorInputSnapshot: JSON.stringify(generated.explanation.normalizedInput), generatorExplanationSnapshot: JSON.stringify(generated.explanation), generatorProgramSnapshot: JSON.stringify(generated)});
         for (const [dayIndex, generatedDay] of generated.days.entries()) {
             const day = created.days[dayIndex];
             await this.updateDay(day.id, {name: generatedDay.name, emphasis: generatedDay.emphasis, warmupSeconds: generatedDay.duration.warmup, conditioningSeconds: generatedDay.duration.conditioning, notes: generatedDay.conditioning.name});
             for (const generatedExercise of generatedDay.exercises) {
-                const added = await this.addExercise({dayId: day.id, exerciseId: generatedExercise.exerciseId, exerciseName: generatedExercise.exerciseName, movementPattern: generatedExercise.movementPattern, primaryMuscles: generatedExercise.primaryMuscles, defaultRestSeconds: generatedExercise.prescription.restSeconds, defaultReps: {min: generatedExercise.prescription.repsMin, max: generatedExercise.prescription.repsMax}});
+                const added = await this.addExercise({dayId: day.id, exerciseId: generatedExercise.exerciseId, exerciseName: generatedExercise.exerciseName, movementPattern: generatedExercise.movementPattern, primaryMuscles: generatedExercise.primaryMuscles, equipmentTags: generatedExercise.equipmentTags, defaultRestSeconds: generatedExercise.prescription.restSeconds, defaultReps: {min: generatedExercise.prescription.repsMin, max: generatedExercise.prescription.repsMax}});
                 const {id: ignoredPrescriptionId, ...prescription} = generatedExercise.prescription;
                 void ignoredPrescriptionId;
                 await this.updatePrescription(added.prescriptionId, prescription);
@@ -76,7 +76,7 @@ export class ProgramRepository {
                 for (const [index, currentAccessory] of currentAccessories.entries()) {
                     const next = nextAccessories[index];
                     if (!next) continue;
-                    await this.db.programExercise.update(currentAccessory.id, {exerciseId: next.exerciseId, exerciseNameSnapshot: next.exerciseName, movementPatternSnapshot: next.movementPattern, primaryMusclesSnapshot: next.primaryMuscles, alternativeExerciseIds: next.alternativeExerciseIds, generatorRoleSnapshot: next.role});
+                    await this.db.programExercise.update(currentAccessory.id, {exerciseId: next.exerciseId, exerciseNameSnapshot: next.exerciseName, movementPatternSnapshot: next.movementPattern, primaryMusclesSnapshot: next.primaryMuscles, equipmentTagsSnapshot: next.equipmentTags, alternativeExerciseIds: next.alternativeExerciseIds, generatorRoleSnapshot: next.role});
                     const {id: ignored, ...prescription} = next.prescription;
                     void ignored;
                     await this.db.exercisePrescription.update(currentAccessory.prescriptionId, prescription);
@@ -104,7 +104,7 @@ export class ProgramRepository {
         const count = await this.db.programExercise.where('programDayId').equals(day.id).count();
         const prescription: ExercisePrescriptionRecord = {id: prescriptionId, workingSets: 3, repsMin: input.defaultReps.min, repsMax: input.defaultReps.max, targetRir: 2, restSeconds: input.defaultRestSeconds, loadReferenceKg: 0};
         const progressionRule: ProgressionRuleRecord = {id: progressionRuleId, kind: 'double-progression', description: 'Increase the load after completing all sets within the rep range.', requiresApproval: true};
-        const exercise: ProgramExerciseRecord = {id, programDayId: day.id, exerciseId: input.exerciseId, exerciseNameSnapshot: input.exerciseName, movementPatternSnapshot: input.movementPattern, primaryMusclesSnapshot: input.primaryMuscles, sequenceIndex: count, role: count < 2 ? 'primary' : 'secondary', groupType: 'single', groupSequenceIndex: 0, locked: false, alternativeExerciseIds: [], prescriptionId, progressionRuleId, notes: ''};
+        const exercise: ProgramExerciseRecord = {id, programDayId: day.id, exerciseId: input.exerciseId, exerciseNameSnapshot: input.exerciseName, movementPatternSnapshot: input.movementPattern, primaryMusclesSnapshot: input.primaryMuscles, equipmentTagsSnapshot: input.equipmentTags, sequenceIndex: count, role: count < 2 ? 'primary' : 'secondary', groupType: 'single', groupSequenceIndex: 0, locked: false, alternativeExerciseIds: [], prescriptionId, progressionRuleId, notes: ''};
         await this.db.transaction('rw', [this.db.programExercise, this.db.exercisePrescription, this.db.progressionRule, this.db.trainingProgram], async () => {
             await this.db.exercisePrescription.add(prescription);
             await this.db.progressionRule.add(progressionRule);

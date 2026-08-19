@@ -22,6 +22,7 @@ export interface TrainingProgramRecord {
     generatorInputSnapshot?: string;
     generatorExplanationSnapshot?: string;
     generatorProgramSnapshot?: string;
+    trainingContext?: {zone: string; goal: string};
 }
 
 export interface ProgramDayRecord {
@@ -43,6 +44,7 @@ export interface ProgramExerciseRecord {
     exerciseNameSnapshot: string;
     movementPatternSnapshot: string;
     primaryMusclesSnapshot: string[];
+    equipmentTagsSnapshot?: string[];
     sequenceIndex: number;
     role: ExerciseRole;
     generatorRoleSnapshot?: string;
@@ -103,6 +105,7 @@ export interface AddProgramExerciseInput {
     exerciseName: string;
     movementPattern: string;
     primaryMuscles: string[];
+    equipmentTags?: string[];
     defaultRestSeconds: number;
     defaultReps: {min: number; max: number};
 }

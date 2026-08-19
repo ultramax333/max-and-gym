@@ -24,7 +24,7 @@ const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.met
 const appVersion = process.env.npm_package_version ?? packageJson.version;
 const isAndroidBuild = process.env.MAX_GYM_TARGET === 'android';
 const githubPagesBase = '/max-and-gym/';
-const cacheVersion = '3';
+const cacheVersion = '6';
 const gitSha = process.env.GITHUB_SHA ?? (() => {
     try {
         return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {encoding: 'utf8'}).trim();
@@ -44,7 +44,14 @@ export default defineConfig({
         __BUILD_ENVIRONMENT__: JSON.stringify(isAndroidBuild ? 'android' : process.env.GITHUB_ACTIONS ? 'github-pages' : 'local'),
     },
     build: {
-        outDir: isAndroidBuild ? 'build-android' : 'build'
+        outDir: isAndroidBuild ? 'build-android' : 'build',
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('/node_modules/i18next/') || id.includes('/node_modules/react-i18next/')) return 'i18n-vendor';
+                },
+            },
+        },
     },
     plugins: [react(), VitePWA({
         disable: isAndroidBuild,
