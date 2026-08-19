@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
-import {Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SkipNext, SwapHoriz, Undo} from '@mui/icons-material';
+import {AddCircleOutline, Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SkipNext, Star, StarBorder, SwapHoriz, Undo, Visibility} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../../components/ui/UiPrimitives';
@@ -8,7 +8,9 @@ import {recordDiagnostic} from '../../diagnostics/service';
 import {ActiveWorkoutSnapshot, ExercisePerformanceSummary, SessionExerciseRecord} from '../../workout/types';
 import {useWorkoutService} from '../../workout/useWorkoutService';
 import {ExerciseMediaAsset, LibraryExercise} from '../../exerciseCatalog/types';
+import {ExerciseContextRatingRepository, ExerciseRatingContext} from '../../exerciseCatalog/ExerciseContextRatingRepository';
 import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
+import {db} from '../../db/db';
 import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
@@ -16,6 +18,8 @@ import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
 import {parseNonNegativeDecimal, shouldInitializeNumericDraft} from './numericInput';
 import {remainingRestSeconds} from './restTimerDisplay';
 import {CompleteSetAction, ExerciseRail, MetricStepper, RestAction, WorkoutActionBar, WorkoutProgressHeader} from './ActiveWorkoutUi';
+
+const contextRatings = new ExerciseContextRatingRepository(db);
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -70,6 +74,11 @@ export function ActiveWorkoutPage() {
     const [planOpen, setPlanOpen] = useState(true);
     const [alternativesOpen, setAlternativesOpen] = useState(false);
     const [replacementOptions, setReplacementOptions] = useState<LibraryExercise[]>([]);
+    const [exerciseRating, setExerciseRating] = useState<number>(0);
+    const [previewExercise, setPreviewExercise] = useState<SessionExerciseRecord>();
+    const [previewDetails, setPreviewDetails] = useState<LibraryExercise>();
+    const [previewMedia, setPreviewMedia] = useState<ExerciseMediaAsset[]>([]);
+    const [setAdjustmentOpen, setSetAdjustmentOpen] = useState(false);
     const previousExerciseId = useRef<string>();
     const pendingExerciseChangeNotice = useRef<string>();
     const initializedSetId = useRef<string>();
@@ -157,6 +166,14 @@ export function ActiveWorkoutPage() {
     }, [catalog, currentExercise, service, snapshot?.session.id]);
 
     useEffect(() => {
+        let active = true;
+        const context = snapshot?.session.trainingContext as ExerciseRatingContext | undefined;
+        if (!currentExercise || !context) { setExerciseRating(0); return () => { active = false; }; }
+        void contextRatings.get(currentExercise.exerciseId, context).then((entry) => { if (active) setExerciseRating(entry?.rating ?? 0); });
+        return () => { active = false; };
+    }, [currentExercise, snapshot?.session.trainingContext]);
+
+    useEffect(() => {
         if (!currentExercise || !snapshot) return;
         const previous = previousExerciseId.current;
         previousExerciseId.current = currentExercise.id;
@@ -207,6 +224,7 @@ export function ActiveWorkoutPage() {
     const canSwitchExercise = unfinishedExercises.length > 1 && currentUnfinishedIndex >= 0;
     const currentExerciseSets = currentExercise ? snapshot.sets.filter((entry) => entry.sessionExerciseId === currentExercise.id) : [];
     const canReplaceCurrent = currentExerciseSets.every((entry) => entry.status !== 'completed' && !entry.completionOperationId && entry.actualLoadKg === undefined && entry.actualReps === undefined);
+    const canTradeSet = Boolean(currentExercise && snapshot.exercises.some((exercise) => exercise.id !== currentExercise.id && exercise.status === 'pending' && snapshot.sets.filter((set) => set.sessionExerciseId === exercise.id && (set.setKind ?? 'working') === 'working').length > 2));
 
     const switchToExercise = (exercise: SessionExerciseRecord) => {
         if (service) void perform(() => service.switchExercise(snapshot.session.id, exercise.id));
@@ -249,6 +267,7 @@ export function ActiveWorkoutPage() {
             sessionExerciseId: currentExercise.id,
             replacementExerciseId: replacement.id,
             replacementExerciseName: replacement.name,
+            replacementEquipmentTags: replacement.equipmentTags,
             alternativeExerciseIds: replacementOptions.filter((entry) => entry.id !== replacement.id).slice(0, 5).map((entry) => entry.id),
             reason: 'equipment-unavailable',
         }));
@@ -261,6 +280,47 @@ export function ActiveWorkoutPage() {
         if (!service || !currentSet || load === undefined || reps === undefined || !Number.isInteger(reps)) return;
         if (!restAlarmGateway.isNativeAndroid()) void prepareRestTimerAudio();
         void perform(() => service.completeSet({sessionId: snapshot.session.id, setId: currentSet.id, actualLoadKg: load, actualReps: reps, actualRir: rir}));
+    };
+    const rateCurrentExercise = async (value: number | null) => {
+        const context = snapshot.session.trainingContext as ExerciseRatingContext | undefined;
+        if (!currentExercise || !context || value === null || value < 1 || value > 5) return;
+        setBusy(true);
+        try {
+            await contextRatings.set(currentExercise.exerciseId, context, value as 1 | 2 | 3 | 4 | 5);
+            setExerciseRating(value);
+            setDefaultValueNotice(`${currentExercise.exerciseNameSnapshot} rated ${value}/5 for ${context.zone} · ${context.goal}. Future sessions will use this preference.`);
+        } catch {
+            setError('The rating could not be saved. Your workout is unchanged.');
+        } finally {
+            setBusy(false);
+        }
+    };
+    const openExercisePreview = async (exercise: SessionExerciseRecord) => {
+        if (!catalog) return;
+        setPreviewExercise(exercise);
+        setPreviewDetails(undefined);
+        setPreviewMedia([]);
+        try {
+            const [details, media] = await Promise.all([catalog.get(exercise.exerciseId), resolveWorkoutExerciseMedia(catalog, exercise.exerciseId, exercise.exerciseNameSnapshot)]);
+            setPreviewDetails(details);
+            setPreviewMedia(media);
+        } catch {
+            setError('The local exercise preview could not be opened.');
+        }
+    };
+    const addCurrentSet = async () => {
+        if (!service || !currentExercise) return;
+        setBusy(true);
+        try {
+            const result = await service.adjustWorkingSets(snapshot.session.id, currentExercise.id);
+            setSnapshot(result.snapshot);
+            setExerciseChangeNotice(`One set added to ${result.addedExerciseName}; one untouched future set removed from ${result.reducedExerciseName}. The session time target is unchanged.`);
+            setSetAdjustmentOpen(false);
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : 'The set plan could not be adjusted.');
+        } finally {
+            setBusy(false);
+        }
     };
 
     return <Layout title={snapshot.session.nameSnapshot} hideAppBar hideNav>
@@ -296,6 +356,13 @@ export function ActiveWorkoutPage() {
                         <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{mt: 0.75}}><Chip size="small" label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/><Chip size="small" variant="outlined" label={currentSet.setKind ?? 'working'}/></Stack>
                     </Box>
 
+                    {snapshot.session.trainingContext && <Paper sx={{p: 1.5, bgcolor: 'rgba(250,190,80,.06)'}}>
+                        <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'flex-start', sm: 'center'}} gap={1}>
+                            <Box><Typography fontWeight={750}>Rate for this training type</Typography><Typography variant="body2" color="text.secondary">{snapshot.session.trainingContext.zone} · {snapshot.session.trainingContext.goal}. This does not change ratings in another body area.</Typography></Box>
+                            <Stack direction="row" aria-label={`Rate ${currentExercise.exerciseNameSnapshot} out of 5 for this training type`}>{[1, 2, 3, 4, 5].map((value) => <IconButton key={value} aria-label={`${value} out of 5`} disabled={busy} onClick={() => void rateCurrentExercise(value)} sx={{width: 48, height: 48, color: value <= exerciseRating ? 'warning.main' : 'text.secondary'}}>{value <= exerciseRating ? <Star/> : <StarBorder/>}</IconButton>)}</Stack>
+                        </Stack>
+                    </Paper>}
+
                     <Paper sx={{p: 1.5, bgcolor: 'rgba(126,161,248,.07)', borderColor: 'rgba(126,161,248,.2)'}}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
                             <Box><Typography variant="caption" color="text.secondary">LAST SESSION</Typography>{previousPerformance ? <Typography fontWeight={750}>{previousPerformance.sets.map((set) => `${set.loadKg} kg × ${set.reps}`).join(' · ')}</Typography> : <Typography color="text.secondary">No previous performance</Typography>}</Box>
@@ -314,6 +381,7 @@ export function ActiveWorkoutPage() {
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={1} sx={{mt: 1.25}}>
                             <Button variant="outlined" startIcon={<SkipNext/>} disabled={busy || !canSwitchExercise} onClick={() => void deferCurrentExercise()}>Do later</Button>
                             <Button variant="outlined" startIcon={<SwapHoriz/>} disabled={busy || !canReplaceCurrent || !exerciseDetails} onClick={() => void openAlternatives()}>Choose alternative</Button>
+                            <Button variant="outlined" startIcon={<AddCircleOutline/>} disabled={busy || !canTradeSet} onClick={() => setSetAdjustmentOpen(true)}>Add one set</Button>
                         </Stack>
                         {!canReplaceCurrent && <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 1}}>An exercise with logged sets cannot be rewritten. Use Do later instead.</Typography>}
                     </Paper>
@@ -337,12 +405,14 @@ export function ActiveWorkoutPage() {
                 <Paper component="section" aria-labelledby="workout-plan-title" sx={{p: 1.5, position: 'relative'}}>
                     <Typography id="workout-plan-title" component="h2" variant="h6" sx={{minHeight: 48, display: 'flex', alignItems: 'center', pr: 6}}>Workout plan · {snapshot.exercises.length} exercises</Typography>
                     <IconButton aria-label={planOpen ? 'Hide workout plan' : 'Show workout plan'} onClick={() => setPlanOpen((open) => !open)} sx={{position: 'absolute', top: 8, right: 8}}><ExpandMore sx={{transform: planOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms'}}/></IconButton>
-                    <Collapse in={planOpen}><Stack divider={<Divider flexItem/>} sx={{mt: 1}}>{snapshot.exercises.map((exercise) => {
+                    <Collapse in={planOpen}><Stack sx={{mt: 1}}>{snapshot.exercises.map((exercise, exerciseIndex) => {
                         const exerciseSets = snapshot.sets.filter((entry) => entry.sessionExerciseId === exercise.id);
                         const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
                         const isCurrent = exercise.id === currentExercise?.id && !allSetsDone;
                         const canSwitch = !isCurrent && completedSets < exerciseSets.length;
-                        return <Stack key={exercise.id} direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1}}><Box minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Box><Stack direction="row" gap={1} alignItems="center" justifyContent="space-between"><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => switchToExercise(exercise)}>Switch here</Button>}</Stack></Stack>;
+                        const equipment = exercise.equipmentTagsSnapshot?.[0] ?? 'Equipment not specified';
+                        const previousEquipment = exerciseIndex > 0 ? snapshot.exercises[exerciseIndex - 1].equipmentTagsSnapshot?.[0] ?? 'Equipment not specified' : undefined;
+                        return <React.Fragment key={exercise.id}>{equipment !== previousEquipment && <Typography variant="overline" color="primary.main" sx={{pt: exerciseIndex ? 1.5 : 0.5, pb: 0.25, borderTop: exerciseIndex ? 1 : 0, borderColor: 'divider'}}>{equipment}</Typography>}<Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1, borderBottom: 1, borderColor: 'divider'}}><Button color="inherit" startIcon={<Visibility/>} onClick={() => void openExercisePreview(exercise)} sx={{justifyContent: 'flex-start', textAlign: 'left', minHeight: 48, minWidth: 0}}><Box minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Box></Button><Stack direction="row" gap={1} alignItems="center" justifyContent="space-between"><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => switchToExercise(exercise)}>Switch here</Button>}</Stack></Stack></React.Fragment>;
                     })}</Stack></Collapse>
                 </Paper>
 
@@ -385,6 +455,11 @@ export function ActiveWorkoutPage() {
         />}</WorkoutActionBar>}
 
         <Dialog open={finishOpen} onClose={() => setFinishOpen(false)}><DialogTitle>Finish workout?</DialogTitle><DialogContent><Typography>Remaining sets will stay incomplete in this summary.</Typography></DialogContent><DialogActions><Button onClick={() => setFinishOpen(false)}>Continue</Button><Button variant="contained" color="error" startIcon={<Flag/>} onClick={() => void perform(async () => { const result = await service!.finish(snapshot.session.id); navigate(`/workout/summary/${snapshot.session.id}`); return result; })}>Finish</Button></DialogActions></Dialog>
+        <Dialog open={setAdjustmentOpen} onClose={() => !busy && setSetAdjustmentOpen(false)}><DialogTitle>Add one set?</DialogTitle><DialogContent><Typography>The app will add one working set to {currentExercise?.exerciseNameSnapshot} and remove one untouched set from the closest future exercise. Completed work is never changed and the session time target stays the same.</Typography></DialogContent><DialogActions><Button disabled={busy} onClick={() => setSetAdjustmentOpen(false)}>Cancel</Button><Button variant="contained" disabled={busy || !canTradeSet} onClick={() => void addCurrentSet()}>Adjust plan</Button></DialogActions></Dialog>
+        <Dialog open={Boolean(previewExercise)} onClose={() => setPreviewExercise(undefined)} fullScreen>
+            <DialogTitle component="div"><Stack direction="row" justifyContent="space-between" alignItems="center"><Box><Typography variant="overline" color="primary.main">UPCOMING EXERCISE</Typography><Typography variant="h5" component="h2">{previewExercise?.exerciseNameSnapshot}</Typography></Box><IconButton aria-label="Close exercise preview" onClick={() => setPreviewExercise(undefined)}><Close/></IconButton></Stack></DialogTitle>
+            <DialogContent dividers><Stack spacing={2}>{previewMedia.length ? <Box sx={{height: {xs: 300, sm: 430}, display: 'grid', gridTemplateColumns: previewMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider', borderRadius: 3, overflow: 'hidden'}}>{previewMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <StatePanel title="No local photo" description="This exercise has no reviewed local image yet." icon={<FitnessCenter/>}/>}<Stack direction="row" gap={0.75} flexWrap="wrap"><Chip label={previewExercise?.prescriptionSnapshot}/>{previewDetails?.equipmentTags.map((entry) => <Chip key={entry} variant="outlined" label={entry}/>)}</Stack>{previewDetails && <><Typography variant="h6">How to move</Typography><Typography color="text.secondary">{previewDetails.setupInstructions}</Typography><Box component="ol" sx={{pl: 3, m: 0}}>{previewDetails.executionSteps.slice(0, 4).map((step) => <Typography key={step} component="li" sx={{mb: 1}}>{step}</Typography>)}</Box></>}</Stack></DialogContent>
+        </Dialog>
         <Dialog open={alternativesOpen} onClose={() => !busy && setAlternativesOpen(false)} fullScreen>
             <DialogTitle component="div"><Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}><Box><Typography variant="overline" color="primary.main">MACHINE OCCUPIED</Typography><Typography variant="h5" component="h2">Choose an alternative</Typography></Box><IconButton aria-label="Close alternatives" disabled={busy} onClick={() => setAlternativesOpen(false)}><Close/></IconButton></Stack></DialogTitle>
             <DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {

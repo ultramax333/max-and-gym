@@ -20,6 +20,7 @@ function exerciseSnapshot(entry: ProgramExerciseDetail): StartWorkoutInput['exer
         restSeconds: entry.prescription.restSeconds,
         locked: entry.locked,
         alternativeExerciseIds: entry.alternativeExerciseIds,
+        equipmentTags: entry.equipmentTagsSnapshot,
         groupId: entry.groupId,
         groupType: entry.groupType,
         groupSequenceIndex: entry.groupSequenceIndex,
@@ -29,12 +30,13 @@ function exerciseSnapshot(entry: ProgramExerciseDetail): StartWorkoutInput['exer
     };
 }
 
-export function programDayWorkoutInput(programName: string, day: ProgramDayDetail): StartWorkoutInput {
+export function programDayWorkoutInput(programName: string, day: ProgramDayDetail, trainingContext?: {zone: string; goal: string}): StartWorkoutInput {
     return {
         plannedDurationSeconds: day.targetDurationMinutes * 60,
         name: `${programName} · ${day.name}`,
         programId: day.programId,
         programDayId: day.id,
+        trainingContext,
         exercises: day.exercises.map(exerciseSnapshot),
     };
 }
@@ -44,6 +46,7 @@ export function generatedSessionWorkoutInput(program: GeneratedProgram, day: Gen
         plannedDurationSeconds: day.targetDurationMinutes * 60,
         name: `${program.name} · ${day.name}`,
         restOverrideSeconds: program.sessionRestSeconds,
+        trainingContext: program.sessionContext,
         exercises: day.exercises.map((entry) => ({
             exerciseId: entry.exerciseId,
             exerciseName: entry.exerciseName,
@@ -56,6 +59,7 @@ export function generatedSessionWorkoutInput(program: GeneratedProgram, day: Gen
             restSeconds: entry.prescription.restSeconds,
             locked: entry.locked,
             alternativeExerciseIds: entry.alternativeExerciseIds,
+            equipmentTags: entry.equipmentTags,
             setScheme: entry.prescription.setScheme ?? 'straight',
             warmupSets: entry.prescription.warmupSets ?? 0,
             dropSets: entry.prescription.dropSets ?? 0,

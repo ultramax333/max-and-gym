@@ -157,3 +157,11 @@ Order:
 6. create reason code/text;
 7. persist pending proposal;
 8. apply only after user confirmation.
+
+## 11. Quick-session equipment and preference planning
+
+- Quick-session working sets may vary from two to five according to duration, goal, exercise role and contextual rating; three is not a fixed default.
+- The duration validator still includes execution, recovery, setup and transitions and must remain within the documented tolerance.
+- Selected exercises are grouped by their primary equipment tag with stable ordering inside each group.
+- A contextual rating is resolved before generation by exercise ID, body area and goal. It affects ranking only inside that exact context. A high non-strength rating may extend the optional upper repetition target by one; it never changes a completed record or applies a load automatically.
+- Normalized rating inputs are sorted and included in the identity hash so generation remains reproducible.

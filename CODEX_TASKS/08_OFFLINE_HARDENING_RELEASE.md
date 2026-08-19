@@ -123,4 +123,4 @@ Document platform limitations honestly.
 - production smoke passes;
 - CP8 report accepted.
 
-Open the release pull request and stop. Do not merge or publish a tag automatically unless explicitly authorized.
+Open the release pull request, report its status, and stop. After all required checks pass, ask the project owner whether to merge that specific pull request and commit. Merge only after a fresh explicit approval replying to that request. Do not publish a tag manually unless separately authorized; the trusted release workflow may publish its documented tag after an approved merge.

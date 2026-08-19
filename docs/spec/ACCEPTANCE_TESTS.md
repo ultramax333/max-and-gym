@@ -275,3 +275,21 @@ An induced migration failure displays recovery, records safe diagnostics, and do
 ### AT-L03 — Historical immutability
 
 Editing/deleting/archive of live programs/exercises does not alter completed workout snapshots.
+
+## M. Flexible active sessions
+
+### AT-M01 — Equipment grouping and preview
+
+Generated exercises with the same primary equipment are contiguous. In an active workout, every plan exercise opens its local photos and technique without changing the current exercise or losing progress.
+
+### AT-M02 — Variable working sets
+
+Supported quick-session durations produce coherent prescriptions containing two to five working sets according to goal and role; generation is not fixed to three sets.
+
+### AT-M03 — Contextual rating
+
+The same exercise can retain independent 1–5 ratings for glutes/hypertrophy, back/hypertrophy and back/strength. Only the exact matching context affects a future generation.
+
+### AT-M04 — Safe set trade
+
+Adding a current working set removes exactly one untouched future working set, keeps the total planned set count and duration target unchanged, is idempotent on retry, and refuses safely when no donor can retain at least two working sets.

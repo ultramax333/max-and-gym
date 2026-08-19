@@ -18,6 +18,7 @@ export interface WorkoutSessionRecord {
     elapsedSeconds?: number;
     plannedDurationSeconds?: number;
     restOverrideSeconds?: number;
+    trainingContext?: {zone: string; goal: string};
     currentSessionExerciseId: string;
     currentSetId: string;
     createdAt: string;
@@ -28,6 +29,7 @@ export interface StartWorkoutInput {
     name: string;
     plannedDurationSeconds?: number;
     restOverrideSeconds?: number;
+    trainingContext?: {zone: string; goal: string};
     programId?: string;
     programDayId?: string;
     exercises: Array<{
@@ -43,6 +45,7 @@ export interface StartWorkoutInput {
         restSeconds: number;
         locked?: boolean;
         alternativeExerciseIds?: string[];
+        equipmentTags?: string[];
         groupId?: string;
         groupType?: 'single' | 'superset' | 'triset' | 'circuit';
         groupSequenceIndex?: number;
@@ -64,6 +67,7 @@ export interface SessionExerciseRecord {
     programExerciseId?: string;
     lockedSnapshot: boolean;
     alternativeExerciseIdsSnapshot: string[];
+    equipmentTagsSnapshot?: string[];
     groupIdSnapshot?: string;
     groupTypeSnapshot?: 'single' | 'superset' | 'triset' | 'circuit';
     groupSequenceIndexSnapshot?: number;
@@ -112,7 +116,7 @@ export interface RestTimerRecord {
 
 export interface WorkoutOperationRecord {
     operationId: string;
-    kind: 'start' | 'complete-set' | 'undo-set' | 'replace-exercise' | 'finish' | 'abandon';
+    kind: 'start' | 'complete-set' | 'undo-set' | 'replace-exercise' | 'adjust-sets' | 'finish' | 'abandon';
     status: 'started' | 'committed' | 'failed';
     sessionId?: string;
     entityId?: string;
@@ -143,8 +147,21 @@ export interface ReplaceSessionExerciseInput {
     operationId: string;
     replacementExerciseId: string;
     replacementExerciseName: string;
+    replacementEquipmentTags?: string[];
     alternativeExerciseIds?: string[];
     reason: 'equipment-unavailable' | 'user-choice';
+}
+
+export interface AdjustWorkingSetsInput {
+    sessionId: string;
+    currentSessionExerciseId: string;
+    operationId: string;
+}
+
+export interface WorkoutSetAdjustmentResult {
+    snapshot: ActiveWorkoutSnapshot;
+    addedExerciseName: string;
+    reducedExerciseName: string;
 }
 
 export interface ExercisePerformanceSummary {

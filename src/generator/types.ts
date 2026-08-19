@@ -1,6 +1,6 @@
 import {ExercisePrescriptionRecord, ProgramDurationMinutes, ProgramFrequency} from '../programs/types';
 
-export const GENERATOR_VERSION = 'deterministic-v7';
+export const GENERATOR_VERSION = 'deterministic-v8';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 
 export type GoalBlend = 'strength' | 'balanced' | 'hypertrophy' | 'endurance';
@@ -51,6 +51,7 @@ export interface GeneratorInput {
     favouriteExerciseIds: string[];
     neverSuggestExerciseIds: string[];
     recentExerciseIds?: string[];
+    contextualExerciseRatings?: Array<{exerciseId: string; rating: number}>;
     stableExercises: StableExerciseInput[];
     coreMinutes: 10 | 15;
     lowBackComfortWarmup: boolean;
@@ -73,6 +74,7 @@ export interface GeneratedExercise {
     exerciseName: string;
     movementPattern: string;
     primaryMuscles: string[];
+    equipmentTags: string[];
     role: GeneratorRole;
     prescription: ExercisePrescriptionRecord;
     locked: boolean;
@@ -123,6 +125,7 @@ export interface GeneratedProgram {
     seed: string;
     generatorVersion: string;
     sessionRestSeconds?: number;
+    sessionContext?: {zone: string; goal: GoalBlend};
     identityHash: string;
     days: GeneratedDay[];
     explanation: GeneratorExplanation;

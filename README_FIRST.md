@@ -75,7 +75,7 @@ Every Codex task follows:
 
 > **AUDIT → PLAN → APPLY → VERIFY → CHECKPOINT**
 
-Codex must complete one task at a time, open one reviewable pull request, produce evidence, and stop. It must not automatically merge or begin the next task.
+Codex must complete one task at a time, open one reviewable pull request, produce evidence, and stop. It must not begin the next task automatically. After required checks pass, Codex may ask for permission to merge the identified pull request and commit; only a fresh explicit reply to that request authorizes the merge.
 
 ## Where to start
 

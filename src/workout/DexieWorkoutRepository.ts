@@ -1,5 +1,5 @@
 import {DexieDB} from '../db/db';
-import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, PerformedSetRecord, ReplaceSessionExerciseInput, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord} from './types';
+import {ActiveWorkoutSnapshot, AdjustWorkingSetsInput, CompleteSetInput, ExercisePerformanceSummary, PerformedSetRecord, ReplaceSessionExerciseInput, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord, WorkoutSetAdjustmentResult} from './types';
 import {WorkoutRepository} from './WorkoutRepository';
 import {calculateProgression, ProgressionKind} from '../generator/progression';
 import {elapsedSeconds as calculateElapsedSeconds} from './elapsed';
@@ -166,7 +166,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             if (active) throw new WorkoutDomainError('WORKOUT_ACTIVE_SESSION_CONFLICT', 'An active session already exists.');
             await this.db.workoutOperation.put({operationId, kind: 'start', status: 'started', sessionId, startedAt: now});
             const exerciseIds = input.exercises.map(() => this.clock.id());
-            const exercises: SessionExerciseRecord[] = input.exercises.map((entry, sequenceIndex) => ({id: exerciseIds[sequenceIndex], sessionId, exerciseId: entry.exerciseId, exerciseNameSnapshot: entry.exerciseName, prescriptionSnapshot: entry.prescriptionSnapshot, programExerciseId: entry.programExerciseId, lockedSnapshot: entry.locked ?? false, alternativeExerciseIdsSnapshot: [...(entry.alternativeExerciseIds ?? [])], groupIdSnapshot: entry.groupId, groupTypeSnapshot: entry.groupType ?? 'single', groupSequenceIndexSnapshot: entry.groupSequenceIndex ?? 0, setSchemeSnapshot: entry.setScheme ?? 'straight', sequenceIndex, status: sequenceIndex === 0 ? 'active' : 'pending', createdAt: now, updatedAt: now}));
+            const exercises: SessionExerciseRecord[] = input.exercises.map((entry, sequenceIndex) => ({id: exerciseIds[sequenceIndex], sessionId, exerciseId: entry.exerciseId, exerciseNameSnapshot: entry.exerciseName, prescriptionSnapshot: entry.prescriptionSnapshot, programExerciseId: entry.programExerciseId, lockedSnapshot: entry.locked ?? false, alternativeExerciseIdsSnapshot: [...(entry.alternativeExerciseIds ?? [])], equipmentTagsSnapshot: [...(entry.equipmentTags ?? [])], groupIdSnapshot: entry.groupId, groupTypeSnapshot: entry.groupType ?? 'single', groupSequenceIndexSnapshot: entry.groupSequenceIndex ?? 0, setSchemeSnapshot: entry.setScheme ?? 'straight', sequenceIndex, status: sequenceIndex === 0 ? 'active' : 'pending', createdAt: now, updatedAt: now}));
             const sets: PerformedSetRecord[] = input.exercises.flatMap((entry, exerciseIndex) => {
                 const warmupSets = Math.max(0, entry.warmupSets ?? 0);
                 const dropSets = Math.max(0, entry.dropSets ?? 0);
@@ -187,7 +187,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                 const savedRepetitions = defaultReps[entry.exerciseId];
                 return rows.map((row, sequenceIndex) => ({id: this.clock.id(), sessionId, sessionExerciseId: exerciseIds[exerciseIndex], sequenceIndex, setKind: row.kind, status: 'planned' as const, targetRepsMin: row.kind === 'working' && savedRepetitions !== undefined ? savedRepetitions : entry.repsMin, targetRepsMax: row.kind === 'working' && savedRepetitions !== undefined ? savedRepetitions : entry.repsMax, targetLoadKg: Math.round(baseLoad * row.loadFactor * 10) / 10, targetRir: entry.targetRir, restSeconds: isIntermediateGroupMember ? 0 : entry.restSeconds, createdAt: now, updatedAt: now}));
             });
-            const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, plannedDurationSeconds: input.plannedDurationSeconds, restOverrideSeconds: input.restOverrideSeconds, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
+            const session: WorkoutSessionRecord = {id: sessionId, creationOperationId: operationId, nameSnapshot: input.name, programId: input.programId, programDayId: input.programDayId, status: 'active', startedAt: now, pausedDurationSeconds: 0, plannedDurationSeconds: input.plannedDurationSeconds, restOverrideSeconds: input.restOverrideSeconds, trainingContext: input.trainingContext, currentSessionExerciseId: exerciseIds[0], currentSetId: sets[0].id, createdAt: now, updatedAt: now};
             await this.db.workoutSession.add(session);
             await this.db.sessionExercise.bulkAdd(exercises);
             await this.db.performedSet.bulkAdd(sets);
@@ -244,6 +244,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                 originalExerciseNameSnapshot: exercise.originalExerciseNameSnapshot ?? exercise.exerciseNameSnapshot,
                 substitutionReason: input.reason,
                 alternativeExerciseIdsSnapshot: [...new Set(input.alternativeExerciseIds ?? [])].filter((id) => id !== input.replacementExerciseId),
+                equipmentTagsSnapshot: [...(input.replacementEquipmentTags ?? [])],
                 updatedAt: now,
             });
             await this.db.performedSet.where('sessionExerciseId').equals(exercise.id).filter((entry) => entry.status !== 'completed').modify({targetLoadKg: replacementLoad, updatedAt: now});
@@ -252,6 +253,56 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         const result = await this.get(input.sessionId);
         if (!result) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session disappeared after exercise replacement.');
         return result;
+    }
+
+    async adjustWorkingSets(input: AdjustWorkingSetsInput): Promise<WorkoutSetAdjustmentResult> {
+        const now = this.iso();
+        let reducedExerciseId = '';
+        await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.workoutOperation], async () => {
+            const prior = await this.db.workoutOperation.get(input.operationId);
+            if (prior?.status === 'committed') {
+                reducedExerciseId = prior.entityId ?? '';
+                return;
+            }
+            const session = await this.db.workoutSession.get(input.sessionId);
+            const currentExercise = await this.db.sessionExercise.get(input.currentSessionExerciseId);
+            if (!session || (session.status !== 'active' && session.status !== 'paused') || !currentExercise || currentExercise.sessionId !== input.sessionId || session.currentSessionExerciseId !== currentExercise.id) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'Only the current exercise can receive an extra set.');
+            const exercises = await this.db.sessionExercise.where('sessionId').equals(input.sessionId).sortBy('sequenceIndex');
+            const allSets = await this.db.performedSet.where('sessionId').equals(input.sessionId).toArray();
+            const currentSets = allSets.filter((entry) => entry.sessionExerciseId === currentExercise.id);
+            const currentWorkingSets = currentSets.filter((entry) => (entry.setKind ?? 'working') === 'working');
+            const template = [...currentWorkingSets].sort((left, right) => right.sequenceIndex - left.sequenceIndex)[0];
+            if (!template) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The current exercise has no working set to copy.');
+            const donors = exercises.flatMap((exercise) => {
+                if (exercise.id === currentExercise.id || exercise.status !== 'pending') return [];
+                const working = allSets.filter((entry) => entry.sessionExerciseId === exercise.id && (entry.setKind ?? 'working') === 'working');
+                const removable = [...working].filter((entry) => entry.status === 'planned' && !entry.completionOperationId && entry.actualLoadKg === undefined && entry.actualReps === undefined).sort((left, right) => right.sequenceIndex - left.sequenceIndex)[0];
+                if (!removable || working.length <= 2) return [];
+                const costDifference = Math.abs((removable.restSeconds + removable.targetRepsMax * 3) - (template.restSeconds + template.targetRepsMax * 3));
+                return [{exercise, removable, costDifference}];
+            }).sort((left, right) => left.costDifference - right.costDifference || Number(right.exercise.sequenceIndex > currentExercise.sequenceIndex) - Number(left.exercise.sequenceIndex > currentExercise.sequenceIndex) || left.exercise.sequenceIndex - right.exercise.sequenceIndex);
+            const donor = donors[0];
+            if (!donor) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'No untouched future exercise has a spare working set. Keep the current plan or add time to the session.');
+            reducedExerciseId = donor.exercise.id;
+            await this.db.workoutOperation.put({operationId: input.operationId, kind: 'adjust-sets', status: 'started', sessionId: input.sessionId, entityId: reducedExerciseId, startedAt: now});
+            const nextSequenceIndex = template.sequenceIndex + 1;
+            for (const row of currentSets.filter((entry) => entry.sequenceIndex >= nextSequenceIndex).sort((left, right) => right.sequenceIndex - left.sequenceIndex)) {
+                await this.db.performedSet.update(row.id, {sequenceIndex: row.sequenceIndex + 1, updatedAt: now});
+            }
+            await this.db.performedSet.add({...template, id: this.clock.id(), sequenceIndex: nextSequenceIndex, status: 'planned', actualReps: undefined, actualLoadKg: undefined, actualRir: undefined, completionOperationId: undefined, undoOperationId: undefined, completedAt: undefined, createdAt: now, updatedAt: now});
+            await this.db.performedSet.delete(donor.removable.id);
+            const updatePrescription = (value: string, count: number) => value.replace(/^\d+\s*×/, `${count} ×`);
+            await this.db.sessionExercise.update(currentExercise.id, {prescriptionSnapshot: updatePrescription(currentExercise.prescriptionSnapshot, currentWorkingSets.length + 1), updatedAt: now});
+            const donorWorkingCount = allSets.filter((entry) => entry.sessionExerciseId === donor.exercise.id && (entry.setKind ?? 'working') === 'working').length - 1;
+            await this.db.sessionExercise.update(donor.exercise.id, {prescriptionSnapshot: updatePrescription(donor.exercise.prescriptionSnapshot, donorWorkingCount), updatedAt: now});
+            await this.db.workoutOperation.put({operationId: input.operationId, kind: 'adjust-sets', status: 'committed', sessionId: input.sessionId, entityId: reducedExerciseId, startedAt: now, finishedAt: now});
+        });
+        const snapshot = await this.get(input.sessionId);
+        if (!snapshot) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The session disappeared after its set plan was adjusted.');
+        const added = snapshot.exercises.find((entry) => entry.id === input.currentSessionExerciseId);
+        const reduced = snapshot.exercises.find((entry) => entry.id === reducedExerciseId);
+        if (!added || !reduced) throw new WorkoutDomainError('DB_INVARIANT_VIOLATION', 'The adjusted exercises could not be recovered.');
+        return {snapshot, addedExerciseName: added.exerciseNameSnapshot, reducedExerciseName: reduced.exerciseNameSnapshot};
     }
 
     async saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {

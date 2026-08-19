@@ -559,6 +559,8 @@ Required invariants:
 - no generated program containing a hard-blocked exercise/tag;
 - no historical session depends on mutable live program text.
 
+Contextual exercise ratings are stored in the existing `appMeta` backup surface under a versioned key. Their compound logical identity is body area + training goal + exercise ID. Workout and saved-program snapshots may carry optional training-context and equipment-tag fields; these are additive non-indexed fields and require no schema migration.
+
 ## 32. Migration requirements
 
 - Sequential, explicit, tested.

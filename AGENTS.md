@@ -10,9 +10,9 @@ Every task uses this sequence:
 2. **PLAN** — list requirements, files, migrations, tests, rollback, and exclusions.
 3. **APPLY** — implement the smallest coherent change.
 4. **VERIFY** — run all required checks and collect evidence.
-5. **CHECKPOINT** — write a report under `docs/reports/`, open a pull request, and stop.
+5. **CHECKPOINT** — write a report under `docs/reports/`, open a pull request, report its status, and stop.
 
-Never skip the audit because a change appears small. Never start the next task automatically. Never merge your own pull request.
+Never skip the audit because a change appears small. Never start the next task automatically. After a pull request is open and its required checks pass, Codex may ask the project owner whether to merge that specific pull request. Codex may merge only after a fresh explicit approval replying to that request. A standing permission, an earlier `Go`, or approval given before the merge request does not authorize a merge. Approval expires if the pull-request head changes or a required check fails.
 
 When a defect appears, use `CODEX_TASKS/90_DIAGNOSTIC_AUDIT.md`. It is read-only by default; product code may change only after root-cause evidence exists and the project owner explicitly authorizes the fix with either `MODE=FIX` or the standalone instruction `Go` (case-insensitive).
 

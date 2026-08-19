@@ -7,6 +7,7 @@ import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SectionHeader} from '../../components/ui/UiPrimitives';
 import {db} from '../../db/db';
 import {ExerciseCatalogRepository} from '../../exerciseCatalog/ExerciseCatalogRepository';
+import {ExerciseContextRatingRepository} from '../../exerciseCatalog/ExerciseContextRatingRepository';
 import {LibraryExercise} from '../../exerciseCatalog/types';
 import {GENERATOR_VERSION as BUILD_GENERATOR_VERSION, EXERCISE_SEED_VERSION, PROGRAM_SEED_VERSION} from '../../config/buildIdentity';
 import {generateCoreSession} from '../../generator/coreWarmup';
@@ -27,6 +28,7 @@ const catalog = new ExerciseCatalogRepository(db);
 const programs = new ProgramRepository(db);
 const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
 const quickSessionState = new QuickSessionGenerationStateRepository(db);
+const contextRatings = new ExerciseContextRatingRepository(db);
 const allEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'];
 type SelectableGoal = Exclude<GoalBlend, 'balanced'>;
 const goalRecovery: Record<SelectableGoal, number> = {strength: 180, hypertrophy: 90, endurance: 60};
@@ -89,6 +91,7 @@ function QuickSessionBuilder() {
             setLibraryExercises(catalogExercises);
             const candidates = catalogExercises as GeneratorCandidate[];
             const generationState = await quickSessionState.get(zone);
+            const ratings = await contextRatings.list({zone, goal});
             const variation = generationState.nextVariation;
             const recentExerciseIds = [...new Set(generationState.recentGenerations.flat())];
             const input: GeneratorInput = {
@@ -103,6 +106,7 @@ function QuickSessionBuilder() {
                 favouriteExerciseIds: [],
                 neverSuggestExerciseIds: [],
                 recentExerciseIds,
+                contextualExerciseRatings: ratings.map((entry) => ({exerciseId: entry.exerciseId, rating: entry.rating})),
                 stableExercises: [],
                 coreMinutes: 10,
                 lowBackComfortWarmup: true,
@@ -172,6 +176,7 @@ function QuickSessionBuilder() {
             exerciseName: replacement.name,
             movementPattern: replacement.movementPattern,
             primaryMuscles: [...replacement.primaryMuscles],
+            equipmentTags: [...replacement.equipmentTags],
             alternativeExerciseIds: [],
             reasons: ['Manually selected from the local exercise alternatives.'],
         };
@@ -264,7 +269,7 @@ function QuickSessionBuilder() {
                 const endImage = details?.media.find((media) => media.kind === 'end-image');
                 return <Card key={`${exercise.exerciseId}-${index}`} variant="outlined" sx={{overflow: 'hidden', borderRadius: '20px', bgcolor: '#101720'}}><Stack direction={{xs: 'column', sm: 'row'}}>
                     <Box sx={{width: {xs: '100%', sm: 220}, height: {xs: 205, sm: 220}, flexShrink: 0, display: 'grid', gridTemplateColumns: endImage ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{startImage && <CardMedia component="img" image={catalogMediaUrl(startImage.path)} alt={startImage.altText} loading="lazy" sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>}{endImage && <CardMedia component="img" image={catalogMediaUrl(endImage.path)} alt={endImage.altText} loading="lazy" sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>}{!startImage && <Box sx={{height: '100%', bgcolor: 'background.default', display: 'grid', placeItems: 'center'}}><Typography variant="caption" color="text.secondary">No local photo</Typography></Box>}</Box>
-                    <CardContent sx={{minWidth: 0, flex: 1, p: 2}}><Stack spacing={1}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Box><Typography variant="overline" color="primary.main">EXERCISE {index + 1}</Typography><Typography component="h3" variant="h6">{exercise.exerciseName}</Typography></Box>{details && <Stack direction="row"><IconButton aria-label={details.favourite ? `Remove ${details.name} from favourites` : `Add ${details.name} to favourites`} onClick={() => void toggleFavourite(details)}>{details.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</IconButton><IconButton color="warning" aria-label={`Never suggest ${details.name}`} disabled={busy} onClick={() => void markNeverSuggest(details)}><Block/></IconButton></Stack>}</Stack><Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${exercise.prescription.workingSets} × ${exercise.prescription.repsMin}–${exercise.prescription.repsMax}`}/><Chip size="small" variant="outlined" label={`${exercise.prescription.restSeconds} s rest`}/></Stack><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Button variant="outlined" disabled={libraryExercises.length === 0} onClick={() => { setReplacementSearch(''); setReplaceIndex(index); }}>Replace exercise</Button><IconButton aria-label={`Move ${exercise.exerciseName} earlier`} disabled={index === 0} onClick={() => movePreviewExercise(index, -1)}><KeyboardArrowUp/></IconButton><IconButton aria-label={`Move ${exercise.exerciseName} later`} disabled={index === preview.days[0].exercises.length - 1} onClick={() => movePreviewExercise(index, 1)}><KeyboardArrowDown/></IconButton></Stack></Stack></CardContent>
+                    <CardContent sx={{minWidth: 0, flex: 1, p: 2}}><Stack spacing={1}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Box><Typography variant="overline" color="primary.main">{exercise.equipmentTags?.[0] ?? 'BODYWEIGHT'} · EXERCISE {index + 1}</Typography><Typography component="h3" variant="h6">{exercise.exerciseName}</Typography></Box>{details && <Stack direction="row"><IconButton aria-label={details.favourite ? `Remove ${details.name} from favourites` : `Add ${details.name} to favourites`} onClick={() => void toggleFavourite(details)}>{details.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</IconButton><IconButton color="warning" aria-label={`Never suggest ${details.name}`} disabled={busy} onClick={() => void markNeverSuggest(details)}><Block/></IconButton></Stack>}</Stack><Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${exercise.prescription.workingSets} × ${exercise.prescription.repsMin}–${exercise.prescription.repsMax}`}/><Chip size="small" variant="outlined" label={`${exercise.prescription.restSeconds} s rest`}/></Stack><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Button variant="outlined" disabled={libraryExercises.length === 0} onClick={() => { setReplacementSearch(''); setReplaceIndex(index); }}>Replace exercise</Button><IconButton aria-label={`Move ${exercise.exerciseName} earlier`} disabled={index === 0} onClick={() => movePreviewExercise(index, -1)}><KeyboardArrowUp/></IconButton><IconButton aria-label={`Move ${exercise.exerciseName} later`} disabled={index === preview.days[0].exercises.length - 1} onClick={() => movePreviewExercise(index, 1)}><KeyboardArrowDown/></IconButton></Stack></Stack></CardContent>
                 </Stack></Card>;
             })}
             <Alert severity="info">Save it to My sessions to find it later from Train or Programs, then rename, reorder or edit it at any time.</Alert>

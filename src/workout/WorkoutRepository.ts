@@ -1,4 +1,4 @@
-import {ActiveWorkoutSnapshot, CompleteSetInput, ExercisePerformanceSummary, ReplaceSessionExerciseInput, StartWorkoutInput} from './types';
+import {ActiveWorkoutSnapshot, AdjustWorkingSetsInput, CompleteSetInput, ExercisePerformanceSummary, ReplaceSessionExerciseInput, StartWorkoutInput, WorkoutSetAdjustmentResult} from './types';
 
 export interface WorkoutRepository {
     findActive(): Promise<ActiveWorkoutSnapshot | undefined>;
@@ -8,6 +8,7 @@ export interface WorkoutRepository {
     completeSet(input: CompleteSetInput): Promise<ActiveWorkoutSnapshot>;
     switchExercise(sessionId: string, sessionExerciseId: string): Promise<ActiveWorkoutSnapshot>;
     replaceExercise(input: ReplaceSessionExerciseInput): Promise<ActiveWorkoutSnapshot>;
+    adjustWorkingSets(input: AdjustWorkingSetsInput): Promise<WorkoutSetAdjustmentResult>;
     saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot>;
     saveDefaultReps(sessionId: string, sessionExerciseId: string, repetitions: number): Promise<ActiveWorkoutSnapshot>;
     exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined>;
