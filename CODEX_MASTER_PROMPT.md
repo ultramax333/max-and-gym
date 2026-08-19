@@ -40,7 +40,7 @@ Use exactly one task file at a time. For each task:
 8. open a pull request using the template;
 9. stop.
 
-Do not merge. Do not begin the next task. Do not hide failed checks.
+Do not begin the next task or hide failed checks. After stopping at the pull request and after all required checks pass, Codex may ask the project owner whether to merge that specific pull request and commit. Merge only after a fresh explicit approval replying to that request; standing permission or an earlier generic `Go` is not sufficient.
 
 ## Non-negotiable product constraints
 

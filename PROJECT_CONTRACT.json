@@ -1,7 +1,7 @@
 {
   "project": "max&gym",
-  "contractVersion": "2.0.0",
-  "preparedAt": "2026-08-05",
+  "contractVersion": "2.1.0",
+  "preparedAt": "2026-08-19",
   "language": "en",
   "primaryClient": "Android Chrome",
   "hosting": "GitHub Pages",
@@ -89,7 +89,15 @@
     "CP7",
     "CP8"
   ],
-  "noAutoMerge": true,
+  "noAutoMerge": false,
+  "mergePolicy": {
+    "assistantMayMerge": true,
+    "requiresFreshOwnerApproval": true,
+    "approvalMustReplyToSpecificMergeRequest": true,
+    "approvalBoundToPullRequestHead": true,
+    "requiredChecksMustPass": true,
+    "standingApprovalAccepted": false
+  },
   "noAutomaticNextTask": true,
   "documentPrecedence": [
     "PROJECT_CONTRACT.json",

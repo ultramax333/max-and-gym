@@ -19,6 +19,8 @@ Every checkpoint requires:
 - pull request;
 - Codex stops.
 
+After the stop, Codex may ask the project owner whether to merge the specific pull request and head commit once every required check passes. Only a fresh explicit reply to that request authorizes the merge. Standing permission, an earlier generic approval, or approval for a different head commit is invalid.
+
 ## CP0 — Baseline understood
 
 ### Goal

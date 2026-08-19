@@ -133,3 +133,12 @@ Do not remove an import or migration reader until:
 - An active or paused workout and any started workout, backup or import write defer both checking and opening the download.
 - Opening a download requires a second in-app confirmation. The system browser performs the download; the user then opens the APK and Android presents its own installation confirmation.
 - The app does not request silent-install or unknown-package installation privileges. Never uninstall the existing app as part of an update because that would remove its private local data.
+
+## 11. Pull-request merge approval
+
+- Codex opens the pull request, reports its checks and head commit, then stops.
+- Once all required checks pass, Codex may ask the project owner whether to merge that specific pull request and commit.
+- Only a fresh explicit approval replying to that merge request authorizes the merge. A standing permission, an earlier generic `Go`, or approval issued before the request is invalid.
+- The approval is bound to the reported pull-request head. If the head changes or a required check fails, Codex must resolve the state and ask again.
+- Codex must not merge a draft pull request, a pull request with pending or failing required checks, or a pull request whose mergeability is uncertain.
+- After an approved merge, Codex may monitor the documented deployment and release workflows and report their results. It must not begin unrelated product work automatically.

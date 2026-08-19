@@ -66,7 +66,7 @@ For one task only:
 6. Pull request.
 7. Stop.
 
-Never merge or begin the next task automatically.
+Never begin the next task automatically. Once the pull request is open and all required checks pass, Codex may ask the project owner for permission to merge that identified pull request and commit. Merge only after a fresh explicit approval replying to that request. Standing permission and earlier generic approval do not count. Ask again if the pull-request head changes or any required check fails.
 
 For incidents, Task 90 is read-only by default; explicit authorization with either `MODE=FIX` or the standalone instruction `Go` (case-insensitive) is required before product code changes.
 
