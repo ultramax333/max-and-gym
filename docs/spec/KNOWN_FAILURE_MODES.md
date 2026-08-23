@@ -399,3 +399,24 @@ Controls:
 - keep sets, repetitions and recovery while resetting an unknown replacement load to zero;
 - offer `Do later` after progress exists instead of rewriting history;
 - commit replacement and its operation identifier in one transaction.
+
+## FM-38 — Android update reaches 100 percent without opening the installer
+
+Likely causes:
+
+- DownloadManager completion is projected as a boolean rather than a durable phase;
+- staging, digest verification or installer launch fails after the transfer completes;
+- a lifecycle transition causes the web listener to miss the native completion event;
+- unknown-source permission was revoked;
+- the APK size, digest, package, version or signer does not match the selected release.
+
+Controls:
+
+- persist pending, downloading, verifying, ready and failed phases;
+- expose downloaded bytes, total bytes and percentage to the update screen;
+- reconcile native status on mount and whenever the application returns to the foreground;
+- verify release size and SHA-256 before installation;
+- verify application ID, version name, monotonic version code and installed signer before presenting the installer;
+- retain a verified private APK and an explicit Install update retry action;
+- record bounded failure reasons without URLs, paths or personal data;
+- publish a public ZIP companion while keeping the versioned APK as the only in-app update candidate.

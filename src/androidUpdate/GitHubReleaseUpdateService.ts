@@ -29,7 +29,7 @@ export interface AndroidReleaseUpdate {
     releaseUrl: string;
     assetName: string;
     assetSize: number;
-    sha256?: string;
+    sha256: string;
     immutable: boolean;
     publishedAt?: string;
 }
@@ -104,6 +104,7 @@ export function parseAndroidRelease(payload: unknown): AndroidReleaseUpdate {
     const digest = typeof asset.digest === 'string' && /^sha256:[a-f0-9]{64}$/i.test(asset.digest)
         ? asset.digest.slice('sha256:'.length).toLowerCase()
         : undefined;
+    if (!digest) throw new AndroidUpdateError('The release APK is missing its SHA-256 digest.');
     return {
         versionName,
         versionCode,
