@@ -119,6 +119,7 @@ Do not remove an import or migration reader until:
 - Preserve the signing key and credentials in an independently backed-up secret store. Losing or changing the key prevents in-place updates of an installed release.
 - A partially configured signing secret set fails the workflow; an entirely absent set safely skips the release APK while retaining the debug artifact.
 - Attach the signed APK to the matching GitHub Release without renaming it. Its required name is `max-and-gym-v<versionName>-<versionCode>-release.apk`; the in-app checker rejects missing, duplicate, malformed or downgrade assets.
+- Attach a companion `max-and-gym-v<versionName>-<versionCode>-release-apk.zip` containing exactly that signed APK so phone browsers can download an archive. The in-app updater continues to select only the `.apk` asset.
 - The GitHub release tag is exactly `v<versionName>`. Drafts and prereleases are never offered by the installed application.
 - The trusted `master` workflow creates the exact version tag at the built commit, then creates the GitHub Release and attaches the signed, versioned APK. CI keeps an existing release immutable and refuses an orphaned/ambiguous tag; a correction requires a new semantic version and a higher `versionCode`.
 - Keep the Android `applicationId` equal to `io.github.ultramax333.maxandgym` and retain the same signing certificate. Android enforces both identity and signature during an in-place update and rejects a non-increasing `versionCode`.
@@ -131,7 +132,7 @@ Do not remove an import or migration reader until:
 - The only accepted download URL begins with `https://github.com/ultramax333/max-and-gym/releases/download/` and names the exact versioned release APK.
 - The metadata check sends no token, cookie, account, analytics identifier, workout value or local database content. GitHub still receives normal network metadata such as the device IP address; the external browser may separately use its own GitHub session when it opens the download.
 - An active or paused workout and any started workout, backup or import write defer both checking and opening the download.
-- Opening a download requires a second in-app confirmation. The system browser performs the download; the user then opens the APK and Android presents its own installation confirmation.
+- Opening a download requires a second in-app confirmation. The installed app delegates the transfer to Android DownloadManager, shows durable byte progress, verifies size, SHA-256, package identity, version and signer, then opens Android's installation confirmation.
 - The app does not request silent-install or unknown-package installation privileges. Never uninstall the existing app as part of an update because that would remove its private local data.
 
 ## 11. Pull-request merge approval

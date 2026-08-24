@@ -48,6 +48,8 @@ When a new service worker is waiting during an active workout, the app shows a d
 
 After deploying a new checkpoint build, the user can identify current/waiting versions and apply the update without clearing all browser data.
 
+For the installed Android app, a manual APK update exposes durable download, verification, ready and failed phases; returning to the app cannot lose a completed download, and the installer is offered only after release integrity and package identity checks pass.
+
 ## D. Onboarding and settings
 
 ### AT-D01 — Defaults

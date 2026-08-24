@@ -48,6 +48,12 @@ describe('GitHubReleaseUpdateService', () => {
         expect(() => parseAndroidRelease(payload)).toThrow(/exactly one/i);
     });
 
+    it('rejects an APK without a GitHub SHA-256 digest', () => {
+        const payload = release();
+        delete (payload.assets[0] as Record<string, unknown>).digest;
+        expect(() => parseAndroidRelease(payload)).toThrow(/missing its SHA-256 digest/i);
+    });
+
     it('performs an opt-in unauthenticated GitHub API check', async () => {
         const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(JSON.stringify(release()), {status: 200, headers: {'Content-Type': 'application/json'}}));
         const service = createGitHubReleaseUpdateService(fetcher as typeof fetch, {versionName: '1.0.0', versionCode: 120000001});

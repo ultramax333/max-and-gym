@@ -52,6 +52,10 @@ if (!workflow.includes('gh release create') || !workflow.includes('keeping its i
     throw new Error('Master releases do not safely publish a non-replaceable GitHub Release.');
 }
 
+if (!workflow.includes('-release-apk.zip') || !workflow.includes('Package public APK ZIP companion')) {
+    throw new Error('The Android workflow does not publish the required ZIP companion containing the signed APK.');
+}
+
 if (!workflow.includes("- 'feat/**'") || !workflow.includes("steps.signing.outputs.enabled == 'true'")) {
     throw new Error('Feature branches must build debug APKs and release publication must remain signing-gated.');
 }
@@ -67,6 +71,9 @@ if (!mainActivity.includes('registerPlugin(AndroidUpdatePlugin.class)') ||
     !updatePlugin.includes('DownloadManager') ||
     !updatePlugin.includes('ACTION_INSTALL_PACKAGE') ||
     !updatePlugin.includes('FileProvider.getUriForFile') ||
+    !updatePlugin.includes('MessageDigest.getInstance("SHA-256")') ||
+    !updatePlugin.includes('GET_SIGNING_CERTIFICATES') ||
+    !updatePlugin.includes('COLUMN_BYTES_DOWNLOADED_SO_FAR') ||
     !updatePlugin.includes('APPROVED_HOST = "github.com"') ||
     !updatePlugin.includes('APPROVED_PATH_PREFIX = "/ultramax333/max-and-gym/releases/download/"')) {
     throw new Error('The Android update launcher is not registered or repository-scoped.');

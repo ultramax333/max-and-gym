@@ -1,34 +1,58 @@
 import {Capacitor, registerPlugin} from '@capacitor/core';
 
+export type AndroidUpdatePhase = 'idle' | 'permission-required' | 'pending' | 'downloading' | 'verifying' | 'ready' | 'failed';
+
+export interface AndroidUpdateRequest {
+    url: string;
+    expectedSha256: string;
+    expectedSize: number;
+    expectedVersionName: string;
+    expectedVersionCode: number;
+}
+
+export interface AndroidUpdateStatus {
+    phase: AndroidUpdatePhase;
+    downloadedBytes: number;
+    totalBytes: number;
+    percent?: number;
+    reason?: string;
+    staged: boolean;
+    downloading: boolean;
+}
+
 interface NativeAndroidUpdatePlugin {
-    downloadAndInstall(options: {url: string}): Promise<{status: 'downloading' | 'permission-required'}>;
-    getUpdateStatus(): Promise<{staged: boolean; downloading: boolean}>;
-    installPending(): Promise<{status: 'ready' | 'failed' | 'none'}>;
-    addListener(eventName: 'androidUpdateDownload', listener: (event: {status: string}) => void): Promise<{remove: () => Promise<void>}>;
+    downloadAndInstall(options: AndroidUpdateRequest): Promise<AndroidUpdateStatus>;
+    getUpdateStatus(): Promise<AndroidUpdateStatus>;
+    installPending(): Promise<AndroidUpdateStatus>;
+    addListener(eventName: 'androidUpdateDownload', listener: (event: AndroidUpdateStatus) => void): Promise<{remove: () => Promise<void>}>;
 }
 
 const NativeAndroidUpdate = registerPlugin<NativeAndroidUpdatePlugin>('AndroidUpdate');
 
 export interface AndroidUpdateLauncher {
     isNativeAndroid(): boolean;
-    downloadAndInstall(url: string): Promise<{status: 'downloading' | 'permission-required'}>;
-    getUpdateStatus?(): Promise<{staged: boolean; downloading: boolean}>;
-    installPending?(): Promise<{status: 'ready' | 'failed' | 'none'}>;
-    addListener?(listener: (event: {status: string}) => void): Promise<{remove: () => Promise<void>}>;
+    downloadAndInstall(request: AndroidUpdateRequest): Promise<AndroidUpdateStatus>;
+    getUpdateStatus?(): Promise<AndroidUpdateStatus>;
+    installPending?(): Promise<AndroidUpdateStatus>;
+    addListener?(listener: (event: AndroidUpdateStatus) => void): Promise<{remove: () => Promise<void>}>;
 }
+
+const idleStatus: AndroidUpdateStatus = {
+    phase: 'idle', downloadedBytes: 0, totalBytes: 0, staged: false, downloading: false,
+};
 
 export const androidUpdateLauncher: AndroidUpdateLauncher = {
     isNativeAndroid: () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android',
-    async downloadAndInstall(url) {
+    async downloadAndInstall(request) {
         if (!this.isNativeAndroid()) throw new Error('Android update download is only available in the installed Android app.');
-        return NativeAndroidUpdate.downloadAndInstall({url});
+        return NativeAndroidUpdate.downloadAndInstall(request);
     },
     async getUpdateStatus() {
-        if (!this.isNativeAndroid()) return {staged: false, downloading: false};
+        if (!this.isNativeAndroid()) return idleStatus;
         return NativeAndroidUpdate.getUpdateStatus();
     },
     async installPending() {
-        if (!this.isNativeAndroid()) return {status: 'none'};
+        if (!this.isNativeAndroid()) return idleStatus;
         return NativeAndroidUpdate.installPending();
     },
     async addListener(listener) {

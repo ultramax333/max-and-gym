@@ -141,6 +141,21 @@ jobs:
         with:
           name: max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release-apk
           path: release-apk
+      - name: Package public APK ZIP companion
+        shell: bash
+        run: |
+          apk="release-apk/max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release.apk"
+          zip_asset="release-apk/max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release-apk.zip"
+          python3 - "$apk" "$zip_asset" <<'PY'
+          import os
+          import sys
+          import zipfile
+
+          apk, destination = sys.argv[1:]
+          with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+              archive.write(apk, arcname=os.path.basename(apk))
+          PY
+          test -s "$zip_asset"
       - name: Publish immutable-candidate GitHub Release
         shell: bash
         env:
@@ -156,4 +171,5 @@ jobs:
             exit 1
           fi
           apk="release-apk/max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release.apk"
-          gh release create "$release_tag" "$apk" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest --title "Max & Gym $release_tag" --notes "Signed Android release. Back up your local data before updating."
+          zip_asset="release-apk/max-and-gym-v${{ needs.android-apk.outputs.version_name }}-${{ needs.android-apk.outputs.version_code }}-release-apk.zip"
+          gh release create "$release_tag" "$apk" "$zip_asset#Signed APK in a ZIP for mobile download" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest --title "Max & Gym $release_tag" --notes "Signed Android release. Back up your local data before updating."
