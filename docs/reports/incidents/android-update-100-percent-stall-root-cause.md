@@ -4,12 +4,12 @@
 
 - Reported at: 2026-08-23
 - Investigation mode: FIX (`Go` authorization)
-- Current Git SHA: `5bb1eee47f899e0478496eb2e21d068f8a39c8f7`
+- Correction Git SHA: `c264acbe75456cab26b8f06f27bd42ac61640863`
 - Last known good release: `v1.8.0`
 - Affected environment: installed Android application on Pixel 9a
 - Visible error ID: none
 - Severity: high usability / no identified data-loss risk
-- Status: correction in progress
+- Status: correction implemented; physical Pixel 9a acceptance pending
 
 ## User-visible symptom
 
@@ -128,9 +128,11 @@ Persist and expose an explicit native phase with byte progress and safe failure 
 
 | Command/test | Result | Evidence |
 |---|---|---|
-| Targeted component regression | Pending | `AndroidUpdateCard.test.tsx` |
-| Android audit and Gradle unit/build | Pending | CI/local runtime |
-| Full quality gate | Pending | checkpoint output |
+| Targeted component regression | Passed, 12 tests | `AndroidUpdateCard.test.tsx` and update-service tests |
+| TypeScript and ESLint | Passed | Local checkpoint, zero lint warnings |
+| Android audit, Capacitor sync and Gradle compile/test | Passed | GitHub Actions run `32771558363`, job `97572838642` |
+| Web/Android production builds and smoke checks | Passed | Local checkpoint |
+| Physical Pixel 9a update hand-off | Pending | Requires installing v1.8.1 over an older signed build |
 
 ## New diagnostic coverage
 
@@ -144,6 +146,6 @@ Persist and expose an explicit native phase with byte progress and safe failure 
 
 ## Final verdict
 
-- Root cause partially proven; device-specific installer behavior remains for physical acceptance
-- Fix authorized and in progress
-- Checkpoint gate required: Task 90 affected CP8 release gate
+- Root cause proven at the application lifecycle boundary; device-specific installer behavior remains for physical acceptance
+- Fix implemented and Android compilation verified in GitHub Actions
+- Release remains gated on pull-request quality checks and explicit merge authorization
