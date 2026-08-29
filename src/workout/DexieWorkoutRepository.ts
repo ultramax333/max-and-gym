@@ -2,6 +2,7 @@ import {DexieDB} from '../db/db';
 import {ActiveWorkoutSnapshot, AdjustWorkingSetsInput, CompleteSetInput, ExercisePerformanceSummary, PerformedSetRecord, ReplaceSessionExerciseInput, SessionExerciseRecord, StartWorkoutInput, WorkoutSessionRecord, WorkoutSetAdjustmentResult} from './types';
 import {WorkoutRepository} from './WorkoutRepository';
 import {calculateProgression, ProgressionKind} from '../generator/progression';
+import {recommendExerciseLoad} from './loadRecommendation';
 import {elapsedSeconds as calculateElapsedSeconds} from './elapsed';
 
 export class WorkoutDomainError extends Error {
@@ -91,6 +92,10 @@ export class DexieWorkoutRepository implements WorkoutRepository {
     }
 
     async exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined> {
+        return (await this.exerciseHistoryList(exerciseId, excludeSessionId, 1))[0];
+    }
+
+    async exerciseHistoryList(exerciseId: string, excludeSessionId?: string, limit = 3): Promise<ExercisePerformanceSummary[]> {
         const matchingExercises = await this.db.sessionExercise.filter((entry) => entry.exerciseId === exerciseId && entry.sessionId !== excludeSessionId).toArray();
         const candidates = await Promise.all(matchingExercises.map(async (exercise) => {
             const session = await this.db.workoutSession.get(exercise.sessionId);
@@ -101,9 +106,9 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             const workingSets = sets.filter((entry) => (entry.setKind ?? 'working') === 'working');
             const suggested = [...workingSets, ...sets].at(-1);
             if (!sets.length || !suggested?.actualLoadKg && suggested?.actualLoadKg !== 0) return undefined;
-            return {sessionId: session.id, sessionName: session.nameSnapshot, performedAt: session.endedAt ?? session.updatedAt, suggestedLoadKg: suggested.actualLoadKg, sets: sets.map((entry) => ({loadKg: entry.actualLoadKg!, reps: entry.actualReps!, ...(entry.actualRir === undefined ? {} : {rir: entry.actualRir})}))} satisfies ExercisePerformanceSummary;
+            return {sessionId: session.id, sessionName: session.nameSnapshot, performedAt: session.endedAt ?? session.updatedAt, suggestedLoadKg: suggested.actualLoadKg, sets: sets.map((entry) => ({loadKg: entry.actualLoadKg!, reps: entry.actualReps!, kind: entry.setKind ?? 'working', ...(entry.actualRir === undefined ? {} : {rir: entry.actualRir})}))} satisfies ExercisePerformanceSummary;
         }));
-        return candidates.filter((entry): entry is NonNullable<typeof entry> => entry !== undefined).sort((a, b) => b.performedAt.localeCompare(a.performedAt))[0];
+        return candidates.filter((entry): entry is NonNullable<typeof entry> => entry !== undefined).sort((a, b) => b.performedAt.localeCompare(a.performedAt)).slice(0, Math.max(1, limit));
     }
 
     async repairPosition(sessionId: string): Promise<ActiveWorkoutSnapshot> {
@@ -155,8 +160,25 @@ export class DexieWorkoutRepository implements WorkoutRepository {
         const defaultReps = parseDefaultReps((await this.db.appMeta.get(DEFAULT_EXERCISE_REPS_META_KEY))?.value);
         const resolvedLoads = new Map<string, number>();
         for (const entry of input.exercises) {
-            const previous = defaultLoads[entry.exerciseId] === undefined ? await this.exerciseHistory(entry.exerciseId) : undefined;
-            resolvedLoads.set(entry.exerciseId, defaultLoads[entry.exerciseId] ?? previous?.suggestedLoadKg ?? entry.targetLoadKg);
+            const manualLoad = defaultLoads[entry.exerciseId];
+            if (manualLoad !== undefined) {
+                resolvedLoads.set(entry.exerciseId, manualLoad);
+                continue;
+            }
+            const history = await this.exerciseHistoryList(entry.exerciseId, undefined, 3);
+            const savedRepetitions = defaultReps[entry.exerciseId];
+            const goalSupportsRecommendation = ['strength', 'hypertrophy', 'endurance', 'balanced'].includes(input.trainingContext?.goal ?? '');
+            const recommendation = goalSupportsRecommendation ? recommendExerciseLoad({
+                repsMin: savedRepetitions ?? entry.repsMin,
+                repsMax: savedRepetitions ?? entry.repsMax,
+                targetRir: entry.targetRir,
+                history,
+            }) : undefined;
+            const hasRecordedRir = history.some((summary) => summary.sets.some((set) => set.rir !== undefined));
+            const recommendedLoad = recommendation?.status === 'recommended' && (recommendation.confidence !== 'low' || hasRecordedRir)
+                ? recommendation.suggestedLoadKg
+                : undefined;
+            resolvedLoads.set(entry.exerciseId, recommendedLoad ?? history[0]?.suggestedLoadKg ?? entry.targetLoadKg);
         }
         const sessionId = this.clock.id();
         await this.db.transaction('rw', [this.db.workoutSession, this.db.sessionExercise, this.db.performedSet, this.db.workoutOperation], async () => {

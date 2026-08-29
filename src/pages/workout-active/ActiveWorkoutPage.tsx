@@ -18,6 +18,7 @@ import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
 import {parseNonNegativeDecimal, shouldInitializeNumericDraft} from './numericInput';
 import {remainingRestSeconds} from './restTimerDisplay';
 import {CompleteSetAction, ExerciseRail, MetricStepper, RestAction, WorkoutActionBar, WorkoutProgressHeader} from './ActiveWorkoutUi';
+import {recommendExerciseLoad} from '../../workout/loadRecommendation';
 
 const contextRatings = new ExerciseContextRatingRepository(db);
 
@@ -67,7 +68,7 @@ export function ActiveWorkoutPage() {
     const [rir, setRir] = useState(2);
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
     const [exerciseDetails, setExerciseDetails] = useState<LibraryExercise>();
-    const [previousPerformance, setPreviousPerformance] = useState<ExercisePerformanceSummary>();
+    const [previousHistory, setPreviousHistory] = useState<ExercisePerformanceSummary[]>([]);
     const [exerciseChangeNotice, setExerciseChangeNotice] = useState('');
     const [defaultValueNotice, setDefaultValueNotice] = useState('');
     const [instructionsOpen, setInstructionsOpen] = useState(false);
@@ -145,6 +146,14 @@ export function ActiveWorkoutPage() {
 
     const currentSet = snapshot?.sets.find((entry) => entry.id === snapshot.session.currentSetId && entry.status !== 'completed');
     const currentExercise = snapshot?.exercises.find((entry) => entry.id === (currentSet?.sessionExerciseId ?? snapshot.session.currentSessionExerciseId));
+    const previousPerformance = previousHistory[0];
+    const supportsGoalLoadGuide = ['strength', 'hypertrophy', 'endurance'].includes(snapshot?.session.trainingContext?.goal ?? '');
+    const loadRecommendation = currentSet && supportsGoalLoadGuide ? recommendExerciseLoad({
+        repsMin: currentSet.targetRepsMin,
+        repsMax: currentSet.targetRepsMax,
+        targetRir: currentSet.targetRir,
+        history: previousHistory,
+    }) : undefined;
     const completed = snapshot?.sets.filter((entry) => entry.status === 'completed') ?? [];
     const latestCompleted = [...completed].sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))[0];
     const allSetsDone = Boolean(snapshot && snapshot.sets.every((entry) => entry.status === 'completed'));
@@ -153,14 +162,14 @@ export function ActiveWorkoutPage() {
         let cancelled = false;
         setExerciseMedia([]);
         setExerciseDetails(undefined);
-        setPreviousPerformance(undefined);
+        setPreviousHistory([]);
         if (!catalog || !currentExercise) return () => { cancelled = true; };
         void Promise.all([
             resolveWorkoutExerciseMedia(catalog, currentExercise.exerciseId, currentExercise.exerciseNameSnapshot),
             catalog.get(currentExercise.exerciseId),
-            service?.exerciseHistory(currentExercise.exerciseId, snapshot?.session.id),
+            service?.exerciseHistoryList(currentExercise.exerciseId, snapshot?.session.id, 3),
         ]).then(([media, details, history]) => {
-            if (!cancelled) { setExerciseMedia(media); setExerciseDetails(details); setPreviousPerformance(history); }
+            if (!cancelled) { setExerciseMedia(media); setExerciseDetails(details); setPreviousHistory(history ?? []); }
         });
         return () => { cancelled = true; };
     }, [catalog, currentExercise, service, snapshot?.session.id]);
@@ -360,6 +369,18 @@ export function ActiveWorkoutPage() {
                         <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'flex-start', sm: 'center'}} gap={1}>
                             <Box><Typography fontWeight={750}>Rate for this training type</Typography><Typography variant="body2" color="text.secondary">{snapshot.session.trainingContext.zone} · {snapshot.session.trainingContext.goal}. This does not change ratings in another body area.</Typography></Box>
                             <Stack direction="row" aria-label={`Rate ${currentExercise.exerciseNameSnapshot} out of 5 for this training type`}>{[1, 2, 3, 4, 5].map((value) => <IconButton key={value} aria-label={`${value} out of 5`} disabled={busy} onClick={() => void rateCurrentExercise(value)} sx={{width: 48, height: 48, color: value <= exerciseRating ? 'warning.main' : 'text.secondary'}}>{value <= exerciseRating ? <Star/> : <StarBorder/>}</IconButton>)}</Stack>
+                        </Stack>
+                    </Paper>}
+
+                    {loadRecommendation && <Paper sx={{p: 1.5, bgcolor: 'rgba(83,199,183,.07)', borderColor: 'rgba(83,199,183,.24)'}}>
+                        <Stack spacing={0.75}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} flexWrap="wrap">
+                                <Box><Typography variant="caption" color="primary.main">GOAL LOAD GUIDE</Typography><Typography fontWeight={800}>{loadRecommendation.status === 'recommended' && loadRecommendation.loadMinKg !== undefined && loadRecommendation.loadMaxKg !== undefined ? loadRecommendation.loadMinKg === loadRecommendation.loadMaxKg ? `${loadRecommendation.loadMinKg} kg` : `${loadRecommendation.loadMinKg}–${loadRecommendation.loadMaxKg} kg` : 'Calibration set needed'}</Typography></Box>
+                                <Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/><Chip size="small" variant="outlined" label={`RIR ${currentSet.targetRir}`}/>{loadRecommendation.status === 'recommended' && <Chip size="small" color="primary" variant="outlined" label={`${loadRecommendation.confidence} confidence`}/>}</Stack>
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary">{loadRecommendation.reason}</Typography>
+                            {loadRecommendation.status === 'recommended' && loadRecommendation.suggestedLoadKg !== undefined && loadRecommendation.suggestedLoadKg !== currentSet.targetLoadKg && <Button sx={{alignSelf: 'flex-start'}} variant="outlined" onClick={() => setLoadInput(String(loadRecommendation.suggestedLoadKg))}>Use suggested {loadRecommendation.suggestedLoadKg} kg</Button>}
+                            <Typography variant="caption" color="text.secondary">Your current target and saved manual defaults are never overwritten automatically.</Typography>
                         </Stack>
                     </Paper>}
 

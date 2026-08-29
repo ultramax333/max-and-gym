@@ -135,6 +135,30 @@ describe('DexieWorkoutRepository', () => {
         expect(await repository.exerciseHistory(next.exercises[0].exerciseId, next.session.id)).toMatchObject({suggestedLoadKg: 22, sets: expect.arrayContaining([expect.objectContaining({loadKg: 22, reps: 9})])});
     });
 
+    it('adapts the suggested load when a generated session changes training goal', async () => {
+        let hypertrophy = await repository.startProgramDay({
+            name: 'Hypertrophy calibration',
+            trainingContext: {zone: 'arms', goal: 'hypertrophy'},
+            exercises: [{exerciseId: 'curl-goal', exerciseName: 'Curl', prescriptionSnapshot: '2 × 8–12', workingSets: 2, repsMin: 8, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 90}],
+        }, 'goal-history-start');
+        for (let index = 0; index < 2; index += 1) {
+            const current = hypertrophy.sets.find((entry) => entry.id === hypertrophy.session.currentSetId)!;
+            hypertrophy = await repository.completeSet({sessionId: hypertrophy.session.id, setId: current.id, operationId: `goal-history-set-${index}`, actualLoadKg: 12, actualReps: 10, actualRir: 2});
+        }
+        await repository.finish(hypertrophy.session.id, 'goal-history-finish');
+
+        const strength = await repository.startProgramDay({
+            name: 'Strength recommendation',
+            trainingContext: {zone: 'arms', goal: 'strength'},
+            exercises: [{exerciseId: 'curl-goal', exerciseName: 'Curl', prescriptionSnapshot: '2 × 4–6', workingSets: 2, repsMin: 4, repsMax: 6, targetLoadKg: 0, targetRir: 2, restSeconds: 180}],
+        }, 'goal-strength-start');
+
+        expect(strength.sets.map((entry) => entry.targetLoadKg)).toEqual([13.5, 13.5]);
+        expect(await repository.exerciseHistoryList('curl-goal', strength.session.id)).toEqual([
+            expect.objectContaining({sessionId: hypertrophy.session.id, sets: expect.arrayContaining([expect.objectContaining({kind: 'working', rir: 2})])}),
+        ]);
+    });
+
     it('saves an explicit default load and applies it to every remaining working set', async () => {
         const started = await repository.startSample('default-start');
         const updated = await repository.saveDefaultLoad(started.session.id, started.exercises[0].id, 24);

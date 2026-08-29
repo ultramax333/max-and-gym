@@ -135,7 +135,7 @@ export function generateProgram(rawInput: GeneratorInput, rawCandidates: Generat
     if (warnings.length) return {ok: false, code: 'VALIDATION_FAILED', message: warnings.join(' '), exclusions};
     const explanation = {normalizedInput: input, selections, exclusions, warnings, weeklyPatterns, weeklyMuscles};
     const identityHash = stableHash(JSON.stringify({input, days, explanation}));
-    return {ok: true, program: {name: `Program ${input.frequency} days · ${input.durationMinutes} min`, frequency: input.frequency, durationMinutes: input.durationMinutes, seed: input.seed, generatorVersion: input.generatorVersion, identityHash, days, explanation}};
+    return {ok: true, program: {name: `Program ${input.frequency} days · ${input.durationMinutes} min`, frequency: input.frequency, durationMinutes: input.durationMinutes, seed: input.seed, generatorVersion: input.generatorVersion, sessionContext: {zone: 'full-body', goal: input.goal}, identityHash, days, explanation}};
 }
 
 export function regenerateAccessories(program: GeneratedProgram, input: GeneratorInput, candidates: GeneratorCandidate[]): GenerationResult {

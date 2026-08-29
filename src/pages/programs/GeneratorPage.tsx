@@ -23,6 +23,7 @@ import {ProgramDetailPage, ProgramListPage} from './ProgramPages';
 import {RELEASE_DEFAULTS} from '../../config/releaseDefaults';
 import {QuickSessionGenerationStateRepository} from '../../generator/QuickSessionGenerationStateRepository';
 import {hasAvailableEquipment} from '../../generator/constraints';
+import {ExerciseLoadRecommendation, recommendExerciseLoad} from '../../workout/loadRecommendation';
 
 const catalog = new ExerciseCatalogRepository(db);
 const programs = new ProgramRepository(db);
@@ -32,6 +33,26 @@ const contextRatings = new ExerciseContextRatingRepository(db);
 const allEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'];
 type SelectableGoal = Exclude<GoalBlend, 'balanced'>;
 const goalRecovery: Record<SelectableGoal, number> = {strength: 180, hypertrophy: 90, endurance: 60};
+
+function formatLoadRange(recommendation: ExerciseLoadRecommendation): string {
+    if (recommendation.loadMinKg === undefined || recommendation.loadMaxKg === undefined) return 'Load calibration needed';
+    return recommendation.loadMinKg === recommendation.loadMaxKg
+        ? `${recommendation.loadMinKg} kg suggested`
+        : `${recommendation.loadMinKg}–${recommendation.loadMaxKg} kg suggested`;
+}
+
+async function loadAdviceForProgram(program: GeneratedProgram): Promise<Record<string, ExerciseLoadRecommendation>> {
+    const entries = await Promise.all(program.days.flatMap((day) => day.exercises).map(async (exercise) => {
+        const history = await workout.exerciseHistoryList(exercise.exerciseId, undefined, 3);
+        return [exercise.exerciseId, recommendExerciseLoad({
+            repsMin: exercise.prescription.repsMin,
+            repsMax: exercise.prescription.repsMax,
+            targetRir: exercise.prescription.targetRir,
+            history,
+        })] as const;
+    }));
+    return Object.fromEntries(entries);
+}
 
 function catalogMediaUrl(path: string): string {
     return `${import.meta.env.BASE_URL}${path}`;
@@ -70,6 +91,7 @@ function QuickSessionBuilder() {
     const [seed, setSeed] = useState('maxgym-session-01');
     const [variationNumber, setVariationNumber] = useState(1);
     const [preview, setPreview] = useState<GeneratedProgram>();
+    const [loadAdvice, setLoadAdvice] = useState<Record<string, ExerciseLoadRecommendation>>({});
     const [libraryExercises, setLibraryExercises] = useState<LibraryExercise[]>([]);
     const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
     const [replacementSearch, setReplacementSearch] = useState('');
@@ -119,9 +141,11 @@ function QuickSessionBuilder() {
             const result = generateQuickSession(input, candidates, zone);
             if (!result.ok) {
                 setPreview(undefined);
+                setLoadAdvice({});
                 setError(result.message);
             } else {
                 setPreview(result.program);
+                setLoadAdvice(await loadAdviceForProgram(result.program));
                 setReplaceIndex(null);
                 const nextState = await quickSessionState.record(zone, variation, result.program.days[0].exercises.map((exercise) => exercise.exerciseId));
                 setVariationNumber(nextState.nextVariation);
@@ -159,7 +183,7 @@ function QuickSessionBuilder() {
         }
     };
 
-    const replaceExercise = (index: number, replacement: LibraryExercise) => {
+    const replaceExercise = async (index: number, replacement: LibraryExercise) => {
         if (!preview) return;
         const currentDay = preview.days[0];
         const existingIds = new Set(currentDay.exercises.map((entry) => entry.exerciseId));
@@ -188,6 +212,13 @@ function QuickSessionBuilder() {
         const nextProgram = {...preview, days: [nextDay], explanation: {...preview.explanation, selections: nextSelections}, identityHash: ''};
         nextProgram.identityHash = stableHash(JSON.stringify(nextProgram));
         setPreview(nextProgram);
+        const history = await workout.exerciseHistoryList(replacement.id, undefined, 3);
+        setLoadAdvice((advice) => ({...advice, [replacement.id]: recommendExerciseLoad({
+            repsMin: nextExercise.prescription.repsMin,
+            repsMax: nextExercise.prescription.repsMax,
+            targetRir: nextExercise.prescription.targetRir,
+            history,
+        })}));
         setReplaceIndex(null);
     };
 
@@ -269,7 +300,7 @@ function QuickSessionBuilder() {
                 const endImage = details?.media.find((media) => media.kind === 'end-image');
                 return <Card key={`${exercise.exerciseId}-${index}`} variant="outlined" sx={{overflow: 'hidden', borderRadius: '20px', bgcolor: '#101720'}}><Stack direction={{xs: 'column', sm: 'row'}}>
                     <Box sx={{width: {xs: '100%', sm: 220}, height: {xs: 205, sm: 220}, flexShrink: 0, display: 'grid', gridTemplateColumns: endImage ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{startImage && <CardMedia component="img" image={catalogMediaUrl(startImage.path)} alt={startImage.altText} loading="lazy" sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>}{endImage && <CardMedia component="img" image={catalogMediaUrl(endImage.path)} alt={endImage.altText} loading="lazy" sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>}{!startImage && <Box sx={{height: '100%', bgcolor: 'background.default', display: 'grid', placeItems: 'center'}}><Typography variant="caption" color="text.secondary">No local photo</Typography></Box>}</Box>
-                    <CardContent sx={{minWidth: 0, flex: 1, p: 2}}><Stack spacing={1}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Box><Typography variant="overline" color="primary.main">{exercise.equipmentTags?.[0] ?? 'BODYWEIGHT'} · EXERCISE {index + 1}</Typography><Typography component="h3" variant="h6">{exercise.exerciseName}</Typography></Box>{details && <Stack direction="row"><IconButton aria-label={details.favourite ? `Remove ${details.name} from favourites` : `Add ${details.name} to favourites`} onClick={() => void toggleFavourite(details)}>{details.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</IconButton><IconButton color="warning" aria-label={`Never suggest ${details.name}`} disabled={busy} onClick={() => void markNeverSuggest(details)}><Block/></IconButton></Stack>}</Stack><Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${exercise.prescription.workingSets} × ${exercise.prescription.repsMin}–${exercise.prescription.repsMax}`}/><Chip size="small" variant="outlined" label={`${exercise.prescription.restSeconds} s rest`}/></Stack><Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Button variant="outlined" disabled={libraryExercises.length === 0} onClick={() => { setReplacementSearch(''); setReplaceIndex(index); }}>Replace exercise</Button><IconButton aria-label={`Move ${exercise.exerciseName} earlier`} disabled={index === 0} onClick={() => movePreviewExercise(index, -1)}><KeyboardArrowUp/></IconButton><IconButton aria-label={`Move ${exercise.exerciseName} later`} disabled={index === preview.days[0].exercises.length - 1} onClick={() => movePreviewExercise(index, 1)}><KeyboardArrowDown/></IconButton></Stack></Stack></CardContent>
+                    <CardContent sx={{minWidth: 0, flex: 1, p: 2}}><Stack spacing={1}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Box><Typography variant="overline" color="primary.main">{exercise.equipmentTags?.[0] ?? 'BODYWEIGHT'} · EXERCISE {index + 1}</Typography><Typography component="h3" variant="h6">{exercise.exerciseName}</Typography></Box>{details && <Stack direction="row"><IconButton aria-label={details.favourite ? `Remove ${details.name} from favourites` : `Add ${details.name} to favourites`} onClick={() => void toggleFavourite(details)}>{details.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</IconButton><IconButton color="warning" aria-label={`Never suggest ${details.name}`} disabled={busy} onClick={() => void markNeverSuggest(details)}><Block/></IconButton></Stack>}</Stack><Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${exercise.prescription.workingSets} × ${exercise.prescription.repsMin}–${exercise.prescription.repsMax}`}/><Chip size="small" variant="outlined" label={`RIR ${exercise.prescription.targetRir}`}/><Chip size="small" variant="outlined" label={`${exercise.prescription.restSeconds} s rest`}/></Stack>{loadAdvice[exercise.exerciseId] && <Box sx={{p: 1.25, borderRadius: '12px', bgcolor: 'rgba(126,161,248,.08)'}}><Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap"><Typography variant="body2" fontWeight={750}>{formatLoadRange(loadAdvice[exercise.exerciseId])}</Typography>{loadAdvice[exercise.exerciseId].status === 'recommended' && <Chip size="small" color="secondary" variant="outlined" label={`${loadAdvice[exercise.exerciseId].confidence} confidence`}/>}</Stack><Typography variant="caption" color="text.secondary">{loadAdvice[exercise.exerciseId].reason} Saved manual defaults still take priority.</Typography></Box>}<Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Button variant="outlined" disabled={libraryExercises.length === 0} onClick={() => { setReplacementSearch(''); setReplaceIndex(index); }}>Replace exercise</Button><IconButton aria-label={`Move ${exercise.exerciseName} earlier`} disabled={index === 0} onClick={() => movePreviewExercise(index, -1)}><KeyboardArrowUp/></IconButton><IconButton aria-label={`Move ${exercise.exerciseName} later`} disabled={index === preview.days[0].exercises.length - 1} onClick={() => movePreviewExercise(index, 1)}><KeyboardArrowDown/></IconButton></Stack></Stack></CardContent>
                 </Stack></Card>;
             })}
             <Alert severity="info">Save it to My sessions to find it later from Train or Programs, then rename, reorder or edit it at any time.</Alert>

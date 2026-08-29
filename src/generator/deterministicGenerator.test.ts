@@ -18,6 +18,7 @@ describe('deterministic program generator', () => {
         for (const day of result.program.days) expect(day.duration.total / 60).toBeGreaterThanOrEqual(durationMinutes * 0.9);
         for (const day of result.program.days) expect(day.duration.total / 60).toBeLessThanOrEqual(durationMinutes * 1.1);
         expect(result.program.explanation.selections.length).toBeGreaterThanOrEqual(frequency * 3);
+        expect(result.program.sessionContext).toEqual({zone: 'full-body', goal: 'balanced'});
     });
 
     it('keeps the reviewed seed fixtures aligned with all supported formats', () => {

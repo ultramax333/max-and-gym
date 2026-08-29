@@ -169,5 +169,5 @@ export interface ExercisePerformanceSummary {
     sessionName: string;
     performedAt: string;
     suggestedLoadKg: number;
-    sets: Array<{loadKg: number; reps: number; rir?: number}>;
+    sets: Array<{loadKg: number; reps: number; rir?: number; kind?: WorkoutSetKind}>;
 }

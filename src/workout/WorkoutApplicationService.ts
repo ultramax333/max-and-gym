@@ -125,6 +125,10 @@ export class WorkoutApplicationService {
         return this.repository.exerciseHistory(exerciseId, excludeSessionId);
     }
 
+    exerciseHistoryList(exerciseId: string, excludeSessionId?: string, limit = 3): Promise<ExercisePerformanceSummary[]> {
+        return this.repository.exerciseHistoryList(exerciseId, excludeSessionId, limit);
+    }
+
     async pause(sessionId: string): Promise<ActiveWorkoutSnapshot> {
         const operationId = createOperationId();
         const result = await this.runCritical('workout-pause', operationId, 'WORKOUT_PAUSE_FAILED', () => this.repository.pause(sessionId));
