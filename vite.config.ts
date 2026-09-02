@@ -48,6 +48,9 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id) {
+                    // Keep the reviewed catalogue as data, not inside whichever
+                    // small shared UI component Rollup happens to name its chunk after.
+                    if (id.endsWith('/src/exerciseCatalog/reviewed-exercises.json')) return 'reviewed-exercises';
                     if (id.includes('/node_modules/i18next/') || id.includes('/node_modules/react-i18next/')) return 'i18n-vendor';
                 },
             },
