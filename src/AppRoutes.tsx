@@ -52,6 +52,7 @@ const MeasurementsPage = React.lazy(() => import('./pages/progress/ProgressPages
 const PhotosPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.PhotosPage})));
 const BackupPage = React.lazy(() => import('./pages/backup/BackupPage'));
 const CoreVideosPage = React.lazy(() => import('./pages/core/CoreVideosPage'));
+const WorkoutSetupPage = React.lazy(() => import('./pages/workout-active/WorkoutSetupPage').then((module) => ({default: module.WorkoutSetupPage})));
 
 const AppRoutes = () => {
     return <ErrorBoundary code="UI_ROUTE_RENDER_FAILED" subsystem="UI"><React.Suspense fallback={<Loader prompt="Loading…"/>}><Routes>
@@ -92,6 +93,7 @@ const AppRoutes = () => {
         <Route path="/settings/about" element={<AboutPage/>}/>
         <Route path="/workout" element={<WorkoutPage/>}/>
         <Route path="/workout/active" element={<ActiveWorkoutPage/>}/>
+        <Route path="/workout/setup" element={<WorkoutSetupPage/>}/>
         <Route path="/workout/summary/:sessionId" element={<WorkoutSummaryPage/>}/>
         <Route path="/workout/postworkout"
                element={<PostWorkout/>}/>

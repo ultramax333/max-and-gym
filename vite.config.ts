@@ -24,7 +24,7 @@ const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.met
 const appVersion = process.env.npm_package_version ?? packageJson.version;
 const isAndroidBuild = process.env.MAX_GYM_TARGET === 'android';
 const githubPagesBase = '/max-and-gym/';
-const cacheVersion = '6';
+const cacheVersion = '9';
 const gitSha = process.env.GITHUB_SHA ?? (() => {
     try {
         return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {encoding: 'utf8'}).trim();
@@ -48,6 +48,9 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks(id) {
+                    // Keep the reviewed catalogue as data, not inside whichever
+                    // small shared UI component Rollup happens to name its chunk after.
+                    if (id.endsWith('/src/exerciseCatalog/reviewed-exercises.json')) return 'reviewed-exercises';
                     if (id.includes('/node_modules/i18next/') || id.includes('/node_modules/react-i18next/')) return 'i18n-vendor';
                 },
             },

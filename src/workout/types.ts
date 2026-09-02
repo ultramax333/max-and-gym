@@ -46,6 +46,7 @@ export interface StartWorkoutInput {
         locked?: boolean;
         alternativeExerciseIds?: string[];
         equipmentTags?: string[];
+        equipmentStation?: import('./equipmentStations').EquipmentStation;
         groupId?: string;
         groupType?: 'single' | 'superset' | 'triset' | 'circuit';
         groupSequenceIndex?: number;
@@ -68,6 +69,7 @@ export interface SessionExerciseRecord {
     lockedSnapshot: boolean;
     alternativeExerciseIdsSnapshot: string[];
     equipmentTagsSnapshot?: string[];
+    equipmentStationSnapshot?: import('./equipmentStations').EquipmentStation;
     groupIdSnapshot?: string;
     groupTypeSnapshot?: 'single' | 'superset' | 'triset' | 'circuit';
     groupSequenceIndexSnapshot?: number;
@@ -169,5 +171,5 @@ export interface ExercisePerformanceSummary {
     sessionName: string;
     performedAt: string;
     suggestedLoadKg: number;
-    sets: Array<{loadKg: number; reps: number; rir?: number}>;
+    sets: Array<{loadKg: number; reps: number; rir?: number; kind?: WorkoutSetKind}>;
 }

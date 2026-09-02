@@ -2,6 +2,7 @@ import React, {ReactNode} from 'react';
 import {Add, ArrowBack, Check, ChevronLeft, ChevronRight, Pause, PlayArrow, Remove, SkipNext} from '@mui/icons-material';
 import {Box, Button, Chip, IconButton, LinearProgress, Paper, Stack, TextField, Typography} from '@mui/material';
 import {ActiveWorkoutSnapshot, SessionExerciseRecord} from '../../workout/types';
+import {equipmentStation, EQUIPMENT_STATIONS} from '../../workout/equipmentStations';
 
 export function WorkoutProgressHeader({
     sessionName,
@@ -51,6 +52,7 @@ export function ExerciseRail({snapshot, currentExercise, busy, onSelect}: {
             const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
             const complete = completedSets === exerciseSets.length;
             const current = exercise.id === currentExercise?.id;
+            const station = EQUIPMENT_STATIONS[equipmentStation({exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot})];
             return <Chip
                 key={exercise.id}
                 clickable={!current && !complete}
@@ -59,9 +61,9 @@ export function ExerciseRail({snapshot, currentExercise, busy, onSelect}: {
                 color={current ? 'primary' : complete ? 'success' : 'default'}
                 variant={current ? 'filled' : 'outlined'}
                 icon={complete ? <Check/> : undefined}
-                label={`${index + 1}. ${exercise.exerciseNameSnapshot}`}
+                label={`${index + 1}. ${exercise.exerciseNameSnapshot} · ${station.label}`}
                 aria-current={current ? 'step' : undefined}
-                sx={{flexShrink: 0, height: 40, maxWidth: 245, '& .MuiChip-label': {overflow: 'hidden', textOverflow: 'ellipsis'}}}
+                sx={{flexShrink: 0, height: 48, borderBottom: `3px solid ${station.color}`, maxWidth: 245, '& .MuiChip-label': {overflow: 'hidden', textOverflow: 'ellipsis'}}}
             />;
         })}
     </Stack>;

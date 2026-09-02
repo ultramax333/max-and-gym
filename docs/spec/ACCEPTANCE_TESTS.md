@@ -284,6 +284,8 @@ Editing/deleting/archive of live programs/exercises does not alter completed wor
 
 Generated exercises with the same primary equipment are contiguous. In an active workout, every plan exercise opens its local photos and technique without changing the current exercise or losing progress.
 
+At session setup, named colour badges list required equipment, including reviewed bench requirements. The user can reorder equipment with buttons or keep the original exercise order. Confirming starts that order only for this session, preserves grouped execution, and retains the order after recovery. Cancelling setup must not stop an existing workout selected for replacement.
+
 ### AT-M02 — Variable working sets
 
 Supported quick-session durations produce coherent prescriptions containing two to five working sets according to goal and role; generation is not fixed to three sets.

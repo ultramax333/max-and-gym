@@ -3,6 +3,7 @@ import Dexie from 'dexie';
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {DexieDB} from '../db/db';
 import {DexieWorkoutRepository, WorkoutDomainError} from './DexieWorkoutRepository';
+import {orderByEquipment} from './equipmentStations';
 
 describe('DexieWorkoutRepository', () => {
     let db: DexieDB;
@@ -44,6 +45,27 @@ describe('DexieWorkoutRepository', () => {
         const finished = await repository.finish(started.session.id, 'timed-finish');
         expect(finished.session.elapsedSeconds).toBe(2100);
         expect(finished.session.plannedDurationSeconds).toBe(2400);
+    });
+
+    it('persists chosen station order and resumes it without changing prescriptions', async () => {
+        const prescription = {prescriptionSnapshot: '3 x 8', workingSets: 3, repsMin: 8, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 90};
+        const exercises = orderByEquipment([
+            {...prescription, exerciseId: 'curl', exerciseName: 'Curl', equipmentTags: ['dumbbell']},
+            {...prescription, exerciseId: 'fedb:Dumbbell_Bench_Press', exerciseName: 'Bench press', equipmentTags: ['dumbbell']},
+        ], ['bench', 'dumbbell']);
+        const started = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises}, 'equipment-start');
+        const retry = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises}, 'equipment-start');
+        expect(retry.session.id).toBe(started.session.id);
+        db.close();
+        db = new DexieDB();
+        repository = new DexieWorkoutRepository(db);
+        const recovered = await repository.findActive();
+        expect(recovered?.exercises.map((exercise) => exercise.exerciseId)).toEqual(['fedb:Dumbbell_Bench_Press', 'curl']);
+        expect(recovered?.exercises.map((exercise) => exercise.equipmentStationSnapshot)).toEqual(['bench', 'dumbbell']);
+        expect(recovered?.session.currentSessionExerciseId).toBe(recovered?.exercises[0].id);
+        expect(recovered?.sets).toHaveLength(6);
+        expect(recovered?.sets.every((set) => set.restSeconds === 90 && set.targetRepsMin === 8 && set.targetLoadKg === 12)).toBe(true);
+        expect(recovered?.session.plannedDurationSeconds).toBe(2400);
     });
 
     it('completes a set idempotently and advances position with one timestamp timer', async () => {
@@ -133,6 +155,30 @@ describe('DexieWorkoutRepository', () => {
         const next = await repository.startSample('history-next');
         expect(next.sets.filter((entry) => entry.sessionExerciseId === next.exercises[0].id).map((entry) => entry.targetLoadKg)).toEqual([22, 22, 22]);
         expect(await repository.exerciseHistory(next.exercises[0].exerciseId, next.session.id)).toMatchObject({suggestedLoadKg: 22, sets: expect.arrayContaining([expect.objectContaining({loadKg: 22, reps: 9})])});
+    });
+
+    it('adapts the suggested load when a generated session changes training goal', async () => {
+        let hypertrophy = await repository.startProgramDay({
+            name: 'Hypertrophy calibration',
+            trainingContext: {zone: 'arms', goal: 'hypertrophy'},
+            exercises: [{exerciseId: 'curl-goal', exerciseName: 'Curl', prescriptionSnapshot: '2 × 8–12', workingSets: 2, repsMin: 8, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 90}],
+        }, 'goal-history-start');
+        for (let index = 0; index < 2; index += 1) {
+            const current = hypertrophy.sets.find((entry) => entry.id === hypertrophy.session.currentSetId)!;
+            hypertrophy = await repository.completeSet({sessionId: hypertrophy.session.id, setId: current.id, operationId: `goal-history-set-${index}`, actualLoadKg: 12, actualReps: 10, actualRir: 2});
+        }
+        await repository.finish(hypertrophy.session.id, 'goal-history-finish');
+
+        const strength = await repository.startProgramDay({
+            name: 'Strength recommendation',
+            trainingContext: {zone: 'arms', goal: 'strength'},
+            exercises: [{exerciseId: 'curl-goal', exerciseName: 'Curl', prescriptionSnapshot: '2 × 4–6', workingSets: 2, repsMin: 4, repsMax: 6, targetLoadKg: 0, targetRir: 2, restSeconds: 180}],
+        }, 'goal-strength-start');
+
+        expect(strength.sets.map((entry) => entry.targetLoadKg)).toEqual([13.5, 13.5]);
+        expect(await repository.exerciseHistoryList('curl-goal', strength.session.id)).toEqual([
+            expect.objectContaining({sessionId: hypertrophy.session.id, sets: expect.arrayContaining([expect.objectContaining({kind: 'working', rir: 2})])}),
+        ]);
     });
 
     it('saves an explicit default load and applies it to every remaining working set', async () => {

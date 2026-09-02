@@ -2,7 +2,7 @@ export const NATIVE_BACK_EVENT = 'maxgym:native-back';
 
 export function resolveNativeBackTarget(pathname: string): string | undefined {
     if (pathname === '/') return undefined;
-    if (pathname === '/workout/active') return '/train';
+    if (pathname === '/workout/active' || pathname === '/workout/setup') return '/train';
     if (pathname.startsWith('/workout/summary/') || pathname === '/workout/postworkout') return '/';
     if (pathname === '/train/core-videos') return '/train';
     if (pathname === '/programs/generate' || pathname.startsWith('/programs/')) return '/programs';

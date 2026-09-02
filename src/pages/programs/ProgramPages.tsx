@@ -11,12 +11,9 @@ import {ProgramRepository} from '../../programs/ProgramRepository';
 import {estimateProgramDay, weeklyBalance} from '../../programs/duration';
 import {ExerciseGroupType, ExerciseSetScheme, ProgramDayDetail, ProgramExerciseDetail, ProgramFrequency, ProgramStatus, TrainingProgramRecord} from '../../programs/types';
 import {programDayWorkoutInput} from '../../programs/workoutSnapshot';
-import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
-import {WorkoutApplicationService} from '../../workout/WorkoutApplicationService';
 
 const programs = new ProgramRepository(db);
 const catalog = new ExerciseCatalogRepository(db);
-const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
 
 function statusLabel(status: ProgramStatus): string { return status === 'active' ? 'Active' : status === 'archived' ? 'Archived' : 'Draft'; }
 function minutes(seconds: number): string { return `${Math.round(seconds / 60)} min`; }
@@ -58,8 +55,7 @@ export function ProgramListPage() {
         const day = detail?.days[0];
         if (!detail || !day?.exercises.length) { setError('This saved session has no exercises yet.'); return; }
         try {
-            await workout.startProgramDay(programDayWorkoutInput(detail.name, day, detail.trainingContext));
-            navigate('/workout/active');
+            navigate('/workout/setup', {state: {workoutInput: programDayWorkoutInput(detail.name, day, detail.trainingContext)}});
         } catch {
             setError('A workout is already in progress. Resume or finish it from the workout bar before starting this saved session.');
         }
@@ -124,7 +120,7 @@ export function ProgramDetailPage() {
     if (!program) return <Layout title="Program" hideNav><ScreenContainer><StatePanel title="Program not found" description="It may have been archived or deleted." action={<Button onClick={() => navigate('/programs')}>Back</Button>}/></ScreenContainer></Layout>;
     const savedSession = program.weeklyFrequency === 1;
     const activate = async () => { try { setError(''); await programs.activate(program.id); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not activate program.'); } };
-    const start = async () => { const day = program.days[program.currentDayIndex % program.days.length]; if (!day?.exercises.length) { setError('The next day contains no exercises.'); return; } try { await workout.startProgramDay(programDayWorkoutInput(program.name, day, program.trainingContext)); navigate('/workout/active'); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not start workout.'); } };
+    const start = async () => { const day = program.days[program.currentDayIndex % program.days.length]; if (!day?.exercises.length) { setError('The next day contains no exercises.'); return; } try { navigate('/workout/setup', {state: {workoutInput: programDayWorkoutInput(program.name, day, program.trainingContext)}}); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not start workout.'); } };
     const archived = program.status === 'archived';
     return <Layout title={program.name} hideNav><ScreenContainer><SectionHeader eyebrow={archived ? 'ARCHIVED' : savedSession ? 'SAVED SESSION' : statusLabel(program.status).toUpperCase()} title={program.name} action={<Stack direction="row" gap={1}>{!savedSession && !archived && program.status !== 'active' && <SecondaryButton onClick={activate}>Activate</SecondaryButton>}{!archived && (savedSession || program.status === 'active') && <PrimaryButton startIcon={<FitnessCenter/>} onClick={start}>Start {savedSession ? 'session' : program.days[program.currentDayIndex % program.days.length]?.name}</PrimaryButton>}</Stack>}/>{error && <Alert severity="error" sx={{mb: 2}}>{error}</Alert>}<Stack direction="row" gap={1} flexWrap="wrap" sx={{mb: 2}}><Chip label={savedSession ? 'Reusable session' : `${program.weeklyFrequency} days/week`}/><Chip label={`${program.defaultDurationMinutes} min`}/><Chip label={`${Object.keys(balance?.patterns ?? {}).length} movement patterns covered`}/></Stack>{balance?.warnings.map((warning) => <Alert key={warning} severity="info" sx={{mb: 1}}>{warning}</Alert>)}<Stack spacing={2} sx={{mt: 2}}>{program.days.map((day) => <DayEditor key={day.id} day={day}/>)}</Stack><Divider sx={{my: 3}}/><Stack direction="row" justifyContent="space-between"><Button onClick={() => navigate(savedSession && !archived ? '/programs?view=sessions' : '/programs')}>Back to {savedSession && !archived ? 'saved sessions' : 'programs'}</Button>{!archived && <Button color="error" startIcon={<Archive/>} onClick={async () => { await programs.archive(program.id); navigate(savedSession ? '/programs?view=sessions' : '/programs'); }}>Archive</Button>}</Stack></ScreenContainer></Layout>;
 }

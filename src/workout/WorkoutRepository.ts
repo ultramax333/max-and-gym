@@ -12,6 +12,7 @@ export interface WorkoutRepository {
     saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot>;
     saveDefaultReps(sessionId: string, sessionExerciseId: string, repetitions: number): Promise<ActiveWorkoutSnapshot>;
     exerciseHistory(exerciseId: string, excludeSessionId?: string): Promise<ExercisePerformanceSummary | undefined>;
+    exerciseHistoryList(exerciseId: string, excludeSessionId?: string, limit?: number): Promise<ExercisePerformanceSummary[]>;
     undoSet(sessionId: string, setId: string, operationId: string): Promise<ActiveWorkoutSnapshot>;
     pause(sessionId: string): Promise<ActiveWorkoutSnapshot>;
     resume(sessionId: string): Promise<ActiveWorkoutSnapshot>;

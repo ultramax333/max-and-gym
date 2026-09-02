@@ -18,6 +18,9 @@ import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
 import {parseNonNegativeDecimal, shouldInitializeNumericDraft} from './numericInput';
 import {remainingRestSeconds} from './restTimerDisplay';
 import {CompleteSetAction, ExerciseRail, MetricStepper, RestAction, WorkoutActionBar, WorkoutProgressHeader} from './ActiveWorkoutUi';
+import {recommendExerciseLoad} from '../../workout/loadRecommendation';
+import {EquipmentBadge, EquipmentBadges} from '../../components/ui/EquipmentBadge';
+import {equipmentStation, EQUIPMENT_STATIONS} from '../../workout/equipmentStations';
 
 const contextRatings = new ExerciseContextRatingRepository(db);
 
@@ -67,7 +70,7 @@ export function ActiveWorkoutPage() {
     const [rir, setRir] = useState(2);
     const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
     const [exerciseDetails, setExerciseDetails] = useState<LibraryExercise>();
-    const [previousPerformance, setPreviousPerformance] = useState<ExercisePerformanceSummary>();
+    const [previousHistory, setPreviousHistory] = useState<ExercisePerformanceSummary[]>([]);
     const [exerciseChangeNotice, setExerciseChangeNotice] = useState('');
     const [defaultValueNotice, setDefaultValueNotice] = useState('');
     const [instructionsOpen, setInstructionsOpen] = useState(false);
@@ -145,6 +148,14 @@ export function ActiveWorkoutPage() {
 
     const currentSet = snapshot?.sets.find((entry) => entry.id === snapshot.session.currentSetId && entry.status !== 'completed');
     const currentExercise = snapshot?.exercises.find((entry) => entry.id === (currentSet?.sessionExerciseId ?? snapshot.session.currentSessionExerciseId));
+    const previousPerformance = previousHistory[0];
+    const supportsGoalLoadGuide = ['strength', 'hypertrophy', 'endurance'].includes(snapshot?.session.trainingContext?.goal ?? '');
+    const loadRecommendation = currentSet && supportsGoalLoadGuide ? recommendExerciseLoad({
+        repsMin: currentSet.targetRepsMin,
+        repsMax: currentSet.targetRepsMax,
+        targetRir: currentSet.targetRir,
+        history: previousHistory,
+    }) : undefined;
     const completed = snapshot?.sets.filter((entry) => entry.status === 'completed') ?? [];
     const latestCompleted = [...completed].sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))[0];
     const allSetsDone = Boolean(snapshot && snapshot.sets.every((entry) => entry.status === 'completed'));
@@ -153,14 +164,14 @@ export function ActiveWorkoutPage() {
         let cancelled = false;
         setExerciseMedia([]);
         setExerciseDetails(undefined);
-        setPreviousPerformance(undefined);
+        setPreviousHistory([]);
         if (!catalog || !currentExercise) return () => { cancelled = true; };
         void Promise.all([
             resolveWorkoutExerciseMedia(catalog, currentExercise.exerciseId, currentExercise.exerciseNameSnapshot),
             catalog.get(currentExercise.exerciseId),
-            service?.exerciseHistory(currentExercise.exerciseId, snapshot?.session.id),
+            service?.exerciseHistoryList(currentExercise.exerciseId, snapshot?.session.id, 3),
         ]).then(([media, details, history]) => {
-            if (!cancelled) { setExerciseMedia(media); setExerciseDetails(details); setPreviousPerformance(history); }
+            if (!cancelled) { setExerciseMedia(media); setExerciseDetails(details); setPreviousHistory(history ?? []); }
         });
         return () => { cancelled = true; };
     }, [catalog, currentExercise, service, snapshot?.session.id]);
@@ -347,7 +358,7 @@ export function ActiveWorkoutPage() {
                     <Box sx={{height: {xs: 238, sm: 320}, borderRadius: '24px', overflow: 'hidden', position: 'relative', bgcolor: '#111A24', border: '1px solid rgba(255,255,255,.08)'}}>
                         {exerciseMedia.length ? <Box sx={{height: '100%', display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: '100%', display: 'grid', placeItems: 'center'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}
                         <Box sx={{position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(180deg, transparent 56%, rgba(6,9,13,.92) 100%)'}}/>
-                        {exerciseDetails && <Stack direction="row" gap={0.75} sx={{position: 'absolute', left: 14, bottom: 14}}><Chip size="small" label={exerciseDetails.primaryMuscles[0] ?? exerciseDetails.movementPattern}/><Chip size="small" variant="outlined" label={exerciseDetails.equipmentTags[0] ?? 'Bodyweight'}/></Stack>}
+                        {exerciseDetails && <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{position: 'absolute', left: 14, right: 14, bottom: 14}}><Chip size="small" label={exerciseDetails.primaryMuscles[0] ?? exerciseDetails.movementPattern}/><EquipmentBadges exercise={{exerciseId: exerciseDetails.id, equipmentTags: exerciseDetails.equipmentTags}}/></Stack>}
                     </Box>
 
                     <Box>
@@ -360,6 +371,18 @@ export function ActiveWorkoutPage() {
                         <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'flex-start', sm: 'center'}} gap={1}>
                             <Box><Typography fontWeight={750}>Rate for this training type</Typography><Typography variant="body2" color="text.secondary">{snapshot.session.trainingContext.zone} · {snapshot.session.trainingContext.goal}. This does not change ratings in another body area.</Typography></Box>
                             <Stack direction="row" aria-label={`Rate ${currentExercise.exerciseNameSnapshot} out of 5 for this training type`}>{[1, 2, 3, 4, 5].map((value) => <IconButton key={value} aria-label={`${value} out of 5`} disabled={busy} onClick={() => void rateCurrentExercise(value)} sx={{width: 48, height: 48, color: value <= exerciseRating ? 'warning.main' : 'text.secondary'}}>{value <= exerciseRating ? <Star/> : <StarBorder/>}</IconButton>)}</Stack>
+                        </Stack>
+                    </Paper>}
+
+                    {loadRecommendation && <Paper sx={{p: 1.5, bgcolor: 'rgba(83,199,183,.07)', borderColor: 'rgba(83,199,183,.24)'}}>
+                        <Stack spacing={0.75}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} flexWrap="wrap">
+                                <Box><Typography variant="caption" color="primary.main">GOAL LOAD GUIDE</Typography><Typography fontWeight={800}>{loadRecommendation.status === 'recommended' && loadRecommendation.loadMinKg !== undefined && loadRecommendation.loadMaxKg !== undefined ? loadRecommendation.loadMinKg === loadRecommendation.loadMaxKg ? `${loadRecommendation.loadMinKg} kg` : `${loadRecommendation.loadMinKg}–${loadRecommendation.loadMaxKg} kg` : 'Calibration set needed'}</Typography></Box>
+                                <Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/><Chip size="small" variant="outlined" label={`RIR ${currentSet.targetRir}`}/>{loadRecommendation.status === 'recommended' && <Chip size="small" color="primary" variant="outlined" label={`${loadRecommendation.confidence} confidence`}/>}</Stack>
+                            </Stack>
+                            <Typography variant="body2" color="text.secondary">{loadRecommendation.reason}</Typography>
+                            {loadRecommendation.status === 'recommended' && loadRecommendation.suggestedLoadKg !== undefined && loadRecommendation.suggestedLoadKg !== currentSet.targetLoadKg && <Button sx={{alignSelf: 'flex-start'}} variant="outlined" onClick={() => setLoadInput(String(loadRecommendation.suggestedLoadKg))}>Use suggested {loadRecommendation.suggestedLoadKg} kg</Button>}
+                            <Typography variant="caption" color="text.secondary">Your current target and saved manual defaults are never overwritten automatically.</Typography>
                         </Stack>
                     </Paper>}
 
@@ -410,9 +433,10 @@ export function ActiveWorkoutPage() {
                         const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
                         const isCurrent = exercise.id === currentExercise?.id && !allSetsDone;
                         const canSwitch = !isCurrent && completedSets < exerciseSets.length;
-                        const equipment = exercise.equipmentTagsSnapshot?.[0] ?? 'Equipment not specified';
-                        const previousEquipment = exerciseIndex > 0 ? snapshot.exercises[exerciseIndex - 1].equipmentTagsSnapshot?.[0] ?? 'Equipment not specified' : undefined;
-                        return <React.Fragment key={exercise.id}>{equipment !== previousEquipment && <Typography variant="overline" color="primary.main" sx={{pt: exerciseIndex ? 1.5 : 0.5, pb: 0.25, borderTop: exerciseIndex ? 1 : 0, borderColor: 'divider'}}>{equipment}</Typography>}<Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1, borderBottom: 1, borderColor: 'divider'}}><Button color="inherit" startIcon={<Visibility/>} onClick={() => void openExercisePreview(exercise)} sx={{justifyContent: 'flex-start', textAlign: 'left', minHeight: 48, minWidth: 0}}><Box minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography></Box></Button><Stack direction="row" gap={1} alignItems="center" justifyContent="space-between"><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => switchToExercise(exercise)}>Switch here</Button>}</Stack></Stack></React.Fragment>;
+                        const equipment = equipmentStation({exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot});
+                        const previous = snapshot.exercises[exerciseIndex - 1];
+                        const previousEquipment = previous ? equipmentStation({exerciseId: previous.exerciseId, equipmentTags: previous.equipmentTagsSnapshot, equipmentStation: previous.equipmentStationSnapshot}) : undefined;
+                        return <React.Fragment key={exercise.id}>{equipment !== previousEquipment && <Box sx={{pt: exerciseIndex ? 1.5 : 0.5, pb: 0.75, borderTop: exerciseIndex ? 1 : 0, borderColor: 'divider'}}><EquipmentBadge station={equipment}/></Box>}<Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1, pl: 1, borderLeft: `3px solid ${EQUIPMENT_STATIONS[equipment].color}`, borderBottom: 1, borderBottomColor: 'divider'}}><Button color="inherit" startIcon={<Visibility/>} onClick={() => void openExercisePreview(exercise)} sx={{justifyContent: 'flex-start', textAlign: 'left', minHeight: 48, minWidth: 0}}><Box minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography><EquipmentBadges exercise={{exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot}}/></Box></Button><Stack direction="row" gap={1} alignItems="center" justifyContent="space-between"><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => switchToExercise(exercise)}>Switch here</Button>}</Stack></Stack></React.Fragment>;
                     })}</Stack></Collapse>
                 </Paper>
 
