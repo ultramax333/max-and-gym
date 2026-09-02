@@ -22,17 +22,15 @@ function ShellCard({title, text, icon, onClick, featured = false, disabled = fal
 function useActiveProgram() { return useLiveQuery(() => programs.active(), [], null); }
 function useActiveWorkout() { return useLiveQuery(() => workout.findActive(), [], null); }
 
-async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>): Promise<void> {
+async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>, replaceSessionId?: string): Promise<void> {
     const program = await programs.active();
     const day = program?.days[program.currentDayIndex % program.days.length];
     if (!program || !day?.exercises.length) throw new Error('The next program day has no exercises.');
-    await workout.startProgramDay(programDayWorkoutInput(program.name, day));
-    navigate('/workout/active');
+    navigate('/workout/setup', {state: {workoutInput: programDayWorkoutInput(program.name, day, program.trainingContext), replaceSessionId}});
 }
 
-async function startQuickWorkout(definition: QuickWorkoutDefinition, navigate: ReturnType<typeof useNavigate>): Promise<void> {
-    await workout.startProgramDay({name: definition.name, plannedDurationSeconds: definition.durationMinutes * 60, exercises: definition.exercises});
-    navigate('/workout/active');
+async function startQuickWorkout(definition: QuickWorkoutDefinition, navigate: ReturnType<typeof useNavigate>, replaceSessionId?: string): Promise<void> {
+    navigate('/workout/setup', {state: {workoutInput: {name: definition.name, plannedDurationSeconds: definition.durationMinutes * 60, exercises: definition.exercises}, replaceSessionId}});
 }
 
 export function HomeShellPage() {
@@ -50,8 +48,7 @@ export function HomeShellPage() {
         setBusy(true);
         setError('');
         try {
-            if (activeWorkout && replaceCurrent) await workout.abandon(activeWorkout.session.id);
-            await startNextProgramDay(navigate);
+            await startNextProgramDay(navigate, replaceCurrent ? activeWorkout?.session.id : undefined);
         } catch (reason) {
             setError(reason instanceof Error && reason.message.includes('no exercises')
                 ? 'The next program day has no exercises yet. Open Programs to add at least one exercise.'
@@ -84,7 +81,7 @@ export function HomeShellPage() {
             <CardContent><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}><Box><Typography variant="overline" color="primary.main">WORKOUT IN PROGRESS</Typography><Typography component="h2" variant="h5">{activeWorkout.session.nameSnapshot}</Typography><Typography color="text.secondary">{activeWorkout.sets.filter((entry) => entry.status === 'completed').length}/{activeWorkout.sets.length} sets completed. Resume exactly where you stopped.</Typography></Box><Chip color={activeWorkout.session.status === 'paused' ? 'warning' : 'success'} label={activeWorkout.session.status === 'paused' ? 'Paused' : 'Active'}/></Stack></CardContent>
             <CardActions sx={{px: 2, pb: 2, gap: 1, flexWrap: 'wrap'}}><PrimaryButton startIcon={<PlayArrow/>} onClick={() => navigate('/workout/active')} disabled={busy}>Resume workout</PrimaryButton><Button color="error" variant="outlined" startIcon={<StopCircle/>} onClick={() => setStopOpen(true)} disabled={busy}>Stop workout</Button></CardActions>
         </Card> : active && next
-            ? <ShellCard featured title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · ${next.targetDurationMinutes}-minute target. Start in one tap.`} icon={<PlayArrow/>} onClick={() => void startProgram()} disabled={busy}/>
+            ? <ShellCard featured title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · ${next.targetDurationMinutes}-minute target. Choose your equipment order before starting.`} icon={<PlayArrow/>} onClick={() => void startProgram()} disabled={busy}/>
             : <ShellCard featured title="Build your first program" text="Choose a simple structure to see your next workout here." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>
         }
         {activeWorkout && active && next && <><Typography variant="overline" color="text.secondary">NEXT PLANNED</Typography><ShellCard title={`${active.name} · ${next.name}`} text={`${next.exercises.length} exercises · stop or replace the active workout before starting this session.`} icon={<CalendarMonth/>} onClick={() => void startProgram()} disabled={busy}/></>}
@@ -120,8 +117,7 @@ export function TrainShellPage() {
         if (!workoutToReplace) return;
         setReplacing(true);
         try {
-            await workout.abandon(workoutToReplace.id);
-            await startQuickWorkout(ARM_WORKOUT_45, navigate);
+            await startQuickWorkout(ARM_WORKOUT_45, navigate, workoutToReplace.id);
         } catch {
             setError('The arm workout could not be started. Completed sets from the previous workout are still saved.');
             setWorkoutToReplace(undefined);

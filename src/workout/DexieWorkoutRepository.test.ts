@@ -3,6 +3,7 @@ import Dexie from 'dexie';
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {DexieDB} from '../db/db';
 import {DexieWorkoutRepository, WorkoutDomainError} from './DexieWorkoutRepository';
+import {orderByEquipment} from './equipmentStations';
 
 describe('DexieWorkoutRepository', () => {
     let db: DexieDB;
@@ -44,6 +45,27 @@ describe('DexieWorkoutRepository', () => {
         const finished = await repository.finish(started.session.id, 'timed-finish');
         expect(finished.session.elapsedSeconds).toBe(2100);
         expect(finished.session.plannedDurationSeconds).toBe(2400);
+    });
+
+    it('persists chosen station order and resumes it without changing prescriptions', async () => {
+        const prescription = {prescriptionSnapshot: '3 x 8', workingSets: 3, repsMin: 8, repsMax: 12, targetLoadKg: 12, targetRir: 2, restSeconds: 90};
+        const exercises = orderByEquipment([
+            {...prescription, exerciseId: 'curl', exerciseName: 'Curl', equipmentTags: ['dumbbell']},
+            {...prescription, exerciseId: 'fedb:Dumbbell_Bench_Press', exerciseName: 'Bench press', equipmentTags: ['dumbbell']},
+        ], ['bench', 'dumbbell']);
+        const started = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises}, 'equipment-start');
+        const retry = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises}, 'equipment-start');
+        expect(retry.session.id).toBe(started.session.id);
+        db.close();
+        db = new DexieDB();
+        repository = new DexieWorkoutRepository(db);
+        const recovered = await repository.findActive();
+        expect(recovered?.exercises.map((exercise) => exercise.exerciseId)).toEqual(['fedb:Dumbbell_Bench_Press', 'curl']);
+        expect(recovered?.exercises.map((exercise) => exercise.equipmentStationSnapshot)).toEqual(['bench', 'dumbbell']);
+        expect(recovered?.session.currentSessionExerciseId).toBe(recovered?.exercises[0].id);
+        expect(recovered?.sets).toHaveLength(6);
+        expect(recovered?.sets.every((set) => set.restSeconds === 90 && set.targetRepsMin === 8 && set.targetLoadKg === 12)).toBe(true);
+        expect(recovered?.session.plannedDurationSeconds).toBe(2400);
     });
 
     it('completes a set idempotently and advances position with one timestamp timer', async () => {

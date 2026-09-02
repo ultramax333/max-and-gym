@@ -8,6 +8,8 @@ import {MemoryRouter, Route, Routes} from 'react-router-dom';
 import {db} from '../../db/db';
 import {ProgramRepository} from '../../programs/ProgramRepository';
 import {ProgramDetailPage, ProgramListPage} from './ProgramPages';
+import {DBContext} from '../../context/dbContext';
+import {WorkoutSetupPage} from '../workout-active/WorkoutSetupPage';
 
 describe('ProgramDetailPage', () => {
     beforeEach(async () => {
@@ -46,12 +48,13 @@ describe('ProgramDetailPage', () => {
         const repository = new ProgramRepository(db);
         const session = await repository.create({name: 'Saved glutes', weeklyFrequency: 1, defaultDurationMinutes: 45});
         await repository.addExercise({dayId: session.days[0].id, exerciseId: 'hip-thrust', exerciseName: 'Barbell Hip Thrust', movementPattern: 'hinge', primaryMuscles: ['glutes'], defaultRestSeconds: 90, defaultReps: {min: 8, max: 12}});
-        render(<MemoryRouter initialEntries={['/programs?view=sessions']}><Routes><Route path="/programs" element={<ProgramListPage/>}/><Route path="/workout/active" element={<div>Saved session started</div>}/></Routes></MemoryRouter>);
+        render(<DBContext.Provider value={{db}}><MemoryRouter initialEntries={['/programs?view=sessions']}><Routes><Route path="/workout/setup" element={<WorkoutSetupPage/>}/><Route path="/programs" element={<ProgramListPage/>}/><Route path="/workout/active" element={<div>Saved session started</div>}/></Routes></MemoryRouter></DBContext.Provider>);
 
         expect(await screen.findByRole('heading', {level: 2, name: 'Saved glutes'})).toBeInTheDocument();
         expect(screen.getByText('Reusable session')).toBeInTheDocument();
         expect(screen.queryByText('1 days/week')).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', {name: 'Start'}));
+        await userEvent.click(await screen.findByRole('button', {name: 'Start workout'}));
         expect(await screen.findByText('Saved session started')).toBeInTheDocument();
         expect((await db.trainingProgram.get(session.id))?.status).toBe('draft');
     });

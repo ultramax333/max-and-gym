@@ -8,6 +8,7 @@ describe('native Android back navigation', () => {
 
     it('returns nested app screens to deterministic safe parents', () => {
         expect(resolveNativeBackTarget('/workout/active')).toBe('/train');
+        expect(resolveNativeBackTarget('/workout/setup')).toBe('/train');
         expect(resolveNativeBackTarget('/programs/generate')).toBe('/programs');
         expect(resolveNativeBackTarget('/library/fedb%3ACurl')).toBe('/library');
         expect(resolveNativeBackTarget('/settings/rest-alarm')).toBe('/settings');

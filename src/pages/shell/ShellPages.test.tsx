@@ -12,9 +12,11 @@ import {ProgramRepository} from '../../programs/ProgramRepository';
 import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
 import {maxGymTheme} from '../../theme/maxGymTheme';
 import {HomeShellPage} from './ShellPages';
+import {DBContext} from '../../context/dbContext';
+import {WorkoutSetupPage} from '../workout-active/WorkoutSetupPage';
 
 function renderHome() {
-    return render(<ThemeProvider theme={maxGymTheme}><MemoryRouter initialEntries={['/']}><Routes><Route path="/" element={<HomeShellPage/>}/><Route path="/workout/active" element={<div>Active workout route</div>}/></Routes></MemoryRouter></ThemeProvider>);
+    return render(<ThemeProvider theme={maxGymTheme}><DBContext.Provider value={{db}}><MemoryRouter initialEntries={['/']}><Routes><Route path="/" element={<HomeShellPage/>}/><Route path="/workout/setup" element={<WorkoutSetupPage/>}/><Route path="/workout/active" element={<div>Active workout route</div>}/></Routes></MemoryRouter></DBContext.Provider></ThemeProvider>);
 }
 
 async function createActiveProgram() {
@@ -66,6 +68,9 @@ describe('Home workout controls', () => {
         const dialog = screen.getByRole('dialog', {name: 'Start the planned workout?'});
         await userEvent.click(within(dialog).getByRole('button', {name: 'Replace and start'}));
 
+        await screen.findByRole('heading', {name: 'Equipment order'});
+        expect((await repository.findActive())?.session.nameSnapshot).toBe('Essential workout');
+        await userEvent.click(await screen.findByRole('button', {name: 'Start workout'}));
         expect(await screen.findByText('Active workout route')).toBeInTheDocument();
         await waitFor(async () => expect((await repository.findActive())?.session.nameSnapshot).toBe('Local strength · Day A'));
     });

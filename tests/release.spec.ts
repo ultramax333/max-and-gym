@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v9 / 8', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v9 / 9', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -72,6 +72,7 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await assertNoHorizontalOverflow(page);
 
     await page.getByRole('button', {name: 'Start this session'}).click();
+    await page.getByRole('button', {name: 'Start workout', exact: true}).click();
     await expect(page.getByText('GOAL LOAD GUIDE', {exact: true})).toBeVisible();
     await expect(page.getByText('Rate for this training type')).toBeVisible();
     await page.getByRole('button', {name: '5 out of 5'}).click();
@@ -82,6 +83,26 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await previews.nth(1).click();
     await expect(page.getByText('UPCOMING EXERCISE', {exact: true})).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('img').first()).toBeVisible();
+});
+
+test('equipment order puts bench exercises first and survives reopening @visual', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/train');
+    await page.getByRole('heading', {name: 'Arms · 45 min'}).click();
+    await expect(page.getByRole('heading', {name: 'Equipment order'})).toBeVisible();
+    const earlier = page.getByRole('button', {name: 'Move Bench earlier'});
+    await earlier.click();
+    await expect(page.getByRole('list', {name: 'Ordered exercises'}).getByRole('listitem').first()).toContainText('Decline Dumbbell Triceps Extension');
+    await assertNoHorizontalOverflow(page);
+    expect((await earlier.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(48);
+    await page.screenshot({path: `artifacts/playwright/equipment-setup-${page.viewportSize()?.width}.png`});
+    await page.getByRole('button', {name: 'Start workout', exact: true}).click();
+    await expect(page.getByRole('heading', {name: 'Decline Dumbbell Triceps Extension', exact: true})).toBeVisible();
+    await expect(page.getByText('0/15 sets completed')).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('heading', {name: 'Decline Dumbbell Triceps Extension', exact: true})).toBeVisible();
+    await expect(page.getByRole('navigation', {name: 'Workout exercises'}).getByText(/1\. Decline.*Bench/)).toBeVisible();
+    await assertNoHorizontalOverflow(page);
 });
 
 test('an occupied machine can be deferred or replaced without losing the session', async ({page}) => {
@@ -137,6 +158,7 @@ test('Pixel 9a training screen keeps every action reachable and the 45-minute ar
     await page.getByRole('heading', {name: 'Arms · 45 min'}).click();
     await expect(page.getByRole('dialog', {name: 'Start Arms · 45 min?'})).toBeVisible();
     await page.getByRole('button', {name: 'Start arm workout'}).click();
+    await page.getByRole('button', {name: 'Start workout', exact: true}).click();
     await expect(page.getByText('0/15 sets completed')).toBeVisible();
     const workoutPlan = page.getByRole('heading', {name: 'Workout plan · 5 exercises'}).locator('..');
     for (const exerciseName of ['Dumbbell Bicep Curl', 'Dumbbell One-Arm Triceps Extension', 'Hammer Curls', 'Decline Dumbbell Triceps Extension', 'Concentration Curls']) {

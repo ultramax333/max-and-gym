@@ -24,7 +24,7 @@ const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.met
 const appVersion = process.env.npm_package_version ?? packageJson.version;
 const isAndroidBuild = process.env.MAX_GYM_TARGET === 'android';
 const githubPagesBase = '/max-and-gym/';
-const cacheVersion = '8';
+const cacheVersion = '9';
 const gitSha = process.env.GITHUB_SHA ?? (() => {
     try {
         return execFileSync('git', ['rev-parse', '--short=12', 'HEAD'], {encoding: 'utf8'}).trim();
