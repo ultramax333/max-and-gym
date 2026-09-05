@@ -36,7 +36,7 @@ export function ActiveWorkoutDock({navigationVisible}: {navigationVisible: boole
 
     return <>
         <Box aria-hidden sx={{height: {xs: 82, md: 78}, flexShrink: 0}}/>
-        <Paper component="aside" aria-label="Active workout controls" elevation={8} sx={{position: 'fixed', zIndex: 1250, left: {xs: 10, md: navigationVisible ? 104 : 24}, right: {xs: 10, md: 24}, bottom: {xs: navigationVisible ? 'calc(78px + env(safe-area-inset-bottom))' : 'calc(12px + env(safe-area-inset-bottom))', md: 16}, borderRadius: '20px', borderColor: 'rgba(83,199,183,.35)', background: 'linear-gradient(135deg, rgba(24,45,50,.98), rgba(16,23,32,.98))', p: 1.25}}>
+        <Paper component="aside" aria-label="Active workout controls" elevation={8} sx={{position: 'fixed', zIndex: 1250, left: {xs: 10, md: navigationVisible ? 104 : 24}, right: {xs: 10, md: 24}, bottom: {xs: navigationVisible ? 'calc(90px + env(safe-area-inset-bottom))' : 'calc(12px + env(safe-area-inset-bottom))', md: 16}, borderRadius: '24px', borderColor: 'rgba(200,243,107,.35)', background: 'linear-gradient(135deg, rgba(32,38,25,.98), rgba(21,24,27,.98))', p: 1.25}}>
             <Stack direction="row" alignItems="center" gap={1.25}>
                 <Box sx={{minWidth: 0, flex: 1}}><Typography variant="overline" color="primary.main" sx={{lineHeight: 1}}>WORKOUT IN PROGRESS</Typography><Typography fontWeight={800} noWrap>{active.session.nameSnapshot}</Typography><Typography variant="caption" color="text.secondary">{completed}/{active.sets.length} sets completed</Typography></Box>
                 <Button size="small" variant="contained" startIcon={<PlayArrow/>} onClick={() => navigate('/workout/active')}>Resume</Button>

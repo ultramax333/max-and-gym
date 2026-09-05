@@ -2,7 +2,7 @@
 
 ## 1. Direction
 
-Dark, sober, technical, and premium. The application should feel calm during training, not gamified or promotional.
+Dark graphite, restrained citron accents and editorial typography. The application should feel calm during training. Version 1.11 uses a floating mobile navigation bar, image-led exercise cards and prominent numeric workout inputs.
 
 Version 1 has one dark theme. A light theme is deferred.
 
@@ -12,11 +12,11 @@ Suggested starting palette; verify contrast in implementation:
 
 | Token | Value | Use |
 |---|---|---|
-| `background.canvas` | `#090D12` | app background |
-| `background.surface` | `#101720` | cards and navigation |
-| `background.elevated` | `#17212C` | sheets and selected cards |
-| `border.subtle` | `#263342` | dividers and borders |
-| `accent.primary` | `#53C7B7` | primary actions and focus |
+| `background.canvas` | `#0C0E10` | app background |
+| `background.surface` | `#15181B` | cards and navigation |
+| `background.elevated` | `#20252A` | sheets and selected cards |
+| `border.subtle` | `#2B3035` | dividers and borders |
+| `accent.primary` | `#C8F36B` | primary actions and focus |
 | `accent.secondary` | `#7EA1F8` | secondary data emphasis |
 | `text.primary` | `#F2F6FA` | primary text |
 | `text.secondary` | `#A9B5C3` | supporting text |
@@ -56,9 +56,9 @@ Scale:
 
 - base unit: 4 pixels;
 - standard gaps: 8, 12, 16, 24, 32;
-- card radius: 16;
-- button radius: 12;
-- sheet top radius: 24;
+- card radius: 24;
+- button radius: 14;
+- sheet top radius: 28;
 - subtle one-pixel borders;
 - minimal shadows; elevation primarily through surface colour.
 

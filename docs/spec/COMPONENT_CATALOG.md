@@ -154,3 +154,12 @@ Every data-bearing component defines:
   NeverSuggestControl and local custom-image input.
 - The library uses a repository boundary; seed records, user preferences and custom
   exercises remain separate.
+
+## v1.11 interface refinement
+
+- Graphite/citron shared theme, floating mobile navigation and compact desktop rail.
+- Photo-led session launcher and library cards with separate open/favourite/exclusion controls.
+- Paired Load/Repetitions steppers appear before supporting workout panels.
+- Existing data services and workout operations remain the owners of persistence.
+- Responsive walkthrough and complete-backup navigation coverage: `tests/design.spec.ts`.
+- Visual evidence: `docs/reports/104-v1.11.0-ui-studio.md`.

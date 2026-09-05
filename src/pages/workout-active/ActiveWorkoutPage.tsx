@@ -355,7 +355,7 @@ export function ActiveWorkoutPage() {
                 {!restAlarmGateway.isNativeAndroid() && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
 
                 {!allSetsDone && currentExercise && currentSet && <>
-                    <Box sx={{height: {xs: 238, sm: 320}, borderRadius: '24px', overflow: 'hidden', position: 'relative', bgcolor: '#111A24', border: '1px solid rgba(255,255,255,.08)'}}>
+                    <Box sx={{height: {xs: 196, sm: 300}, borderRadius: '24px', overflow: 'hidden', position: 'relative', bgcolor: '#191D21', border: '1px solid rgba(255,255,255,.08)'}}>
                         {exerciseMedia.length ? <Box sx={{height: '100%', display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: '100%', display: 'grid', placeItems: 'center'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}
                         <Box sx={{position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(180deg, transparent 56%, rgba(6,9,13,.92) 100%)'}}/>
                         {exerciseDetails && <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{position: 'absolute', left: 14, right: 14, bottom: 14}}><Chip size="small" label={exerciseDetails.primaryMuscles[0] ?? exerciseDetails.movementPattern}/><EquipmentBadges exercise={{exerciseId: exerciseDetails.id, equipmentTags: exerciseDetails.equipmentTags}}/></Stack>}
@@ -367,6 +367,19 @@ export function ActiveWorkoutPage() {
                         <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{mt: 0.75}}><Chip size="small" label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/><Chip size="small" variant="outlined" label={currentSet.setKind ?? 'working'}/></Stack>
                     </Box>
 
+                    <Stack direction="row" gap={1.25}>
+                        <MetricStepper label="Load" value={loadInput} unit="kg" step={0.5} error={load === undefined} onChange={setLoadInput}/>
+                        <MetricStepper label="Repetitions" value={repsInput} unit="reps" step={1} error={!validReps} onChange={setRepsInput}/>
+                    </Stack>
+                    {(load === undefined || !validReps) && <Typography variant="caption" color="error.main">Enter a valid load and a whole number of repetitions.</Typography>}
+                    <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} justifyContent="space-between" gap={1}>
+                        <TextField select size="small" label="RIR" value={rir} onChange={(event) => setRir(Number(event.target.value))} sx={{width: 110}}>{Array.from({length: 11}, (_, value) => <MenuItem key={value} value={value}>{value}</MenuItem>)}</TextField>
+                        <Stack direction={{xs: 'column', sm: 'row'}} gap={0.5} alignItems={{xs: 'stretch', sm: 'center'}}>
+                            <Button variant="text" startIcon={<Save/>} disabled={busy || load === undefined || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (load === undefined) return; void perform(() => service!.saveDefaultLoad(snapshot.session.id, currentExercise.id, load)).then((saved) => { if (saved) setDefaultValueNotice(`${load} kg saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {load ?? '—'} kg as default</Button>
+                            <Button variant="text" startIcon={<Save/>} disabled={busy || !validReps || reps === undefined || reps < 1 || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (reps === undefined || reps < 1) return; void perform(() => service!.saveDefaultReps(snapshot.session.id, currentExercise.id, reps)).then((saved) => { if (saved) setDefaultValueNotice(`${reps} repetitions saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {validReps && reps !== undefined ? reps : '—'} reps as default</Button>
+                        </Stack>
+                    </Stack>
+
                     {snapshot.session.trainingContext && <Paper sx={{p: 1.5, bgcolor: 'rgba(250,190,80,.06)'}}>
                         <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'flex-start', sm: 'center'}} gap={1}>
                             <Box><Typography fontWeight={750}>Rate for this training type</Typography><Typography variant="body2" color="text.secondary">{snapshot.session.trainingContext.zone} · {snapshot.session.trainingContext.goal}. This does not change ratings in another body area.</Typography></Box>
@@ -374,7 +387,7 @@ export function ActiveWorkoutPage() {
                         </Stack>
                     </Paper>}
 
-                    {loadRecommendation && <Paper sx={{p: 1.5, bgcolor: 'rgba(83,199,183,.07)', borderColor: 'rgba(83,199,183,.24)'}}>
+                    {loadRecommendation && <Paper sx={{p: 1.5, bgcolor: 'rgba(200,243,107,.07)', borderColor: 'rgba(200,243,107,.24)'}}>
                         <Stack spacing={0.75}>
                             <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} flexWrap="wrap">
                                 <Box><Typography variant="caption" color="primary.main">GOAL LOAD GUIDE</Typography><Typography fontWeight={800}>{loadRecommendation.status === 'recommended' && loadRecommendation.loadMinKg !== undefined && loadRecommendation.loadMaxKg !== undefined ? loadRecommendation.loadMinKg === loadRecommendation.loadMaxKg ? `${loadRecommendation.loadMinKg} kg` : `${loadRecommendation.loadMinKg}–${loadRecommendation.loadMaxKg} kg` : 'Calibration set needed'}</Typography></Box>
@@ -393,12 +406,12 @@ export function ActiveWorkoutPage() {
                         </Stack>
                     </Paper>
 
-                    {exerciseDetails && <Paper sx={{p: 1.5, bgcolor: '#101720'}}>
+                    {exerciseDetails && <Paper sx={{p: 1.5, bgcolor: '#15181B'}}>
                         <Stack direction="row" gap={1} alignItems="flex-start"><InfoOutlined color="primary" fontSize="small"/><Box sx={{flex: 1}}><Typography component="h2" fontWeight={750}>How to move</Typography><Typography variant="body2" color="text.secondary">{shortInstruction(exerciseDetails.setupInstructions)}</Typography></Box><IconButton aria-label={instructionsOpen ? 'Hide technique' : 'Show technique'} onClick={() => setInstructionsOpen((open) => !open)}>{instructionsOpen ? <Close/> : <ExpandMore/>}</IconButton></Stack>
                         <Collapse in={instructionsOpen}><Box component="ol" sx={{pl: 3, mb: 0}}>{exerciseDetails.executionSteps.slice(0, 3).map((step) => <Typography component="li" variant="body2" key={step} sx={{mt: 1}}>{step}</Typography>)}{exerciseDetails.breathingCue && <Typography component="li" variant="body2" sx={{mt: 1}}>Breathing: {exerciseDetails.breathingCue}</Typography>}</Box></Collapse>
                     </Paper>}
 
-                    <Paper sx={{p: 1.5, bgcolor: 'rgba(83,199,183,.05)'}}>
+                    <Paper sx={{p: 1.5, bgcolor: 'rgba(200,243,107,.05)'}}>
                         <Typography component="h2" fontWeight={750}>Machine occupied?</Typography>
                         <Typography variant="body2" color="text.secondary" sx={{mt: 0.25}}>Do this exercise later without losing progress, or choose a compatible alternative before logging its first set.</Typography>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={1} sx={{mt: 1.25}}>
@@ -409,18 +422,7 @@ export function ActiveWorkoutPage() {
                         {!canReplaceCurrent && <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 1}}>An exercise with logged sets cannot be rewritten. Use Do later instead.</Typography>}
                     </Paper>
 
-                    <Stack direction={{xs: 'column', sm: 'row'}} gap={1.25}>
-                        <MetricStepper label="Load" value={loadInput} unit="kg" step={0.5} error={load === undefined} onChange={setLoadInput}/>
-                        <MetricStepper label="Repetitions" value={repsInput} unit="reps" step={1} error={!validReps} onChange={setRepsInput}/>
-                    </Stack>
-                    {(load === undefined || !validReps) && <Typography variant="caption" color="error.main">Enter a valid load and a whole number of repetitions.</Typography>}
-                    <Stack direction={{xs: 'column', sm: 'row'}} alignItems={{xs: 'stretch', sm: 'center'}} justifyContent="space-between" gap={1}>
-                        <TextField select size="small" label="RIR" value={rir} onChange={(event) => setRir(Number(event.target.value))} sx={{width: 110}}>{Array.from({length: 11}, (_, value) => <MenuItem key={value} value={value}>{value}</MenuItem>)}</TextField>
-                        <Stack direction={{xs: 'column', sm: 'row'}} gap={0.5} alignItems={{xs: 'stretch', sm: 'center'}}>
-                            <Button variant="text" startIcon={<Save/>} disabled={busy || load === undefined || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (load === undefined) return; void perform(() => service!.saveDefaultLoad(snapshot.session.id, currentExercise.id, load)).then((saved) => { if (saved) setDefaultValueNotice(`${load} kg saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {load ?? '—'} kg as default</Button>
-                            <Button variant="text" startIcon={<Save/>} disabled={busy || !validReps || reps === undefined || reps < 1 || (currentSet.setKind ?? 'working') !== 'working'} onClick={() => { if (reps === undefined || reps < 1) return; void perform(() => service!.saveDefaultReps(snapshot.session.id, currentExercise.id, reps)).then((saved) => { if (saved) setDefaultValueNotice(`${reps} repetitions saved as the default for ${currentExercise.exerciseNameSnapshot}. All remaining working sets were updated.`); }); }}>Use {validReps && reps !== undefined ? reps : '—'} reps as default</Button>
-                        </Stack>
-                    </Stack>
+
                 </>}
 
                 {allSetsDone && <StatePanel title="All sets are complete" description="Review the summary, then finish the workout. This action is safe to retry without creating duplicates." icon={<Flag/>}/>}

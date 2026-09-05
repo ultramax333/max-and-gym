@@ -23,7 +23,7 @@ import {useNavigate} from "react-router-dom";
 import {ScreenContainer, SectionHeader} from '../../components/ui/UiPrimitives';
 
 function AppTile({title, description, icon, onClick}: {title: string; description: string; icon: ReactNode; onClick: () => void}) {
-    return <Card><CardActionArea onClick={onClick} sx={{height: '100%', minHeight: 144}}><CardContent><Stack direction="row" gap={1.5} alignItems="flex-start"><Box sx={{width: 52, height: 52, flexShrink: 0, borderRadius: '17px', display: 'grid', placeItems: 'center', bgcolor: 'rgba(83,199,183,.12)', color: 'primary.main'}}>{icon}</Box><Box sx={{minWidth: 0, flex: 1}}><Typography component="h2" variant="h6">{title}</Typography><Typography variant="body2" color="text.secondary" sx={{mt: 0.5}}>{description}</Typography></Box><ArrowForwardRounded sx={{color: 'text.disabled'}}/></Stack></CardContent></CardActionArea></Card>;
+    return <Card><CardActionArea onClick={onClick} sx={{height: '100%', minHeight: 144}}><CardContent><Stack direction="row" gap={1.5} alignItems="flex-start"><Box sx={{width: 52, height: 52, flexShrink: 0, borderRadius: '17px', display: 'grid', placeItems: 'center', bgcolor: 'rgba(200,243,107,.12)', color: 'primary.main'}}>{icon}</Box><Box sx={{minWidth: 0, flex: 1}}><Typography component="h2" variant="h6">{title}</Typography><Typography variant="body2" color="text.secondary" sx={{mt: 0.5}}>{description}</Typography></Box><ArrowForwardRounded sx={{color: 'text.disabled'}}/></Stack></CardContent></CardActionArea></Card>;
 }
 
 export const AppsMenu = () => {
