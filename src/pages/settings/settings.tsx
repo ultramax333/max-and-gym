@@ -36,7 +36,7 @@ function SettingsGroup({title, children}: {title: string; children: ReactNode}) 
 }
 
 function SettingsEntry({icon, primary, secondary, onClick, href, target}: {icon: ReactNode; primary: ReactNode; secondary?: ReactNode; onClick?: () => void; href?: string; target?: string}) {
-    return <ListItemButton component="a" onClick={onClick} href={href} target={target} rel={target ? 'noopener noreferrer' : undefined} sx={{px: 1.25}}><ListItemAvatar><Avatar sx={{bgcolor: 'rgba(83,199,183,.12)', color: 'primary.main'}}>{icon}</Avatar></ListItemAvatar><ListItemText primary={primary} secondary={secondary} primaryTypographyProps={{fontWeight: 750}}/><ChevronRight sx={{color: 'text.disabled', flexShrink: 0}}/></ListItemButton>;
+    return <ListItemButton component="a" onClick={onClick} href={href} target={target} rel={target ? 'noopener noreferrer' : undefined} sx={{px: 1.25}}><ListItemAvatar><Avatar sx={{bgcolor: 'rgba(200,243,107,.12)', color: 'primary.main'}}>{icon}</Avatar></ListItemAvatar><ListItemText primary={primary} secondary={secondary} primaryTypographyProps={{fontWeight: 750}}/><ChevronRight sx={{color: 'text.disabled', flexShrink: 0}}/></ListItemButton>;
 }
 
 export const SettingsPage = () => {
@@ -56,7 +56,7 @@ export const SettingsPage = () => {
             <SettingsEntry icon={<NotificationsActive/>} primary="Rest alarm" secondary="Duration, tone, vibration and notification actions" onClick={() => navigate('/settings/rest-alarm')}/>
         </SettingsGroup>
         <SettingsGroup title="DATA & SYSTEM">
-            <SettingsEntry icon={<BackupIcon/>} primary={t('backup.title')} secondary={t('backup.description')} onClick={() => navigate('/settings/backup')}/>
+            <SettingsEntry icon={<BackupIcon/>} primary={t('backup.title')} secondary={t('backup.description')} onClick={() => navigate('/backup')}/>
             <SettingsEntry icon={<Build/>} primary={t('system')} secondary={t('systemDescription')} onClick={() => navigate('/settings/system')}/>
             <SettingsEntry icon={<MonitorHeart/>} primary="Diagnostics" secondary="Check storage, migrations and local status." onClick={() => navigate('/diagnostics')}/>
         </SettingsGroup>

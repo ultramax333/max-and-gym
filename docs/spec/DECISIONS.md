@@ -43,7 +43,7 @@ Codex must not reopen these decisions without a concrete blocker documented in a
 | Tracking | Workouts, body weight, measurements, progress photos |
 | Photos | Compressed local blobs; no uploads and no service-worker caching |
 | Theme | Dark only in version 1 |
-| Visual direction | Restrained graphite surfaces, mineral-teal accent, modern and touch-first |
+| Visual direction | Graphite surfaces, citron accent, editorial typography, image-led and touch-first (owner-authorized v1.11 redesign) |
 | Mobile navigation | Home, Train, Programs, Progress, Library |
 | Program reordering | Explicit move up/down controls required; pointer drag-and-drop is optional only if audit proves low risk and keyboard alternative remains |
 | Desktop navigation | Responsive side rail/sidebar |

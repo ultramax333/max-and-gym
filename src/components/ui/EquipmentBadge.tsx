@@ -4,7 +4,7 @@ import {EquipmentExercise, EquipmentStation, EQUIPMENT_STATIONS, requiredStation
 
 export function EquipmentBadge({station}: {station: EquipmentStation}) {
     const {label, color} = EQUIPMENT_STATIONS[station];
-    return <Chip size="small" label={label} variant="outlined" sx={{color, borderColor: color, bgcolor: '#101720', fontWeight: 700}}/>;
+    return <Chip size="small" label={label} variant="outlined" sx={{color, borderColor: color, bgcolor: '#15181B', fontWeight: 700}}/>;
 }
 
 export function EquipmentBadges({exercise}: {exercise: EquipmentExercise}) {
