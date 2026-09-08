@@ -54,7 +54,9 @@ describe('ProgramDetailPage', () => {
         expect(screen.getByText('Reusable session')).toBeInTheDocument();
         expect(screen.queryByText('1 days/week')).not.toBeInTheDocument();
         await userEvent.click(screen.getByRole('button', {name: 'Start'}));
-        await userEvent.click(await screen.findByRole('button', {name: 'Start workout'}));
+        // Setup resolves the reviewed catalogue before offering Start, including
+        // its first-install seed transaction in this empty synthetic database.
+        await userEvent.click(await screen.findByRole('button', {name: 'Start workout'}, {timeout:5000}));
         expect(await screen.findByText('Saved session started')).toBeInTheDocument();
         expect((await db.trainingProgram.get(session.id))?.status).toBe('draft');
     });

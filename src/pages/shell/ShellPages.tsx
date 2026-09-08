@@ -52,7 +52,7 @@ async function startNextProgramDay(navigate: ReturnType<typeof useNavigate>, rep
     const program = await programs.active();
     const day = program?.days[program.currentDayIndex % program.days.length];
     if (!program || !day?.exercises.length) throw new Error('The next program day has no exercises.');
-    navigate('/workout/setup', {state: {workoutInput: programDayWorkoutInput(program.name, day, program.trainingContext), replaceSessionId}});
+    navigate('/workout/setup', {state: {workoutInput: programDayWorkoutInput(program.name, day, program.trainingContext, program.generatorInputSnapshot), replaceSessionId}});
 }
 
 async function startQuickWorkout(definition: QuickWorkoutDefinition, navigate: ReturnType<typeof useNavigate>, replaceSessionId?: string): Promise<void> {

@@ -165,3 +165,12 @@ Order:
 - Selected exercises are grouped by their primary equipment tag with stable ordering inside each group.
 - A contextual rating is resolved before generation by exercise ID, body area and goal. It affects ranking only inside that exact context. A high non-strength rating may extend the optional upper repetition target by one; it never changes a completed record or applies a load automatically.
 - Normalized rating inputs are sorted and included in the identity hash so generation remains reproducible.
+
+## 12. Classification and replacement consistency (generator v10)
+
+- Focus matching uses primary muscles or explicit reviewed focus annotations, never incidental secondary involvement.
+- Availability tags are cumulative: a band-assisted pull-up requires both bands and bodyweight enabled. Auxiliary support stations remain visible at setup.
+- Generation and substitution always reject intrinsic high-impact transition tags, even if the input block list is empty.
+- Generator preview and active-workout alternatives share one selection policy. A focused session stays within its focus; broad and legacy sessions additionally preserve the exercise's primary/reviewed target overlap. Matching a movement pattern alone is insufficient.
+- Generated and saved generated sessions copy equipment and exclusions into an optional, unindexed workout selection snapshot. Legacy sessions do not invent missing availability.
+- Corrected isolation roles can reduce estimated duration. If the quick planner is below its 90% lower bound, it may fill an existing exercise up to five working sets, deterministically, without exceeding the 110% upper bound. Recovery and repetition ranges are unchanged; infeasible plans still fail validation.

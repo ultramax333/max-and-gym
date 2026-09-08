@@ -100,6 +100,14 @@ Create a repeatable development pipeline:
 
 The application records the seed revision so future updates can be migrated without overwriting user edits.
 
+Reviewed-7 applies 16 documented metadata corrections from
+`data/exercise-classification-overrides.json` during deterministic catalogue
+generation. IDs, source pins, local media and historical snapshots remain stable.
+`audit-exercise-assets.mjs` also runs the classification invariant audit; it does
+not claim exhaustive biomechanical or medical validation. Resistance tags and
+auxiliary setup stations are distinct. Library muscle filters target primary
+muscles unless the user explicitly enables secondary muscles.
+
 ## 9. Attribution screen
 
 The About page lists:

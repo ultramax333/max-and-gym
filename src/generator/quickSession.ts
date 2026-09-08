@@ -1,31 +1,11 @@
-import {evaluateHardConstraints, hasAvailableEquipment} from './constraints';
+import {evaluateHardConstraints} from './constraints';
 import {normalizeGeneratorInput, stableHash} from './deterministicGenerator';
 import {CandidateExclusion, CandidateSelection, GeneratedExercise, GeneratedProgram, GenerationResult, GeneratorCandidate, GeneratorInput, GeneratorRole} from './types';
 import {ProgramDurationMinutes} from '../programs/types';
-
-export type QuickSessionZone = 'full-body' | 'upper-body' | 'lower-body' | 'chest' | 'back' | 'shoulders' | 'arms' | 'glutes' | 'core';
-
-export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string; muscles: string[]}> = [
-    {value: 'full-body', label: 'Full body', muscles: []},
-    {value: 'upper-body', label: 'Upper body', muscles: ['chest', 'shoulders', 'middle back', 'lats', 'biceps', 'triceps', 'forearms']},
-    {value: 'lower-body', label: 'Lower body', muscles: ['quadriceps', 'hamstrings', 'glutes', 'calves']},
-    {value: 'chest', label: 'Chest', muscles: ['chest']},
-    {value: 'back', label: 'Back', muscles: ['middle back', 'lats', 'lower back', 'traps']},
-    {value: 'shoulders', label: 'Shoulders', muscles: ['shoulders']},
-    {value: 'arms', label: 'Arms', muscles: ['biceps', 'triceps', 'forearms']},
-    {value: 'glutes', label: 'Glutes', muscles: ['glutes', 'abductors']},
-    {value: 'core', label: 'Core', muscles: ['abdominals']},
-];
+import {matchesQuickSessionZone, QUICK_SESSION_ZONES, QuickSessionZone, selectExerciseAlternatives} from '../exerciseCatalog/selection';
+export {matchesQuickSessionZone, QUICK_SESSION_ZONES, type QuickSessionZone} from '../exerciseCatalog/selection';
 
 export const QUICK_SESSION_DURATIONS: ProgramDurationMinutes[] = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
-
-export function matchesQuickSessionZone(candidate: Pick<GeneratorCandidate, 'primaryMuscles' | 'generatorFocusZones'>, zone: QuickSessionZone): boolean {
-    const definition = QUICK_SESSION_ZONES.find((entry) => entry.value === zone);
-    if (!definition) return false;
-    return definition.muscles.length === 0
-        || candidate.primaryMuscles.some((muscle) => definition.muscles.includes(muscle))
-        || candidate.generatorFocusZones?.includes(zone) === true;
-}
 
 export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
     candidates: T[],
@@ -35,27 +15,7 @@ export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
     current: Pick<GeneratedExercise, 'exerciseId' | 'movementPattern' | 'primaryMuscles' | 'alternativeExerciseIds'>,
     limit = 20,
 ): T[] {
-    const eligible = candidates.filter((entry) =>
-        !selectedIds.has(entry.id) &&
-        entry.generatorEligible &&
-        !entry.archived &&
-        !entry.neverSuggest &&
-        !entry.effectiveNeverSuggest &&
-        matchesQuickSessionZone(entry, zone) &&
-        hasAvailableEquipment(entry, equipment)
-    );
-    const preferred = current.alternativeExerciseIds
-        .map((id) => eligible.find((entry) => entry.id === id))
-        .filter((entry): entry is T => entry !== undefined);
-    const compatible = eligible.filter((entry) =>
-        !preferred.some((preferredEntry) => preferredEntry.id === entry.id) &&
-        (entry.movementPattern === current.movementPattern || entry.primaryMuscles.some((muscle) => current.primaryMuscles.includes(muscle)))
-    );
-    const remaining = eligible.filter((entry) =>
-        !preferred.some((preferredEntry) => preferredEntry.id === entry.id) &&
-        !compatible.some((compatibleEntry) => compatibleEntry.id === entry.id)
-    );
-    return [...preferred, ...compatible, ...remaining].slice(0, limit);
+    return selectExerciseAlternatives(candidates, {...current, id: current.exerciseId}, {zone, equipment, selectedIds, preferredIds: current.alternativeExerciseIds, limit});
 }
 
 function roleFor(candidate: GeneratorCandidate): GeneratorRole {
@@ -173,6 +133,17 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         selections.push({exerciseId: entry.candidate.id, role: entry.role, score: entry.score, reasons});
     }
     if (exercises.length < minimumExercises) return {ok: false, code: 'NO_VALID_CANDIDATE', message: `Not enough eligible exercises for a ${input.durationMinutes}-minute ${zoneDefinition.label.toLowerCase()} session. Adjust equipment or exercise exclusions.`, exclusions};
+    // Corrected isolation classifications can shorten the initial plan. Fill a
+    // small remaining budget with balanced working sets, never shorter rests or
+    // an unrelated exercise. Keep the documented maximum of five sets.
+    while (quickSessionDuration(exercises, input.durationMinutes).total < lowerBound) {
+        const next = [...exercises].sort((a, b) => a.prescription.workingSets - b.prescription.workingSets)
+            .find(exercise => exercise.prescription.workingSets < 5 && quickSessionDuration(exercises.map(entry => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
+        if (!next) break;
+        next.prescription.workingSets++;
+        const reason = 'Working sets adjusted within the 2–5 set range to fit the session; recovery is unchanged.';
+        if (!next.reasons.includes(reason)) next.reasons.push(reason);
+    }
     const groupedExercises = groupExercisesByEquipment(exercises);
     const duration = quickSessionDuration(groupedExercises, input.durationMinutes);
     if (duration.total < lowerBound || duration.total > upperBound) return {ok: false, code: 'VALIDATION_FAILED', message: `Could not build a coherent ${input.durationMinutes}-minute session with the selected equipment.`, exclusions};

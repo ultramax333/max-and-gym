@@ -258,34 +258,52 @@ export function ActiveWorkoutPage() {
         if (!catalog || !currentExercise || !exerciseDetails || !canReplaceCurrent) return;
         setBusy(true);
         try {
-            const preferred = (await Promise.all(currentExercise.alternativeExerciseIdsSnapshot.map((id) => catalog.get(id)))).filter((entry): entry is LibraryExercise => Boolean(entry));
-            const compatible = await catalog.alternatives(exerciseDetails);
-            const sessionExerciseIds = new Set(snapshot.exercises.map((entry) => entry.exerciseId));
-            const unique = new Map([...preferred, ...compatible].filter((entry) => !entry.effectiveNeverSuggest && !sessionExerciseIds.has(entry.id)).map((entry) => [entry.id, entry]));
-            setReplacementOptions([...unique.values()].slice(0, 20));
+            const options = await catalog.alternatives(exerciseDetails, {
+                ...snapshot.session.selectionConstraints,
+                zone: snapshot.session.trainingContext?.zone,
+                selectedIds: snapshot.exercises.map(entry => entry.exerciseId),
+                preferredIds: currentExercise.alternativeExerciseIdsSnapshot,
+                limit: 40,
+            });
+            setReplacementOptions(options);
             setAlternativesOpen(true);
         } catch {
+            recordDiagnostic({level: 'error', subsystem: 'GENERATOR', code: 'GENERATOR_NO_VALID_CANDIDATE', safeMessage: 'Workout alternatives could not be loaded.'});
             setError('Exercise alternatives could not be loaded. Your workout is unchanged.');
         } finally {
             setBusy(false);
         }
     };
     const replaceCurrentExercise = async (replacement: LibraryExercise) => {
-        if (!service || !currentExercise) return;
-        const previousName = currentExercise.exerciseNameSnapshot;
-        const saved = await perform(() => service.replaceExercise({
-            sessionId: snapshot.session.id,
-            sessionExerciseId: currentExercise.id,
-            replacementExerciseId: replacement.id,
-            replacementExerciseName: replacement.name,
-            replacementEquipmentTags: replacement.equipmentTags,
-            alternativeExerciseIds: replacementOptions.filter((entry) => entry.id !== replacement.id).slice(0, 5).map((entry) => entry.id),
-            reason: 'equipment-unavailable',
-        }));
-        if (saved) {
-            setAlternativesOpen(false);
-            setExerciseChangeNotice(`${previousName} was replaced with ${replacement.name}. Sets, repetitions and recovery were kept; check the load before starting.`);
-        }
+        if (!service || !currentExercise || !catalog || !exerciseDetails) return;
+        setBusy(true);
+        try {
+            const allowed = await catalog.alternatives(exerciseDetails, {...snapshot.session.selectionConstraints, zone: snapshot.session.trainingContext?.zone, selectedIds: snapshot.exercises.map(entry => entry.exerciseId), limit: Number.MAX_SAFE_INTEGER});
+            const freshReplacement = allowed.find(entry => entry.id === replacement.id);
+            if (!freshReplacement) {
+                recordDiagnostic({level: 'warning', subsystem: 'GENERATOR', code: 'GENERATOR_CONSTRAINT_VIOLATION', safeMessage: 'A stale or incompatible workout replacement was refused.'});
+                setError('This alternative is no longer eligible. Reopen the alternatives to refresh the choices.');
+                setAlternativesOpen(false);
+                return;
+            }
+            const previousName = currentExercise.exerciseNameSnapshot;
+            const saved = await perform(() => service.replaceExercise({
+                sessionId: snapshot.session.id,
+                sessionExerciseId: currentExercise.id,
+                replacementExerciseId: freshReplacement.id,
+                replacementExerciseName: freshReplacement.name,
+                replacementEquipmentTags: freshReplacement.equipmentTags,
+                alternativeExerciseIds: allowed.filter(entry => entry.id !== freshReplacement.id).slice(0, 5).map(entry => entry.id),
+                reason: 'equipment-unavailable',
+            }));
+            if (saved) {
+                setAlternativesOpen(false);
+                setExerciseChangeNotice(`${previousName} was replaced with ${freshReplacement.name}. Sets, repetitions and recovery were kept; check the load before starting.`);
+            }
+        } catch {
+            recordDiagnostic({level: 'error', subsystem: 'WORKOUT', code: 'WORKOUT_EXERCISE_REPLACE_FAILED', safeMessage: 'Workout replacement eligibility could not be checked.'});
+            setError('The alternative could not be checked. Your workout is unchanged. Try again.');
+        } finally { setBusy(false); }
     };
     const completeCurrentSet = () => {
         if (!service || !currentSet || load === undefined || reps === undefined || !Number.isInteger(reps)) return;
@@ -488,9 +506,9 @@ export function ActiveWorkoutPage() {
         </Dialog>
         <Dialog open={alternativesOpen} onClose={() => !busy && setAlternativesOpen(false)} fullScreen>
             <DialogTitle component="div"><Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}><Box><Typography variant="overline" color="primary.main">MACHINE OCCUPIED</Typography><Typography variant="h5" component="h2">Choose an alternative</Typography></Box><IconButton aria-label="Close alternatives" disabled={busy} onClick={() => setAlternativesOpen(false)}><Close/></IconButton></Stack></DialogTitle>
-            <DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {
+            <DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Typography color="text.secondary" sx={{mb: 2}}>{snapshot.session.trainingContext?.zone ? `Training focus: ${snapshot.session.trainingContext.zone}. ` : 'Alternatives match the current exercise target. '}{snapshot.session.selectionConstraints?.equipment ? 'Your selected resistance equipment is respected. Check all support badges before choosing.' : 'This older or manual session has no saved equipment filter. Check the required equipment before choosing.'}</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {
                 const media = option.media.find((entry) => entry.kind === 'thumbnail') ?? option.media.find((entry) => entry.kind === 'start-image');
-                return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center">{media && <Box component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: 96, height: 96, objectFit: 'contain', bgcolor: 'background.default', flexShrink: 0}}/>}<Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
+                return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center">{media && <Box component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: 96, height: 96, objectFit: 'contain', bgcolor: 'background.default', flexShrink: 0}}/>}<Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><EquipmentBadges exercise={{exerciseId:option.id, equipmentTags:option.equipmentTags}}/><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
             })}{replacementOptions.length === 0 && <StatePanel title="No compatible alternative" description="Use Do later and return when the equipment becomes available." icon={<FitnessCenter/>}/>}</Stack></DialogContent>
         </Dialog>
     </Layout>;

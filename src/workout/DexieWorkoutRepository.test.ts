@@ -53,7 +53,9 @@ describe('DexieWorkoutRepository', () => {
             {...prescription, exerciseId: 'curl', exerciseName: 'Curl', equipmentTags: ['dumbbell']},
             {...prescription, exerciseId: 'fedb:Dumbbell_Bench_Press', exerciseName: 'Bench press', equipmentTags: ['dumbbell']},
         ], ['bench', 'dumbbell']);
-        const started = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises}, 'equipment-start');
+        const constraints = {equipment:['dumbbell'], blockedExerciseIds:['excluded'], blockedTags:['floor']};
+        const started = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises, selectionConstraints:constraints}, 'equipment-start');
+        constraints.equipment.push('machine');
         const retry = await repository.startProgramDay({name: 'Equipment session', plannedDurationSeconds: 2400, exercises}, 'equipment-start');
         expect(retry.session.id).toBe(started.session.id);
         db.close();
@@ -66,6 +68,7 @@ describe('DexieWorkoutRepository', () => {
         expect(recovered?.sets).toHaveLength(6);
         expect(recovered?.sets.every((set) => set.restSeconds === 90 && set.targetRepsMin === 8 && set.targetLoadKg === 12)).toBe(true);
         expect(recovered?.session.plannedDurationSeconds).toBe(2400);
+        expect(recovered?.session.selectionConstraints).toEqual({equipment:['dumbbell'], blockedExerciseIds:['excluded'], blockedTags:['floor']});
     });
 
     it('completes a set idempotently and advances position with one timestamp timer', async () => {

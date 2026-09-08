@@ -6,6 +6,7 @@ import {DexieDB} from '../db/db';
 import {CustomExerciseRecord} from '../exerciseCatalog/types';
 import {buildPersonalBackup, BackupError, hasPortablePersonalData, importPersonalBackup, previewPersonalBackup, recordPersonalBackupSuccess} from './PersonalBackupService';
 import {CUSTOM_CORE_VIDEOS_META_KEY} from '../pages/core/CoreVideoRepository';
+import {DexieWorkoutRepository} from '../workout/DexieWorkoutRepository';
 
 describe('personal backup', () => {
     let db: DexieDB;
@@ -38,6 +39,8 @@ describe('personal backup', () => {
 
     it('survives export, clear and Replace restore with photo blobs', async () => {
         await seed();
+        const constraints = {equipment:['dumbbell'], blockedTags:['floor'], blockedExerciseIds:['blocked']};
+        const session = await new DexieWorkoutRepository(db).startProgramDay({name:'Synthetic constraints', selectionConstraints:constraints, trainingContext:{zone:'arms',goal:'hypertrophy'}, exercises:[{exerciseId:'synthetic-curl',exerciseName:'Synthetic curl',prescriptionSnapshot:'2 x 8',workingSets:2,repsMin:8,repsMax:10,targetLoadKg:0,targetRir:2,restSeconds:60}]}, 'backup-constraints-start');
         const customVideo = {id: 'video-1', youtubeId: 'dQw4w9WgXcQ', title: 'My class', channel: 'Trainer', durationMinutes: 10, level: 'All levels', equipment: 'No equipment', focus: 'Core', curated: false, createdAt: '2026-08-10T00:00:00Z', updatedAt: '2026-08-10T00:00:00Z'};
         await db.appMeta.put({key: CUSTOM_CORE_VIDEOS_META_KEY, value: JSON.stringify([customVideo]), updatedAt: '2026-08-10T00:00:00Z'});
         const backup = await buildPersonalBackup(db, {now: new Date('2026-08-06T12:00:00Z'), id: 'backup-1'});
@@ -53,6 +56,7 @@ describe('personal backup', () => {
         expect(await db.customExercise.get('custom-1')).toMatchObject({customImageMimeType: 'image/webp'});
         expect(await db.appMeta.get(CUSTOM_CORE_VIDEOS_META_KEY)).toMatchObject({value: JSON.stringify([customVideo])});
         expect(await db.safetySnapshot.count()).toBe(1);
+        expect((await db.workoutSession.get(session.session.id))?.selectionConstraints).toEqual(constraints);
     });
 
     it('previews merge conflicts and changes nothing when rejected or storage is insufficient', async () => {

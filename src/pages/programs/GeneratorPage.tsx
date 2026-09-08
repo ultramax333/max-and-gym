@@ -25,6 +25,7 @@ import {QuickSessionGenerationStateRepository} from '../../generator/QuickSessio
 import {hasAvailableEquipment} from '../../generator/constraints';
 import {ExerciseLoadRecommendation, recommendExerciseLoad} from '../../workout/loadRecommendation';
 import {EquipmentBadges} from '../../components/ui/EquipmentBadge';
+import {isSelectionEligible} from '../../exerciseCatalog/selection';
 
 const catalog = new ExerciseCatalogRepository(db);
 const programs = new ProgramRepository(db);
@@ -188,7 +189,7 @@ function QuickSessionBuilder() {
         const currentDay = preview.days[0];
         const existingIds = new Set(currentDay.exercises.map((entry) => entry.exerciseId));
         if (existingIds.has(replacement.id)) return;
-        if (!matchesQuickSessionZone(replacement, zone) || !hasAvailableEquipment(replacement, equipment)) {
+        if (!matchesQuickSessionZone(replacement, zone) || !hasAvailableEquipment(replacement, equipment) || !isSelectionEligible(replacement)) {
             setError(`This exercise does not match ${QUICK_SESSION_ZONES.find((entry) => entry.value === zone)?.label.toLowerCase() ?? 'the selected area'} training with the available equipment.`);
             setReplaceIndex(null);
             return;

@@ -65,6 +65,7 @@ export interface LibraryFilters {
     search?: string;
     equipment?: string;
     muscle?: string;
+    includeSecondaryMuscles?: boolean;
     movementPattern?: string;
     position?: string;
     status?: 'all' | 'eligible' | 'never-suggest';

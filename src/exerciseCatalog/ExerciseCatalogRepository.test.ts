@@ -6,6 +6,7 @@ import {EXERCISE_SEED_VERSION} from '../config/buildIdentity';
 import {DexieDB} from '../db/db';
 import {ExerciseCatalogRepository} from './ExerciseCatalogRepository';
 import {ReviewedExercise} from './types';
+import {DexieWorkoutRepository} from '../workout/DexieWorkoutRepository';
 
 describe('reviewed local exercise catalogue', () => {
     let db: DexieDB;
@@ -114,5 +115,36 @@ describe('reviewed local exercise catalogue', () => {
         const read = await repository.get(created.id);
         expect(read?.source).toBe('maxgym');
         expect(await db.customExercise.get(created.id)).toMatchObject({name: 'Cable press test', customImageMimeType: 'image/png'});
+    });
+
+    it('filters primary muscles by default, with an explicit secondary option', async () => {
+        const primary = await repository.list({muscle:'glutes'});
+        expect(primary.length).toBeGreaterThan(0);
+        expect(primary.every(e => e.primaryMuscles.includes('glutes'))).toBe(true);
+        expect(primary.some(e => e.sourceId === 'Landmine_180s')).toBe(false);
+        const secondary = await repository.list({muscle:'glutes', includeSecondaryMuscles:true});
+        expect(secondary.some(e => e.sourceId === 'Landmine_180s')).toBe(true);
+        expect((await repository.list({equipment:'bands'})).some(e => e.sourceId === 'Seated_Band_Hamstring_Curl')).toBe(true);
+    });
+
+    it('refreshes v6 classification without touching custom data or historical snapshots', async () => {
+        await repository.ensureSeed();
+        const id = 'fedb:Tricep_Dumbbell_Kickback';
+        await db.exerciseCatalog.update(id, {movementPattern:'hinge'});
+        await db.appMeta.put({key:'exerciseCatalogSeedVersion', value:'fedb-b0eed061e1c8-reviewed-6', updatedAt:'2026-09-01T00:00:00Z'});
+        await repository.updatePreference(id, {favourite:true});
+        await repository.createCustom({name:'Synthetic custom', equipment:'bands', primaryMuscle:'biceps'});
+        const beforeCustom = await db.customExercise.toArray();
+        const workouts = new DexieWorkoutRepository(db);
+        const started = await workouts.startProgramDay({name:'Synthetic historical workout', exercises:[{
+            exerciseId:id, exerciseName:'Historical kickback', equipmentTags:['dumbbell'],
+            prescriptionSnapshot:'3 x 8', workingSets:3, repsMin:8, repsMax:12, targetLoadKg:10, targetRir:2, restSeconds:90,
+        }]}, 'classification-history');
+        await workouts.finish(started.session.id, 'classification-history-finish');
+        const beforeHistory = {sessions:await db.workoutSession.toArray(), exercises:await db.sessionExercise.toArray(), sets:await db.performedSet.toArray()};
+        await repository.ensureSeed();
+        expect(await repository.get(id)).toMatchObject({movementPattern:'accessory', favourite:true});
+        expect(await db.customExercise.toArray()).toEqual(beforeCustom);
+        expect({sessions:await db.workoutSession.toArray(), exercises:await db.sessionExercise.toArray(), sets:await db.performedSet.toArray()}).toEqual(beforeHistory);
     });
 });

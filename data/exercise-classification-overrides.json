@@ -1,0 +1,18 @@
+{
+  "Cable_Russian_Twists": {"equipmentTags": ["cable", "other"], "reason": "Pinned technique requires a stability ball in addition to the cable; specialist support is not optional."},
+  "Natural_Glute_Ham_Raise": {"movementPattern": "accessory", "equipmentTags": ["body only", "other"], "reason": "Knee flexion with anchored ankles using a lat-machine pad or preacher support, not a hip hinge or unsupported floor exercise."},
+  "Cable_Hip_Adduction": {"primaryMuscles": ["adductors"], "reason": "Bringing the leg across the midline against the cable targets the hip adductors, not quadriceps. Pinned instructions specify inner thighs but contain an abduct/adduct typo.", "reference": "https://www.acefitness.org/resources/everyone/exercise-library/104/standing-hip-adduction/"},
+  "Tricep_Dumbbell_Kickback": {"movementPattern": "accessory", "reason": "Triceps elbow extension, not hip extension; source primary muscle and instructions."},
+  "Calf_Press": {"movementPattern": "accessory", "reason": "Ankle plantar flexion; the word press is not an upper-body push."},
+  "Calf_Press_On_The_Leg_Press_Machine": {"movementPattern": "accessory", "reason": "Calf exercise performed on a leg press, not a knee-dominant squat."},
+  "Pushups": {"movementPattern": "push", "reason": "Canonical push-up spelling must not fall through to accessory."},
+  "Incline_Dumbbell_Bench_With_Palms_Facing_In": {"movementPattern": "push", "reason": "Source describes an incline chest press despite the abbreviated name."},
+  "Seated_Triceps_Press": {"movementPattern": "accessory", "reason": "Overhead elbow extension, not a shoulder press."},
+  "Tate_Press": {"movementPattern": "accessory", "reason": "Lying triceps elbow extension, not a compound chest press."},
+  "Band_Assisted_Pull-Up": {"equipmentTags": ["bands", "body only"], "reason": "Band-assisted bodyweight pull-up; both resistance choices required. Pull-up bar is a separate station."},
+  "Seated_Band_Hamstring_Curl": {"equipmentTags": ["bands"], "reason": "Source explicitly requires a band attached low and a bench; not unspecified other resistance."},
+  "Dips_-_Chest_Version": {"equipmentTags": ["body only"], "reason": "Unweighted bodyweight dips; parallel bars are a separate station."},
+  "Bodyweight_Mid_Row": {"equipmentTags": ["body only"], "reason": "Source describes lifting the body on a pull-up apparatus, without added load."},
+  "Knee_Hip_Raise_On_Parallel_Bars": {"equipmentTags": ["body only"], "reason": "Source describes unweighted leg raises on a supported station."},
+  "Weighted_Pull_Ups": {"equipmentTags": ["body only", "other"], "reason": "Requires bodyweight pulling plus external weight/dip belt; not an equipment-free exercise."}
+}

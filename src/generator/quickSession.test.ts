@@ -92,7 +92,7 @@ describe('quick session generator', () => {
 
     it('uses variable set counts and keeps equal equipment together', () => {
         const result = generateQuickSession({...input(50), seed: 'variable-sets-and-equipment'}, candidates, 'arms');
-        expect(result.ok).toBe(true);
+        expect(result.ok, JSON.stringify(result)).toBe(true);
         if (!result.ok) return;
         const sets = result.program.days[0].exercises.map((entry) => entry.prescription.workingSets);
         expect(new Set(sets).size).toBeGreaterThan(1);

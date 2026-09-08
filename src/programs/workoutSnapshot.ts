@@ -1,6 +1,18 @@
 import {ProgramDayDetail, ProgramExerciseDetail} from './types';
 import {StartWorkoutInput} from '../workout/types';
-import {GeneratedDay, GeneratedProgram} from '../generator/types';
+import {GeneratedDay, GeneratedProgram, GeneratorInput} from '../generator/types';
+import {SelectionConstraints} from '../exerciseCatalog/selection';
+
+export function selectionConstraints(input: Pick<GeneratorInput, 'equipment' | 'blockedTags' | 'blockedExerciseIds' | 'neverSuggestExerciseIds'>): SelectionConstraints {
+    return {equipment: [...input.equipment], blockedTags: [...input.blockedTags], blockedExerciseIds: [...new Set([...input.blockedExerciseIds, ...input.neverSuggestExerciseIds])]};
+}
+
+function savedConstraints(snapshot?: string): SelectionConstraints | undefined {
+    if (!snapshot) return undefined;
+    const input = JSON.parse(snapshot) as GeneratorInput;
+    if (!input || ['equipment', 'blockedTags', 'blockedExerciseIds', 'neverSuggestExerciseIds'].some(key => !Array.isArray(input[key as keyof GeneratorInput]) || !(input[key as keyof GeneratorInput] as unknown[]).every(v => typeof v === 'string'))) throw new Error('The saved equipment constraints are invalid. Open the generator to review this session.');
+    return selectionConstraints(input);
+}
 
 function exerciseSnapshot(entry: ProgramExerciseDetail): StartWorkoutInput['exercises'][number] {
     const scheme = entry.prescription.setScheme ?? 'straight';
@@ -30,13 +42,14 @@ function exerciseSnapshot(entry: ProgramExerciseDetail): StartWorkoutInput['exer
     };
 }
 
-export function programDayWorkoutInput(programName: string, day: ProgramDayDetail, trainingContext?: {zone: string; goal: string}): StartWorkoutInput {
+export function programDayWorkoutInput(programName: string, day: ProgramDayDetail, trainingContext?: {zone: string; goal: string}, generatorInputSnapshot?: string): StartWorkoutInput {
     return {
         plannedDurationSeconds: day.targetDurationMinutes * 60,
         name: `${programName} · ${day.name}`,
         programId: day.programId,
         programDayId: day.id,
         trainingContext,
+        selectionConstraints: savedConstraints(generatorInputSnapshot),
         exercises: day.exercises.map(exerciseSnapshot),
     };
 }
@@ -47,6 +60,7 @@ export function generatedSessionWorkoutInput(program: GeneratedProgram, day: Gen
         name: `${program.name} · ${day.name}`,
         restOverrideSeconds: program.sessionRestSeconds,
         trainingContext: program.sessionContext,
+        selectionConstraints: selectionConstraints(program.explanation.normalizedInput),
         exercises: day.exercises.map((entry) => ({
             exerciseId: entry.exerciseId,
             exerciseName: entry.exerciseName,
