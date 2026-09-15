@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v10 / 9', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v11 / 9', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -137,6 +137,24 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await previews.nth(1).click();
     await expect(page.getByText('UPCOMING EXERCISE', {exact: true})).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('img').first()).toBeVisible();
+});
+
+test('back focus separates full, upper and lower back on mobile @visual', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/programs/generate');
+    await page.getByLabel('Body area').click();
+    await expect(page.getByRole('option', {name: 'Full back'})).toBeVisible();
+    await expect(page.getByRole('option', {name: 'Upper back'})).toBeVisible();
+    await page.getByRole('option', {name: 'Lower back'}).click();
+    await expect(page.getByText('A short focus using exercises whose primary target is lower back.')).toBeVisible();
+    await page.getByLabel('Duration').click();
+    await expect(page.getByRole('option', {name: '45 minutes'})).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
+    await expect(page.getByRole('img')).not.toHaveCount(0);
+    await assertNoHorizontalOverflow(page);
+
 });
 
 test('equipment order puts bench exercises first and survives reopening @visual', async ({page}) => {

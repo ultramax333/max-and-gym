@@ -174,3 +174,10 @@ Order:
 - Generator preview and active-workout alternatives share one selection policy. A focused session stays within its focus; broad and legacy sessions additionally preserve the exercise's primary/reviewed target overlap. Matching a movement pattern alone is insufficient.
 - Generated and saved generated sessions copy equipment and exclusions into an optional, unindexed workout selection snapshot. Legacy sessions do not invent missing availability.
 - Corrected isolation roles can reduce estimated duration. If the quick planner is below its 90% lower bound, it may fill an existing exercise up to five working sets, deterministically, without exceeding the 110% upper bound. Recovery and repetition ranges are unchanged; infeasible plans still fail validation.
+
+## 13. Back focus and post-session explanations (generator v11)
+
+- The old `back` zone ID remains stable for saved plans and contextual ratings; its visible name is Full back. Upper back targets middle back, lats and traps; Lower back targets primary lower-back exercises only. Incidental secondary involvement is not sufficient.
+- Lower back quick sessions are limited to 15–30 minutes. The longer duration choices are disabled rather than filling a focused session with unrelated exercises. Full back remains available for 35–60 minutes.
+- Proposals appear after a **saved-program** workout with progression rules. A directly generated one-off session saves loads and repetitions in history but creates no proposal. The summary says so instead of offering an empty link.
+- Each proposal explains logged working sets, the saved target and the optional future default. Accepting a load proposal updates the saved program prescription, not the completed workout; deciding later or dismissing makes no change. The owner may edit the proposed load before accepting it.

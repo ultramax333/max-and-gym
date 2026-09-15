@@ -68,4 +68,24 @@ describe('reviewed classification and shared alternatives', () => {
             expect(options.every(e => matchesQuickSessionZone(e, zone) && isSelectionEligible(e))).toBe(true);
         }
     });
+    it('separates full, upper and lower back without counting secondary muscles', () => {
+        expect(QUICK_SESSION_ZONES.find(e => e.value === 'back')?.label).toBe('Full back');
+        expect(matchesQuickSessionZone(get('Barbell_Deadlift'), 'back')).toBe(true);
+        expect(matchesQuickSessionZone(get('Barbell_Deadlift'), 'upper-back')).toBe(false);
+        expect(matchesQuickSessionZone(get('Seated_Cable_Rows'), 'upper-back')).toBe(true);
+        expect(matchesQuickSessionZone(get('Seated_Cable_Rows'), 'lower-back')).toBe(false);
+        expect(matchesQuickSessionZone(get('Romanian_Deadlift'), 'lower-back')).toBe(false);
+        for (const id of ['Lying_T-Bar_Row', 'Seated_One-arm_Cable_Pulley_Rows', 'Shotgun_Row']) {
+            expect(matchesQuickSessionZone(get(id), 'upper-back')).toBe(true);
+            expect(matchesQuickSessionZone(get(id), 'lower-back')).toBe(false);
+            expect(get(id).media.filter((image) => image.kind === 'start-image' || image.kind === 'end-image')).toHaveLength(2);
+        }
+        expect(get('Superman')).toMatchObject({category:'mobility', generatorEligible:false, positionTags:['floor']});
+        const ball = get('Weighted_Ball_Hyperextension');
+        expect(ball).toMatchObject({primaryMuscles:['lower back'], equipmentTags:['other'], generatorEligible:true});
+        expect(requiredStations({exerciseId:ball.id, equipmentTags:ball.equipmentTags})).toContain('ball');
+        const options = selectExerciseAlternatives(catalog, get('Hyperextensions_Back_Extensions'), {zone:'lower-back'});
+        expect(options.every(e => e.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(options.some(e => e.id === get('Superman').id)).toBe(false);
+    });
 });

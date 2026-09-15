@@ -25,6 +25,23 @@ const input = (durationMinutes: GeneratorInput['durationMinutes']): GeneratorInp
 });
 
 describe('quick session generator', () => {
+    it.each([15,20,25,30] as const)('keeps lower-back %i-minute sessions short and primary-targeted', duration => {
+        const result = generateQuickSession(input(duration), candidates, 'lower-back');
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        if (!result.ok) return;
+        expect(result.program.days[0].exercises.every(e => e.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(duration * 60 * .9);
+        expect(result.program.days[0].duration.total).toBeLessThanOrEqual(duration * 60 * 1.1);
+        expect(result.program.days[0].exercises.every(e => e.exerciseId !== 'fedb:Superman')).toBe(true);
+    });
+    it('refuses to pad a longer lower-back session with unrelated exercises', () => {
+        expect(generateQuickSession(input(45), candidates, 'lower-back')).toMatchObject({ok:false, code:'INVALID_INPUT'});
+        const upper = generateQuickSession(input(45), candidates, 'upper-back');
+        expect(upper.ok, JSON.stringify(upper)).toBe(true);
+        if (upper.ok) expect(upper.program.days[0].exercises.every(e => e.primaryMuscles.some(m => ['middle back','lats','traps'].includes(m)))).toBe(true);
+        const full = generateQuickSession(input(45), candidates, 'back');
+        expect(full.ok).toBe(true);
+    });
     it.each([15, 20, 25, 30, 35, 40, 45, 50, 55, 60] as const)('generates a duration-coherent arms session in %i minutes', (duration) => {
         const result = generateQuickSession(input(duration), candidates, 'arms');
         expect(result.ok).toBe(true);
@@ -193,7 +210,7 @@ describe('quick session generator', () => {
 
     it('never generates or offers catalogue-excluded exercises', () => {
         const excluded = candidates.filter((entry) => !entry.generatorEligible);
-        expect(excluded).toHaveLength(29);
+        expect(excluded).toHaveLength(30);
         let successfulGenerations = 0;
         for (const duration of [15, 30, 45, 60] as const) {
             for (const zone of ['full-body', 'upper-body', 'lower-body', 'chest', 'back', 'shoulders', 'arms', 'glutes', 'core'] as const) {

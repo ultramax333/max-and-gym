@@ -8,6 +8,7 @@ await startVitest('test', filters, {
     root,
     run: true,
     watch: false,
+    maxWorkers: 2,
     globals: true,
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],

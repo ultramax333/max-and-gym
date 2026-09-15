@@ -6,6 +6,7 @@ import {matchesQuickSessionZone, QUICK_SESSION_ZONES, QuickSessionZone, selectEx
 export {matchesQuickSessionZone, QUICK_SESSION_ZONES, type QuickSessionZone} from '../exerciseCatalog/selection';
 
 export const QUICK_SESSION_DURATIONS: ProgramDurationMinutes[] = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
+export const LOWER_BACK_MAX_DURATION_MINUTES = 30;
 
 export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
     candidates: T[],
@@ -79,6 +80,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     const input = normalizeGeneratorInput({...rawInput, frequency: 1});
     const zoneDefinition = QUICK_SESSION_ZONES.find((entry) => entry.value === zone);
     if (!zoneDefinition || !input.equipment.length || !QUICK_SESSION_DURATIONS.includes(input.durationMinutes) || (input.sessionRestSeconds !== undefined && (!Number.isInteger(input.sessionRestSeconds) || input.sessionRestSeconds <= 0))) return {ok: false, code: 'INVALID_INPUT', message: 'Choose a body area, duration, recovery time and at least one equipment option.', exclusions: []};
+    if (zone === 'lower-back' && input.durationMinutes > LOWER_BACK_MAX_DURATION_MINUTES) return {ok: false, code: 'INVALID_INPUT', message: 'Lower back is a short focus (15–30 minutes) in this library. Choose Full back for a longer session.', exclusions: []};
 
     const exclusions: CandidateExclusion[] = [];
     const selections: CandidateSelection[] = [];

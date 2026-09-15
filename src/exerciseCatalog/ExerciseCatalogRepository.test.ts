@@ -47,6 +47,7 @@ describe('reviewed local exercise catalogue', () => {
             'Front_Two-Dumbbell_Raise', 'Hip_Circles_prone', 'Incline_Dumbbell_Flyes_-_With_A_Twist',
             'Intermediate_Hip_Flexor_and_Quad_Stretch', 'Plank', 'Plate_Pinch',
             'Rope_Straight-Arm_Pulldown', 'Side_Bridge',
+            'Superman',
         ].map((id) => `fedb:${id}`).sort());
     });
 
@@ -63,7 +64,8 @@ describe('reviewed local exercise catalogue', () => {
 
     it('returns only the curated active pool when generation requests eligible exercises', async () => {
         const eligible = await repository.list({status: 'eligible'});
-        expect(eligible).toHaveLength(273);
+        expect(eligible).toHaveLength(277);
+        expect(eligible.map((entry) => entry.id)).toEqual(expect.arrayContaining(['fedb:Lying_T-Bar_Row', 'fedb:Seated_One-arm_Cable_Pulley_Rows', 'fedb:Shotgun_Row']));
         expect(eligible.map((entry) => entry.id)).toEqual(expect.arrayContaining(['fedb:Barbell_Hip_Thrust', 'fedb:Step-up_with_Knee_Raise']));
         expect(eligible.some((entry) => entry.id === 'fedb:Plank')).toBe(false);
         expect((await repository.list()).some((entry) => entry.id === 'fedb:Plank')).toBe(true);

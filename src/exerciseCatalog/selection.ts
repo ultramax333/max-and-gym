@@ -1,12 +1,16 @@
 import type {GeneratorCandidate} from '../generator/types';
 
-export type QuickSessionZone = 'full-body' | 'upper-body' | 'lower-body' | 'chest' | 'back' | 'shoulders' | 'arms' | 'glutes' | 'core';
+export type QuickSessionZone = 'full-body' | 'upper-body' | 'lower-body' | 'chest' | 'back' | 'upper-back' | 'lower-back' | 'shoulders' | 'arms' | 'glutes' | 'core';
 export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string; muscles: string[]}> = [
     {value: 'full-body', label: 'Full body', muscles: []},
     {value: 'upper-body', label: 'Upper body', muscles: ['chest', 'shoulders', 'middle back', 'lats', 'biceps', 'triceps', 'forearms', 'traps']},
     {value: 'lower-body', label: 'Lower body', muscles: ['quadriceps', 'hamstrings', 'glutes', 'calves', 'abductors', 'adductors']},
     {value: 'chest', label: 'Chest', muscles: ['chest']},
-    {value: 'back', label: 'Back', muscles: ['middle back', 'lats', 'lower back', 'traps']},
+    // Keep the historical `back` key so saved plans and zone-specific ratings
+    // remain readable; only its visible label changes.
+    {value: 'back', label: 'Full back', muscles: ['middle back', 'lats', 'lower back', 'traps']},
+    {value: 'upper-back', label: 'Upper back', muscles: ['middle back', 'lats', 'traps']},
+    {value: 'lower-back', label: 'Lower back', muscles: ['lower back']},
     {value: 'shoulders', label: 'Shoulders', muscles: ['shoulders']},
     {value: 'arms', label: 'Arms', muscles: ['biceps', 'triceps', 'forearms']},
     {value: 'glutes', label: 'Glutes', muscles: ['glutes', 'abductors']},

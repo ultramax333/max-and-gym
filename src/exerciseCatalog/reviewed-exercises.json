@@ -17129,6 +17129,84 @@
     ]
   },
   {
+    "id": "fedb:Lying_T-Bar_Row",
+    "source": "free-exercise-db",
+    "sourceId": "Lying_T-Bar_Row",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Lying T-Bar Row",
+    "aliases": [
+      "Lying T-Bar Row"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "lats"
+    ],
+    "movementPattern": "pull",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "machine"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Load up the T-bar Row Machine with the desired weight and adjust the leg height so that your upper chest is at the top of the pad. Tip: In some machines all you can do is stand on the appropriate step that allows you to be at a height that has the upper chest at the top of the pad.",
+    "executionSteps": [
+      "Lay face down on the pad and grab the handles. You can either use a palms down, palms up, or palms in position depending on what part of your back you want to emphasize.",
+      "Lift the bar off the rack and extend your arms in front of you. This will be your starting position.",
+      "As you exhale slowly pull the weight up and squeeze your back at the top of the movement. Tip: Keep the upper arms as close to the torso as possible throughout the movement in order to better engage the back muscles. Also, do not lift your body off of the pad at any time and refrain from using the biceps to lift the weight.",
+      "After a second contraction at the top of the movement, as you inhale, slowly go back down to the starting position."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Lying_T-Bar_Row.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/lying-t-bar-row-0.jpg",
+        "altText": "Lying T-Bar Row starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/lying-t-bar-row-1.jpg",
+        "altText": "Lying T-Bar Row finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/lying-t-bar-row-0.jpg",
+        "altText": "Lying T-Bar Row thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Machine_Bench_Press",
     "source": "free-exercise-db",
     "sourceId": "Machine_Bench_Press",
@@ -20328,6 +20406,85 @@
     ]
   },
   {
+    "id": "fedb:Seated_One-arm_Cable_Pulley_Rows",
+    "source": "free-exercise-db",
+    "sourceId": "Seated_One-arm_Cable_Pulley_Rows",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Seated One-arm Cable Pulley Rows",
+    "aliases": [
+      "Seated One-arm Cable Pulley Rows"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "middle back"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "lats",
+      "traps"
+    ],
+    "movementPattern": "pull",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "cable"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "To get into the starting position, first sit down on the machine and place your feet on the front platform or crossbar provided making sure that your knees are slightly bent and not locked.",
+    "executionSteps": [
+      "Lean over as you keep the natural alignment of your back and grab the single handle attachment with your left arm using a palms-down grip.",
+      "With your arm extended pull back until your torso is at a 90-degree angle from your legs. Your back should be slightly arched and your chest should be sticking out. You should be feeling a nice stretch on your lat as you hold the bar in front of you. The right arm can be kept by the waist. This is the starting position of the exercise.",
+      "Keeping the torso stationary, pull the handles back towards your torso while keeping the arms close to it as you rotate the wrist, so that by the time your hand is by your abdominals it is in a neutral position (palms facing the torso). Breathe out as you perform that movement. At that point you should be squeezing your back muscles hard.",
+      "Hold that contraction for a second and slowly go back to the original position while breathing in. Tip: Remember to rotate the wrist as you go back to the starting position so that the palms are facing down again."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Seated_One-arm_Cable_Pulley_Rows.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/seated-one-arm-cable-pulley-rows-0.jpg",
+        "altText": "Seated One-arm Cable Pulley Rows starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/seated-one-arm-cable-pulley-rows-1.jpg",
+        "altText": "Seated One-arm Cable Pulley Rows finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/seated-one-arm-cable-pulley-rows-0.jpg",
+        "altText": "Seated One-arm Cable Pulley Rows thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Seated_Side_Lateral_Raise",
     "source": "free-exercise-db",
     "sourceId": "Seated_Side_Lateral_Raise",
@@ -20472,6 +20629,83 @@
         "kind": "thumbnail",
         "path": "media/exercises/seated-triceps-press-0.jpg",
         "altText": "Seated Triceps Press thumbnail"
+      }
+    ]
+  },
+  {
+    "id": "fedb:Shotgun_Row",
+    "source": "free-exercise-db",
+    "sourceId": "Shotgun_Row",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Shotgun Row",
+    "aliases": [
+      "Shotgun Row"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "lats"
+    ],
+    "secondaryMuscles": [
+      "biceps",
+      "middle back"
+    ],
+    "movementPattern": "pull",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "cable"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Attach a single handle to a low cable.",
+    "executionSteps": [
+      "After selecting the correct weight, stand a couple feet back with a wide-split stance. Your arm should be extended and your shoulder forward. This will be your starting position.",
+      "Perform the movement by retracting the shoulder and flexing the elbow. As you pull, supinate the wrist, turning the palm upward as you go.",
+      "After a brief pause, return to the starting position."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Shotgun_Row.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/shotgun-row-0.jpg",
+        "altText": "Shotgun Row starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/shotgun-row-1.jpg",
+        "altText": "Shotgun Row finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/shotgun-row-0.jpg",
+        "altText": "Shotgun Row thumbnail"
       }
     ]
   },
@@ -21850,6 +22084,83 @@
     ]
   },
   {
+    "id": "fedb:Superman",
+    "source": "free-exercise-db",
+    "sourceId": "Superman",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Superman",
+    "aliases": [
+      "Superman"
+    ],
+    "category": "mobility",
+    "force": "static",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "body only"
+    ],
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings"
+    ],
+    "movementPattern": "accessory",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "body only"
+    ],
+    "metricType": "bodyweight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": false,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "To begin, lie straight and face down on the floor or exercise mat. Your arms should be fully extended in front of you. This is the starting position.",
+    "executionSteps": [
+      "Simultaneously raise your arms, legs, and chest off of the floor and hold this contraction for 2 seconds. Tip: Squeeze your lower back to get the best results from this exercise. Remember to exhale during this movement. Note: When holding the contracted position, you should look like superman when he is flying.",
+      "Slowly begin to lower your arms, legs and chest back down to the starting position while inhaling.",
+      "Repeat for the recommended amount of repetitions prescribed in your program."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Superman.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/superman-0.jpg",
+        "altText": "Superman starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/superman-1.jpg",
+        "altText": "Superman finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/superman-0.jpg",
+        "altText": "Superman thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Suspended_Row",
     "source": "free-exercise-db",
     "sourceId": "Suspended_Row",
@@ -22689,6 +23000,84 @@
         "kind": "thumbnail",
         "path": "media/exercises/v-bar-pulldown-0.jpg",
         "altText": "V-Bar Pulldown thumbnail"
+      }
+    ]
+  },
+  {
+    "id": "fedb:Weighted_Ball_Hyperextension",
+    "source": "free-exercise-db",
+    "sourceId": "Weighted_Ball_Hyperextension",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Weighted Ball Hyperextension",
+    "aliases": [
+      "Weighted Ball Hyperextension"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "other"
+    ],
+    "primaryMuscles": [
+      "lower back"
+    ],
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings",
+      "middle back"
+    ],
+    "movementPattern": "accessory",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "other"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "To begin, lie down on an exercise ball with your torso pressing against the ball and parallel to the floor. The ball of your feet should be pressed against the floor to help keep you balanced. Place a weighted plate under your chin or behind your neck. This is the starting position.",
+    "executionSteps": [
+      "Slowly raise your torso up by bending at the waist and lower back. Remember to exhale during this movement.",
+      "Hold the contraction on your lower back for a second and lower your torso back down to the starting position while inhaling.",
+      "Repeat for the recommended amount of repetitions prescribed in your program."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Weighted_Ball_Hyperextension.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/weighted-ball-hyperextension-0.jpg",
+        "altText": "Weighted Ball Hyperextension starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/weighted-ball-hyperextension-1.jpg",
+        "altText": "Weighted Ball Hyperextension finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/weighted-ball-hyperextension-0.jpg",
+        "altText": "Weighted Ball Hyperextension thumbnail"
       }
     ]
   },

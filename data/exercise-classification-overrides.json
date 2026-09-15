@@ -14,5 +14,7 @@
   "Dips_-_Chest_Version": {"equipmentTags": ["body only"], "reason": "Unweighted bodyweight dips; parallel bars are a separate station."},
   "Bodyweight_Mid_Row": {"equipmentTags": ["body only"], "reason": "Source describes lifting the body on a pull-up apparatus, without added load."},
   "Knee_Hip_Raise_On_Parallel_Bars": {"equipmentTags": ["body only"], "reason": "Source describes unweighted leg raises on a supported station."},
-  "Weighted_Pull_Ups": {"equipmentTags": ["body only", "other"], "reason": "Requires bodyweight pulling plus external weight/dip belt; not an equipment-free exercise."}
+  "Weighted_Pull_Ups": {"equipmentTags": ["body only", "other"], "reason": "Requires bodyweight pulling plus external weight/dip belt; not an equipment-free exercise."},
+  "Superman": {"positionTags":["floor"], "reason":"Floor-based controlled spinal extension, not a supported standing movement. Kept as browsable mobility because the pinned source categorizes it as stretching."},
+  "Weighted_Ball_Hyperextension": {"equipmentTags":["other"], "reason":"Exercise ball and weight plate are both required; the ball is shown as an auxiliary station. Distinct support/load from a back-extension bench."}
 }

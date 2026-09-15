@@ -76,7 +76,7 @@ const additionalStations: Partial<Record<string, EquipmentStation[]>> = {
     'Dips_-_Chest_Version': ['parallel'], 'Dips_-_Triceps_Version': ['parallel'], Knee_Hip_Raise_On_Parallel_Bars: ['parallel'],
     Elevated_Back_Lunge: ['platform'], Elevated_Cable_Rows: ['platform'], Barbell_Step_Ups: ['platform'], Dumbbell_Step_Ups: ['platform'],
     'Step-up_with_Knee_Raise': ['platform'], Split_Squat_with_Dumbbells: ['platform'],
-    Cable_Russian_Twists: ['ball'], 'Crunch_-_Legs_On_Exercise_Ball': ['ball'], Bosu_Ball_Cable_Crunch_With_Side_Bends: ['ball'],
+    Cable_Russian_Twists: ['ball'], 'Crunch_-_Legs_On_Exercise_Ball': ['ball'], Bosu_Ball_Cable_Crunch_With_Side_Bends: ['ball'], Weighted_Ball_Hyperextension:['ball'],
     Suspended_Row: ['suspension'], Hyperextensions_Back_Extensions: ['hyperextension'], Natural_Glute_Ham_Raise: ['legSupport'],
     Trap_Bar_Deadlift: ['trapbar'],
     Decline_Smith_Press: ['bench'], Smith_Machine_Bench_Press: ['bench'], 'Smith_Machine_Close-Grip_Bench_Press': ['bench'], Smith_Machine_Incline_Bench_Press: ['bench'],
