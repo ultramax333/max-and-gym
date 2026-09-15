@@ -42,6 +42,42 @@ describe('quick session generator', () => {
         const full = generateQuickSession(input(45), candidates, 'back');
         expect(full.ok).toBe(true);
     });
+    it.each([15,20,25,30,35,40,45] as const)('builds an honest %i-minute mixed low-back session', duration => {
+        const result = generateQuickSession(input(duration), candidates, 'lower-back-mixed');
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        if (!result.ok) return;
+        const exercises = result.program.days[0].exercises;
+        expect(exercises.some(entry => entry.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(exercises.some(entry => !entry.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(exercises.every(entry => matchesQuickSessionZone(candidates.find(candidate => candidate.id === entry.exerciseId)!, 'lower-back-mixed'))).toBe(true);
+        expect(exercises.every(entry => !['fedb:Barbell_Squat','fedb:Cable_Deadlifts','fedb:Pull_Through'].includes(entry.exerciseId))).toBe(true);
+        expect(exercises.filter(entry => ['fedb:Barbell_Deadlift', 'fedb:Romanian_Deadlift'].includes(entry.exerciseId))).toHaveLength(exercises.some(entry => ['fedb:Barbell_Deadlift', 'fedb:Romanian_Deadlift'].includes(entry.exerciseId)) ? 1 : 0);
+        expect(exercises.filter(entry => ['fedb:Hyperextensions_Back_Extensions', 'fedb:Hyperextensions_With_No_Hyperextension_Bench', 'fedb:Weighted_Ball_Hyperextension'].includes(entry.exerciseId)).length).toBeLessThanOrEqual(1);
+        expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(duration * 60 * .9);
+        expect(result.program.days[0].duration.total).toBeLessThanOrEqual(duration * 60 * 1.1);
+    });
+    it.each([50,55,60] as const)('does not pad mixed lower back to %i minutes with repetitive hinges', duration => {
+        expect(generateQuickSession(input(duration), candidates, 'lower-back-mixed')).toMatchObject({ok:false,code:'INVALID_INPUT'});
+    });
+    it('keeps 45-minute mixed variations inside the time and class constraints', () => {
+        for (let variation = 0; variation < 32; variation++) {
+            const result = generateQuickSession({...input(45), seed:`mixed-variation-${variation}`}, candidates, 'lower-back-mixed');
+            expect(result.ok, `${variation}: ${JSON.stringify(result)}`).toBe(true);
+            if (!result.ok) continue;
+            expect(result.program.days[0].exercises.some(entry => entry.primaryMuscles.includes('lower back'))).toBe(true);
+            expect(result.program.days[0].exercises.some(entry => !entry.primaryMuscles.includes('lower back'))).toBe(true);
+            expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(45 * 60 * .9);
+        }
+    });
+    it('fails closed when the mixed focus has no available direct lower-back anchor', () => {
+        const secondaryOnly = candidates.filter(entry => !entry.primaryMuscles.includes('lower back'));
+        expect(generateQuickSession(input(45), secondaryOnly, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+        const directOnly = candidates.filter(entry => !['fedb:Romanian_Deadlift', 'fedb:Kettlebell_One-Legged_Deadlift', 'fedb:Bent_Over_One-Arm_Long_Bar_Row'].includes(entry.id));
+        expect(generateQuickSession(input(45), directOnly, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+        const blocked = {...input(30), blockedExerciseIds:['fedb:Romanian_Deadlift', 'fedb:Kettlebell_One-Legged_Deadlift', 'fedb:Bent_Over_One-Arm_Long_Bar_Row']};
+        expect(generateQuickSession(blocked, candidates, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+        expect(generateQuickSession({...input(30), equipment:['cable']}, candidates, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+    });
     it.each([15, 20, 25, 30, 35, 40, 45, 50, 55, 60] as const)('generates a duration-coherent arms session in %i minutes', (duration) => {
         const result = generateQuickSession(input(duration), candidates, 'arms');
         expect(result.ok).toBe(true);

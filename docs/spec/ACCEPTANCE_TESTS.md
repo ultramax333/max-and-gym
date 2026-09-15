@@ -297,3 +297,7 @@ The same exercise can retain independent 1–5 ratings for glutes/hypertrophy, b
 ### AT-M04 — Safe set trade
 
 Adding a current working set removes exactly one untouched future working set, keeps the total planned set count and duration target unchanged, is idempotent on retry, and refuses safely when no donor can retain at least two working sets.
+
+### AT-M05 — Secondary lower-back choice
+
+The strict Lower back choice uses only primary lower-back movements and remains limited to 15–30 minutes. The separate mixed choice uses a reviewed secondary pool, labels each exercise Direct or Secondary, contains at least one of each, respects equipment/Never Suggest, and fits 15–45 minutes including recovery. Fifty- and sixty-minute mixed requests are refused with Full back guidance. Replacing the last Direct or Secondary exercise cannot silently remove that class; neither an incidental secondary tag nor an unavailable movement can bypass the reviewed pool.

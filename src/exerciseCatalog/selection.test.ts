@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import seed from './reviewed-exercises.json';
 import {ReviewedExercise} from './types';
-import {HARD_EXCLUSION_TAGS, hasAvailableEquipment, isSelectionEligible, matchesQuickSessionZone, QUICK_SESSION_ZONES, selectExerciseAlternatives} from './selection';
+import {HARD_EXCLUSION_TAGS, hasAvailableEquipment, isReviewedSecondaryLowerBack, isSelectionEligible, matchesQuickSessionZone, QUICK_SESSION_ZONES, selectExerciseAlternatives, SECONDARY_LOWER_BACK_EXERCISE_IDS} from './selection';
 import {matchesRole} from '../generator/constraints';
 import {requiredStations} from '../workout/equipmentStations';
 
@@ -87,5 +87,32 @@ describe('reviewed classification and shared alternatives', () => {
         const options = selectExerciseAlternatives(catalog, get('Hyperextensions_Back_Extensions'), {zone:'lower-back'});
         expect(options.every(e => e.primaryMuscles.includes('lower back'))).toBe(true);
         expect(options.some(e => e.id === get('Superman').id)).toBe(false);
+    });
+    it('makes only reviewed secondary low-back movements available in the opt-in mixed focus', () => {
+        expect(QUICK_SESSION_ZONES.find(e => e.value === 'lower-back-mixed')?.label).toBe('Lower back + supporting work');
+        expect(SECONDARY_LOWER_BACK_EXERCISE_IDS.size).toBe(3);
+        for (const id of ['Romanian_Deadlift', 'Kettlebell_One-Legged_Deadlift', 'Bent_Over_One-Arm_Long_Bar_Row']) {
+            const exercise = get(id);
+            expect(isReviewedSecondaryLowerBack(exercise)).toBe(true);
+            expect(matchesQuickSessionZone(exercise, 'lower-back-mixed')).toBe(true);
+            expect(matchesQuickSessionZone(exercise, 'lower-back')).toBe(false);
+        }
+        for (const id of ['Barbell_Squat', 'Cable_Deadlifts', 'Pull_Through', 'Russian_Twist', 'Bent_Over_Low-Pulley_Side_Lateral']) {
+            const exercise = get(id);
+            expect(exercise.secondaryMuscles).toContain('lower back');
+            expect(matchesQuickSessionZone(exercise, 'lower-back-mixed')).toBe(false);
+        }
+        expect(matchesQuickSessionZone(get('Barbell_Deadlift'), 'lower-back-mixed')).toBe(true);
+    });
+    it('will not replace the last direct lower-back movement with a secondary movement', () => {
+        const direct = get('Hyperextensions_Back_Extensions');
+        const secondary = get('Romanian_Deadlift');
+        const onlyDirect = selectExerciseAlternatives(catalog, direct, {zone:'lower-back-mixed', selectedIds:[direct.id, secondary.id]});
+        expect(onlyDirect.every(entry => entry.primaryMuscles.includes('lower back'))).toBe(true);
+        const anotherDirect = get('Barbell_Deadlift');
+        const choices = selectExerciseAlternatives(catalog, direct, {zone:'lower-back-mixed', selectedIds:[direct.id, anotherDirect.id]});
+        expect(choices.some(entry => isReviewedSecondaryLowerBack(entry))).toBe(true);
+        const onlySecondary = selectExerciseAlternatives(catalog, secondary, {zone:'lower-back-mixed', selectedIds:[direct.id, secondary.id]});
+        expect(onlySecondary.every(entry => isReviewedSecondaryLowerBack(entry))).toBe(true);
     });
 });

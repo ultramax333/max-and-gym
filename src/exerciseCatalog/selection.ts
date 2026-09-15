@@ -1,6 +1,6 @@
 import type {GeneratorCandidate} from '../generator/types';
 
-export type QuickSessionZone = 'full-body' | 'upper-body' | 'lower-body' | 'chest' | 'back' | 'upper-back' | 'lower-back' | 'shoulders' | 'arms' | 'glutes' | 'core';
+export type QuickSessionZone = 'full-body' | 'upper-body' | 'lower-body' | 'chest' | 'back' | 'upper-back' | 'lower-back' | 'lower-back-mixed' | 'shoulders' | 'arms' | 'glutes' | 'core';
 export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string; muscles: string[]}> = [
     {value: 'full-body', label: 'Full body', muscles: []},
     {value: 'upper-body', label: 'Upper body', muscles: ['chest', 'shoulders', 'middle back', 'lats', 'biceps', 'triceps', 'forearms', 'traps']},
@@ -11,15 +11,33 @@ export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string;
     {value: 'back', label: 'Full back', muscles: ['middle back', 'lats', 'lower back', 'traps']},
     {value: 'upper-back', label: 'Upper back', muscles: ['middle back', 'lats', 'traps']},
     {value: 'lower-back', label: 'Lower back', muscles: ['lower back']},
+    {value: 'lower-back-mixed', label: 'Lower back + supporting work', muscles: ['lower back']},
     {value: 'shoulders', label: 'Shoulders', muscles: ['shoulders']},
     {value: 'arms', label: 'Arms', muscles: ['biceps', 'triceps', 'forearms']},
     {value: 'glutes', label: 'Glutes', muscles: ['glutes', 'abductors']},
     {value: 'core', label: 'Core', muscles: ['abdominals']},
 ];
 
-type Target = Pick<GeneratorCandidate, 'primaryMuscles' | 'generatorFocusZones'>;
+type Target = Pick<GeneratorCandidate, 'primaryMuscles' | 'generatorFocusZones'> & Partial<Pick<GeneratorCandidate, 'id' | 'secondaryMuscles' | 'movementPattern'>>;
+
+// Pinned-source secondary tags are not equivalent to a direct training target.
+// These three reviewed setups have useful erector-spinae involvement without
+// reclassifying every squat, ab movement, or shoulder raise as low-back work.
+export const SECONDARY_LOWER_BACK_EXERCISE_IDS = new Set([
+    'fedb:Romanian_Deadlift',
+    'fedb:Kettlebell_One-Legged_Deadlift',
+    'fedb:Bent_Over_One-Arm_Long_Bar_Row',
+]);
+
+export function isReviewedSecondaryLowerBack(candidate: Target): boolean {
+    return Boolean(candidate.id && SECONDARY_LOWER_BACK_EXERCISE_IDS.has(candidate.id)
+        && candidate.secondaryMuscles?.includes('lower back')
+        && ['hinge', 'pull'].includes(candidate.movementPattern ?? ''));
+}
+
 export function matchesQuickSessionZone(candidate: Target, zone: string): boolean {
     const definition = QUICK_SESSION_ZONES.find(entry => entry.value === zone);
+    if (zone === 'lower-back-mixed') return Boolean(candidate.primaryMuscles.includes('lower back') || isReviewedSecondaryLowerBack(candidate));
     return Boolean(definition && (!definition.muscles.length || candidate.primaryMuscles.some(m => definition.muscles.includes(m)) || candidate.generatorFocusZones?.includes(zone)));
 }
 
@@ -58,6 +76,11 @@ export interface AlternativeOptions extends SelectionConstraints {
 
 export function selectExerciseAlternatives<T extends GeneratorCandidate>(candidates: T[], current: Target & {id: string; movementPattern: string}, options: AlternativeOptions = {}): T[] {
     const selected = new Set(options.selectedIds);
+    const directLowerBackRemaining = [...selected].some(id => id !== current.id && candidates.some(entry => entry.id === id && entry.primaryMuscles.includes('lower back')));
+    const protectDirectLowerBack = options.zone === 'lower-back-mixed' && current.primaryMuscles.includes('lower back') && !directLowerBackRemaining;
+    const currentReviewed = candidates.find(entry => entry.id === current.id) ?? current;
+    const secondaryLowerBackRemaining = [...selected].some(id => id !== current.id && candidates.some(entry => entry.id === id && isReviewedSecondaryLowerBack(entry)));
+    const protectSecondaryLowerBack = options.zone === 'lower-back-mixed' && isReviewedSecondaryLowerBack(currentReviewed) && !secondaryLowerBackRemaining;
     const currentTargets = targets(current);
     // A focused session may offer other movements for that same focus. Broad or
     // legacy sessions retain this exercise's target, not merely its pattern.
@@ -65,6 +88,8 @@ export function selectExerciseAlternatives<T extends GeneratorCandidate>(candida
     const preferred = options.preferredIds ?? [];
     return candidates.filter(entry => entry.id !== current.id && !selected.has(entry.id) && isSelectionEligible(entry, options)
         && (!options.zone || matchesQuickSessionZone(entry, options.zone))
+        && (!protectDirectLowerBack || entry.primaryMuscles.includes('lower back'))
+        && (!protectSecondaryLowerBack || isReviewedSecondaryLowerBack(entry))
         && (focused || targets(entry).some(m => currentTargets.includes(m))))
         .sort((a, b) => {
             const rank = (e: T) => {

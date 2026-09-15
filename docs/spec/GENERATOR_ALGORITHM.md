@@ -181,3 +181,10 @@ Order:
 - Lower back quick sessions are limited to 15–30 minutes. The longer duration choices are disabled rather than filling a focused session with unrelated exercises. Full back remains available for 35–60 minutes.
 - Proposals appear after a **saved-program** workout with progression rules. A directly generated one-off session saves loads and repetitions in history but creates no proposal. The summary says so instead of offering an empty link.
 - Each proposal explains logged working sets, the saved target and the optional future default. Accepting a load proposal updates the saved program prescription, not the completed workout; deciding later or dismissing makes no change. The owner may edit the proposed load before accepting it.
+
+## 14. Opt-in secondary lower-back work (generator v12)
+
+- `lower-back` remains strict: primary lower-back exercise only, 15–30 minutes. The separate `lower-back-mixed` choice combines at least one direct lower-back exercise with at least one reviewed movement whose **source secondary** muscle is lower back. Its visible label and each exercise badge distinguish direct from secondary work.
+- Only the existing Romanian Deadlift, Kettlebell One-Legged Deadlift and Bent Over One-Arm Long Bar Row enter this secondary pool. The generic secondary tag alone is insufficient: squats, abdominal movements, side laterals, cable deadlifts and glute pull-throughs are not reclassified. Hard exclusions, equipment availability, favourites and Never Suggest still apply before selection.
+- The mixed choice offers 15–45 minutes, keeping one back-extension family member and at most one heavy barbell hinge per session. Fifty- and sixty-minute requests return clear invalid-input guidance to use Full back rather than pad the low-back focus with repeated variants or additional lumbar loading.
+- Generation fails closed if either direct or secondary pool is unavailable. Preview and active-workout alternatives preserve the last remaining exercise of each class; explicit saved-program editing still remains user-controlled. The generator version advances to v12 so existing v11 snapshots remain identifiable.

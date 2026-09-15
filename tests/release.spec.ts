@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v11 / 9', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v12 / 9', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -145,7 +145,7 @@ test('back focus separates full, upper and lower back on mobile @visual', async 
     await page.getByLabel('Body area').click();
     await expect(page.getByRole('option', {name: 'Full back'})).toBeVisible();
     await expect(page.getByRole('option', {name: 'Upper back'})).toBeVisible();
-    await page.getByRole('option', {name: 'Lower back'}).click();
+    await page.getByRole('option', {name: 'Lower back', exact: true}).click();
     await expect(page.getByText('A short focus using exercises whose primary target is lower back.')).toBeVisible();
     await page.getByLabel('Duration').click();
     await expect(page.getByRole('option', {name: '45 minutes'})).toBeDisabled();
@@ -153,6 +153,18 @@ test('back focus separates full, upper and lower back on mobile @visual', async 
     await page.getByRole('button', {name: 'Generate session'}).click();
     await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
     await expect(page.getByRole('img')).not.toHaveCount(0);
+    await assertNoHorizontalOverflow(page);
+
+    await page.getByLabel('Body area').click();
+    await page.getByRole('option', {name: 'Lower back + supporting work'}).click();
+    await expect(page.getByText('Direct lower-back exercises plus a few reviewed lifts')).toBeVisible();
+    await page.getByLabel('Duration').click();
+    await expect(page.getByRole('option', {name: '60 minutes'})).toBeDisabled();
+    await page.getByRole('option', {name: '45 minutes'}).click();
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
+    await expect(page.getByText('Direct lower back', {exact: true}).first()).toBeVisible();
+    await expect(page.getByText('Lower back secondary', {exact: true}).first()).toBeVisible();
     await assertNoHorizontalOverflow(page);
 
 });
