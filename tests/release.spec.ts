@@ -25,7 +25,7 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v12 / 9', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v13 / 9', {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -167,6 +167,12 @@ test('back focus separates full, upper and lower back on mobile @visual', async 
     await expect(page.getByText('Lower back secondary', {exact: true}).first()).toBeVisible();
     await assertNoHorizontalOverflow(page);
 
+    await page.getByLabel('Body area').click();
+    await page.getByRole('option', {name: 'Full back'}).click();
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByRole('heading', {name: 'Hyperextensions (Back Extensions)'})).toBeVisible();
+    await expect(page.getByText('Back-extension bench', {exact: true})).toBeVisible();
+    await assertNoHorizontalOverflow(page);
 });
 
 test('equipment order puts bench exercises first and survives reopening @visual', async ({page}) => {

@@ -301,3 +301,7 @@ Adding a current working set removes exactly one untouched future working set, k
 ### AT-M05 — Secondary lower-back choice
 
 The strict Lower back choice uses only primary lower-back movements and remains limited to 15–30 minutes. The separate mixed choice uses a reviewed secondary pool, labels each exercise Direct or Secondary, contains at least one of each, respects equipment/Never Suggest, and fits 15–45 minutes including recovery. Fifty- and sixty-minute mixed requests are refused with Full back guidance. Replacing the last Direct or Secondary exercise cannot silently remove that class; neither an incidental secondary tag nor an unavailable movement can bypass the reviewed pool.
+
+### AT-M06 — Full-back lower-back coverage
+
+With all gym equipment available, Full back quick sessions include the reviewed Hyperextensions (Back Extensions) exercise and expose its Back-extension bench station and local images. The generator assigns a duration-safe extra working set to one of the least-covered primary back muscles. If that exercise is unavailable or Never Suggest, it is not forced and another valid Full back plan is generated. All plans remain within the 90–110% duration tolerance and two-to-five working-set limits.

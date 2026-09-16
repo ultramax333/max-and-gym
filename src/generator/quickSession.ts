@@ -10,6 +10,7 @@ export const LOWER_BACK_MAX_DURATION_MINUTES = 30;
 export const MIXED_LOWER_BACK_MAX_DURATION_MINUTES = 45;
 const MIXED_LOWER_BACK_EXTENSION_IDS = new Set(['fedb:Hyperextensions_Back_Extensions', 'fedb:Hyperextensions_With_No_Hyperextension_Bench', 'fedb:Weighted_Ball_Hyperextension']);
 const MIXED_LOWER_BACK_HEAVY_HINGE_IDS = new Set(['fedb:Barbell_Deadlift', 'fedb:Romanian_Deadlift']);
+const FULL_BACK_BENCH_EXTENSION_ID = 'fedb:Hyperextensions_Back_Extensions';
 
 export function quickSessionReplacementCandidates<T extends GeneratorCandidate>(
     candidates: T[],
@@ -106,9 +107,14 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     if (zone === 'lower-back-mixed' && !candidates.some(entry => isReviewedSecondaryLowerBack(entry.candidate))) return {ok: false, code: 'NO_VALID_CANDIDATE', message: 'No reviewed secondary lower-back movement is available with your equipment and exclusions. Choose Lower back or change the filters.', exclusions};
 
     const muscleCoverage: typeof candidates = [];
+    const fullBackBenchExtension = zone === 'back'
+        ? candidates.find((entry) => entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID)
+        : undefined;
     const rotatedMuscles = [...zoneDefinition.muscles].sort((a, b) => stableHash(`${input.seed}:${zone}:muscle:${a}`).localeCompare(stableHash(`${input.seed}:${zone}:muscle:${b}`)));
     for (const muscle of rotatedMuscles) {
-        const entry = candidates.find((candidate) => candidate.candidate.primaryMuscles.includes(muscle) && !muscleCoverage.some((selected) => selected.candidate.id === candidate.candidate.id));
+        const entry = muscle === 'lower back' && fullBackBenchExtension
+            ? fullBackBenchExtension
+            : candidates.find((candidate) => candidate.candidate.primaryMuscles.includes(muscle) && !muscleCoverage.some((selected) => selected.candidate.id === candidate.candidate.id));
         if (entry) muscleCoverage.push(entry);
     }
     const diverse: typeof candidates = [];
@@ -122,7 +128,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     const diverseIds = new Set(diverse.map((entry) => entry.candidate.id));
     const secondaryAnchor = zone === 'lower-back-mixed' ? candidates.find(entry => isReviewedSecondaryLowerBack(entry.candidate)) : undefined;
     const anchorIds = new Set([...coverageIds, ...(secondaryAnchor ? [secondaryAnchor.candidate.id] : [])]);
-    const ordered = [...muscleCoverage, ...(secondaryAnchor ? [secondaryAnchor] : []), ...diverse.filter((entry) => !anchorIds.has(entry.candidate.id)), ...candidates.filter((entry) => !anchorIds.has(entry.candidate.id) && !diverseIds.has(entry.candidate.id))];
+    const ordered = [...(fullBackBenchExtension ? [fullBackBenchExtension] : []), ...muscleCoverage.filter((entry) => entry.candidate.id !== fullBackBenchExtension?.candidate.id), ...(secondaryAnchor ? [secondaryAnchor] : []), ...diverse.filter((entry) => !anchorIds.has(entry.candidate.id)), ...candidates.filter((entry) => !anchorIds.has(entry.candidate.id) && !diverseIds.has(entry.candidate.id))];
     const lowerBound = input.durationMinutes * 60 * 0.9;
     const upperBound = input.durationMinutes * 60 * 1.1;
     const minimumExercises = input.durationMinutes <= 20 ? 2 : 3;
@@ -136,7 +142,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const primaryZoneMatch = entry.candidate.primaryMuscles.some((muscle) => zoneDefinition.muscles.includes(muscle));
         const reasons = [primaryZoneMatch || zoneDefinition.muscles.length === 0
             ? zone === 'lower-back-mixed' ? 'Directly targets lower back.' : `Targets ${zoneDefinition.label.toLowerCase()}.`
-            : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : [])];
+            : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, ...(zone === 'back' && entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID ? ['Back-extension bench coverage keeps lower back represented in a Full back session.'] : []), 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : [])];
         const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], equipmentTags: [...entry.candidate.equipmentTags], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && (!primaryZoneMatch || other.candidate.primaryMuscles.includes('lower back') || zone !== 'lower-back-mixed')).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
         const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
         if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
@@ -146,15 +152,33 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     if (exercises.length < minimumExercises) return {ok: false, code: 'NO_VALID_CANDIDATE', message: `Not enough eligible exercises for a ${input.durationMinutes}-minute ${zoneDefinition.label.toLowerCase()} session. Adjust equipment or exercise exclusions.`, exclusions};
     if (zone === 'lower-back-mixed' && !exercises.some(exercise => exercise.primaryMuscles.includes('lower back'))) return {ok: false, code: 'VALIDATION_FAILED', message: 'The session needs at least one direct lower-back exercise.', exclusions};
     if (zone === 'lower-back-mixed' && !exercises.some(exercise => candidates.some(entry => entry.candidate.id === exercise.exerciseId && isReviewedSecondaryLowerBack(entry.candidate)))) return {ok: false, code: 'VALIDATION_FAILED', message: 'The session needs at least one reviewed secondary lower-back movement.', exclusions};
+    const backMuscleSetTotals = () => Object.fromEntries(zoneDefinition.muscles.map((muscle) => [muscle, exercises.reduce((sum, exercise) => sum + (exercise.primaryMuscles.includes(muscle) ? exercise.prescription.workingSets : 0), 0)]));
+    const leastCoveredSets = (exercise: GeneratedExercise, totals: Record<string, number>) => {
+        const covered = exercise.primaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle));
+        return covered.length ? Math.min(...covered.map((muscle) => totals[muscle] ?? 0)) : Number.MAX_SAFE_INTEGER;
+    };
+    if (zone === 'back') {
+        const totals = backMuscleSetTotals();
+        const recipient = [...exercises].filter((exercise) => exercise.prescription.workingSets < 5)
+            .sort((a, b) => leastCoveredSets(a, totals) - leastCoveredSets(b, totals) || a.prescription.workingSets - b.prescription.workingSets)
+            .find((exercise) => quickSessionDuration(exercises.map((entry) => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
+        if (recipient) {
+            recipient.prescription.workingSets++;
+            recipient.reasons.push('An extra working set was assigned to one of the least-covered back muscles; recovery is unchanged.');
+        }
+    }
     // Corrected isolation classifications can shorten the initial plan. Fill a
     // small remaining budget with balanced working sets, never shorter rests or
     // an unrelated exercise. Keep the documented maximum of five sets.
     while (quickSessionDuration(exercises, input.durationMinutes).total < lowerBound) {
-        const next = [...exercises].sort((a, b) => a.prescription.workingSets - b.prescription.workingSets)
+        const backMuscleSets = backMuscleSetTotals();
+        const next = [...exercises].sort((a, b) => (zone === 'back' ? leastCoveredSets(a, backMuscleSets) - leastCoveredSets(b, backMuscleSets) : 0) || a.prescription.workingSets - b.prescription.workingSets)
             .find(exercise => exercise.prescription.workingSets < 5 && quickSessionDuration(exercises.map(entry => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
         if (!next) break;
         next.prescription.workingSets++;
-        const reason = 'Working sets adjusted within the 2–5 set range to fit the session; recovery is unchanged.';
+        const reason = zone === 'back'
+            ? 'An extra working set was assigned to one of the least-covered back muscles; recovery is unchanged.'
+            : 'Working sets adjusted within the 2–5 set range to fit the session; recovery is unchanged.';
         if (!next.reasons.includes(reason)) next.reasons.push(reason);
     }
     const groupedExercises = groupExercisesByEquipment(exercises);
