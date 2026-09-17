@@ -104,7 +104,7 @@ describe('ProgramRepository', () => {
         for (const [index, set] of session.sets.entries()) await workout.completeSet({sessionId: session.session.id, setId: set.id, operationId: `complete-${index}`, actualLoadKg: 100, actualReps: 8, actualRir: 2});
         await workout.finish(session.session.id, 'finish-progress');
         expect(await db.progressionProposal.where('sessionId').equals(session.session.id).count()).toBe(1);
-        expect((await db.progressionProposal.where('sessionId').equals(session.session.id).first())?.status).toBe('pending');
+        expect(await db.progressionProposal.where('sessionId').equals(session.session.id).first()).toMatchObject({status: 'pending', proposedLoadKg: 102.5});
         expect((await db.exercisePrescription.get(exercise.prescriptionId))?.loadReferenceKg).toBe(0);
     });
 

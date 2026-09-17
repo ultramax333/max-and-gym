@@ -516,7 +516,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                     if (!programExercise) continue;
                     const [prescription, rule] = await Promise.all([this.db.exercisePrescription.get(programExercise.prescriptionId), this.db.progressionRule.get(programExercise.progressionRuleId)]);
                     if (!prescription || !rule) continue;
-                    const relevant = performedSets.filter((entry) => entry.sessionExerciseId === sessionExercise.id);
+                    const relevant = performedSets.filter((entry) => entry.sessionExerciseId === sessionExercise.id && (entry.setKind ?? 'working') === 'working');
                     const proposal = calculateProgression({exerciseId: sessionExercise.exerciseId, kind: (rule.kind === 'load-after-success' ? 'fixed-increment' : rule.kind === 'manual' ? 'manual-hold' : rule.kind) as ProgressionKind, sets: relevant.map((entry) => ({reps: entry.actualReps ?? 0, loadKg: entry.actualLoadKg ?? entry.targetLoadKg, rir: entry.actualRir, completed: entry.status === 'completed'})), repsMax: prescription.repsMax, targetRir: prescription.targetRir, currentLoadKg: prescription.loadReferenceKg, incrementKg: 2.5, comparableMisses: 0, discomfort: false, conditioningSeconds: undefined, createdAt: now});
                     await this.db.progressionProposal.put({...proposal, id: `progression:${session.id}:${programExercise.id}`, sessionId: session.id, programId: session.programId, programExerciseId: programExercise.id, prescriptionId: prescription.id, updatedAt: now});
                 }

@@ -10,6 +10,13 @@ describe('progression proposals', () => {
         expect(calculateProgression(base({kind: 'top-set-back-off'}))).toMatchObject({proposedLoadKg: 102.5, proposedBackoffLoadKg: 92.5});
     });
 
+    it('uses the last completed working load when a saved default has not been set yet', () => {
+        expect(calculateProgression(base({currentLoadKg: 0, sets: [
+            {reps: 8, loadKg: 100, rir: 2, completed: true},
+            {reps: 8, loadKg: 100, rir: 2, completed: true},
+        ]}))).toMatchObject({reasonCode: 'SUCCESS_INCREASE', proposedLoadKg: 102.5});
+    });
+
     it('holds incomplete work and discomfort and proposes deload review after comparable misses', () => {
         const incomplete = calculateProgression(base({sets: [{reps: 6, loadKg: 100, completed: true}]}));
         const discomfort = calculateProgression(base({discomfort: true}));

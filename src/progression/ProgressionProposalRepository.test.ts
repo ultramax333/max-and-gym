@@ -45,11 +45,12 @@ describe('ProgressionProposalRepository', () => {
 
     it('joins the readable exercise and logged sets without changing workout history', async () => {
         await add('detail');
+        await db.trainingProgram.add({id: 'program', name: 'Leg day', description: '', source: 'manual', status: 'active', weeklyFrequency: 1, defaultDurationMinutes: 40, currentDayIndex: 0, createdAt: '2026-08-07T10:00:00Z', updatedAt: '2026-08-07T10:00:00Z'});
         await db.programExercise.add({id: 'exercise', programDayId: 'day', exerciseId: 'squat', exerciseNameSnapshot: 'Back squat', movementPatternSnapshot: 'squat', primaryMusclesSnapshot: ['quadriceps'], sequenceIndex: 0, role: 'primary', groupType: 'single', groupSequenceIndex: 0, locked: false, alternativeExerciseIds: [], prescriptionId: 'rx', progressionRuleId: 'rule', notes: ''});
         await db.sessionExercise.add({id: 'session-exercise', sessionId: 'session', exerciseId: 'squat', exerciseNameSnapshot: 'Back squat', prescriptionSnapshot: '{}', programExerciseId: 'exercise', lockedSnapshot: false, alternativeExerciseIdsSnapshot: [], sequenceIndex: 0, status: 'completed', createdAt: '2026-08-07T10:00:00Z', updatedAt: '2026-08-07T10:00:00Z'});
         const template = {sessionId: 'session', sessionExerciseId: 'session-exercise', setKind: 'working' as const, targetRepsMin: 6, targetRepsMax: 8, targetLoadKg: 100, targetRir: 2, restSeconds: 120, createdAt: '2026-08-07T10:00:00Z', updatedAt: '2026-08-07T10:00:00Z'};
         await db.performedSet.bulkAdd([{...template, id: 'set-1', sequenceIndex: 0, status: 'completed', actualLoadKg: 100, actualReps: 8}, {...template, id: 'set-2', sequenceIndex: 1, status: 'planned'}]);
-        expect(await repository.detail('detail')).toMatchObject({exerciseName: 'Back squat', savedTargetKg: 100, targetRepsMax: 8, completedSets: 1, totalSets: 2, lastCompleted: {loadKg: 100, repetitions: 8}});
+        expect(await repository.detail('detail')).toMatchObject({programName: 'Leg day', exerciseName: 'Back squat', savedTargetKg: 100, targetRepsMin: 6, targetRepsMax: 8, targetRir: 2, completedSets: 1, totalSets: 2, lastCompleted: {loadKg: 100, repetitions: 8}});
         expect((await db.performedSet.get('set-1'))?.actualReps).toBe(8);
     });
 

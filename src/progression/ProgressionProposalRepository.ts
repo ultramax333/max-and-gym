@@ -3,9 +3,12 @@ import {ProgressionProposalRecord} from './types';
 
 export interface ProgressionProposalDetail {
     proposal: ProgressionProposalRecord;
+    programName: string;
     exerciseName: string;
     savedTargetKg?: number;
+    targetRepsMin?: number;
     targetRepsMax?: number;
+    targetRir?: number;
     completedSets: number;
     totalSets: number;
     lastCompleted?: {loadKg:number; repetitions:number};
@@ -25,7 +28,8 @@ export class ProgressionProposalRepository {
     async detail(id: string): Promise<ProgressionProposalDetail | undefined> {
         const proposal = await this.db.progressionProposal.get(id);
         if (!proposal) return undefined;
-        const [exercise, prescription, sessionExercises, sessionSets] = await Promise.all([
+        const [program, exercise, prescription, sessionExercises, sessionSets] = await Promise.all([
+            this.db.trainingProgram.get(proposal.programId),
             this.db.programExercise.get(proposal.programExerciseId),
             this.db.exercisePrescription.get(proposal.prescriptionId),
             this.db.sessionExercise.where('sessionId').equals(proposal.sessionId).toArray(),
@@ -37,9 +41,12 @@ export class ProgressionProposalRepository {
         const last = completed.at(-1);
         return {
             proposal,
+            programName: program?.name ?? 'Saved program',
             exerciseName: sessionExercise?.exerciseNameSnapshot ?? exercise?.exerciseNameSnapshot ?? proposal.exerciseId.replace(/^fedb:/,'').replaceAll('_',' '),
             savedTargetKg: prescription?.loadReferenceKg,
+            targetRepsMin: prescription?.repsMin,
             targetRepsMax: prescription?.repsMax,
+            targetRir: prescription?.targetRir,
             completedSets: completed.length,
             totalSets: relevant.length,
             lastCompleted: last?.actualReps === undefined ? undefined : {loadKg:last.actualLoadKg ?? last.targetLoadKg, repetitions:last.actualReps},
