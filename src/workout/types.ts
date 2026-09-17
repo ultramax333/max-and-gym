@@ -19,6 +19,7 @@ export interface WorkoutSessionRecord {
     plannedDurationSeconds?: number;
     restOverrideSeconds?: number;
     trainingContext?: {zone: string; goal: string};
+    selectionConstraints?: import('../exerciseCatalog/selection').SelectionConstraints;
     currentSessionExerciseId: string;
     currentSetId: string;
     createdAt: string;
@@ -30,6 +31,7 @@ export interface StartWorkoutInput {
     plannedDurationSeconds?: number;
     restOverrideSeconds?: number;
     trainingContext?: {zone: string; goal: string};
+    selectionConstraints?: import('../exerciseCatalog/selection').SelectionConstraints;
     programId?: string;
     programDayId?: string;
     exercises: Array<{

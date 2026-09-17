@@ -21,8 +21,13 @@ import {CompleteSetAction, ExerciseRail, MetricStepper, RestAction, WorkoutActio
 import {recommendExerciseLoad} from '../../workout/loadRecommendation';
 import {EquipmentBadge, EquipmentBadges} from '../../components/ui/EquipmentBadge';
 import {equipmentStation, EQUIPMENT_STATIONS} from '../../workout/equipmentStations';
+import {QUICK_SESSION_ZONES} from '../../exerciseCatalog/selection';
 
 const contextRatings = new ExerciseContextRatingRepository(db);
+
+function focusLabel(zone: string): string {
+    return QUICK_SESSION_ZONES.find(entry => entry.value === zone)?.label ?? zone.replaceAll('-', ' ');
+}
 
 function formatTimer(seconds: number): string {
     const safe = Math.max(0, seconds);
@@ -258,34 +263,52 @@ export function ActiveWorkoutPage() {
         if (!catalog || !currentExercise || !exerciseDetails || !canReplaceCurrent) return;
         setBusy(true);
         try {
-            const preferred = (await Promise.all(currentExercise.alternativeExerciseIdsSnapshot.map((id) => catalog.get(id)))).filter((entry): entry is LibraryExercise => Boolean(entry));
-            const compatible = await catalog.alternatives(exerciseDetails);
-            const sessionExerciseIds = new Set(snapshot.exercises.map((entry) => entry.exerciseId));
-            const unique = new Map([...preferred, ...compatible].filter((entry) => !entry.effectiveNeverSuggest && !sessionExerciseIds.has(entry.id)).map((entry) => [entry.id, entry]));
-            setReplacementOptions([...unique.values()].slice(0, 20));
+            const options = await catalog.alternatives(exerciseDetails, {
+                ...snapshot.session.selectionConstraints,
+                zone: snapshot.session.trainingContext?.zone,
+                selectedIds: snapshot.exercises.map(entry => entry.exerciseId),
+                preferredIds: currentExercise.alternativeExerciseIdsSnapshot,
+                limit: 40,
+            });
+            setReplacementOptions(options);
             setAlternativesOpen(true);
         } catch {
+            recordDiagnostic({level: 'error', subsystem: 'GENERATOR', code: 'GENERATOR_NO_VALID_CANDIDATE', safeMessage: 'Workout alternatives could not be loaded.'});
             setError('Exercise alternatives could not be loaded. Your workout is unchanged.');
         } finally {
             setBusy(false);
         }
     };
     const replaceCurrentExercise = async (replacement: LibraryExercise) => {
-        if (!service || !currentExercise) return;
-        const previousName = currentExercise.exerciseNameSnapshot;
-        const saved = await perform(() => service.replaceExercise({
-            sessionId: snapshot.session.id,
-            sessionExerciseId: currentExercise.id,
-            replacementExerciseId: replacement.id,
-            replacementExerciseName: replacement.name,
-            replacementEquipmentTags: replacement.equipmentTags,
-            alternativeExerciseIds: replacementOptions.filter((entry) => entry.id !== replacement.id).slice(0, 5).map((entry) => entry.id),
-            reason: 'equipment-unavailable',
-        }));
-        if (saved) {
-            setAlternativesOpen(false);
-            setExerciseChangeNotice(`${previousName} was replaced with ${replacement.name}. Sets, repetitions and recovery were kept; check the load before starting.`);
-        }
+        if (!service || !currentExercise || !catalog || !exerciseDetails) return;
+        setBusy(true);
+        try {
+            const allowed = await catalog.alternatives(exerciseDetails, {...snapshot.session.selectionConstraints, zone: snapshot.session.trainingContext?.zone, selectedIds: snapshot.exercises.map(entry => entry.exerciseId), limit: Number.MAX_SAFE_INTEGER});
+            const freshReplacement = allowed.find(entry => entry.id === replacement.id);
+            if (!freshReplacement) {
+                recordDiagnostic({level: 'warning', subsystem: 'GENERATOR', code: 'GENERATOR_CONSTRAINT_VIOLATION', safeMessage: 'A stale or incompatible workout replacement was refused.'});
+                setError('This alternative is no longer eligible. Reopen the alternatives to refresh the choices.');
+                setAlternativesOpen(false);
+                return;
+            }
+            const previousName = currentExercise.exerciseNameSnapshot;
+            const saved = await perform(() => service.replaceExercise({
+                sessionId: snapshot.session.id,
+                sessionExerciseId: currentExercise.id,
+                replacementExerciseId: freshReplacement.id,
+                replacementExerciseName: freshReplacement.name,
+                replacementEquipmentTags: freshReplacement.equipmentTags,
+                alternativeExerciseIds: allowed.filter(entry => entry.id !== freshReplacement.id).slice(0, 5).map(entry => entry.id),
+                reason: 'equipment-unavailable',
+            }));
+            if (saved) {
+                setAlternativesOpen(false);
+                setExerciseChangeNotice(`${previousName} was replaced with ${freshReplacement.name}. Sets, repetitions and recovery were kept; check the load before starting.`);
+            }
+        } catch {
+            recordDiagnostic({level: 'error', subsystem: 'WORKOUT', code: 'WORKOUT_EXERCISE_REPLACE_FAILED', safeMessage: 'Workout replacement eligibility could not be checked.'});
+            setError('The alternative could not be checked. Your workout is unchanged. Try again.');
+        } finally { setBusy(false); }
     };
     const completeCurrentSet = () => {
         if (!service || !currentSet || load === undefined || reps === undefined || !Number.isInteger(reps)) return;
@@ -364,7 +387,7 @@ export function ActiveWorkoutPage() {
                     <Box>
                         <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap"><Typography variant="overline" color="primary.main">EXERCISE {snapshot.exercises.findIndex((entry) => entry.id === currentExercise.id) + 1} OF {snapshot.exercises.length}</Typography><Typography component="h2" variant="overline" color="primary.main">Set {currentSet.sequenceIndex + 1}</Typography><Typography variant="overline" color="text.secondary">OF {currentExerciseSets.length}</Typography></Stack>
                         <Typography component="h1" sx={{fontSize: {xs: 27, sm: 32}, fontWeight: 850, letterSpacing: '-.03em', lineHeight: 1.12}}>{currentExercise.exerciseNameSnapshot}</Typography>
-                        <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{mt: 0.75}}><Chip size="small" label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/><Chip size="small" variant="outlined" label={currentSet.setKind ?? 'working'}/></Stack>
+                        <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap" sx={{mt: 0.75}}><Chip size="small" label={`${currentSet.targetLoadKg} kg · ${currentSet.targetRepsMin}–${currentSet.targetRepsMax} reps`}/><Chip size="small" variant="outlined" label={currentSet.setKind ?? 'working'}/>{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && exerciseDetails && <Chip size="small" color={exerciseDetails.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={exerciseDetails.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}</Stack>
                     </Box>
 
                     <Stack direction="row" gap={1.25}>
@@ -382,7 +405,7 @@ export function ActiveWorkoutPage() {
 
                     {snapshot.session.trainingContext && <Paper sx={{p: 1.5, bgcolor: 'rgba(250,190,80,.06)'}}>
                         <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'flex-start', sm: 'center'}} gap={1}>
-                            <Box><Typography fontWeight={750}>Rate for this training type</Typography><Typography variant="body2" color="text.secondary">{snapshot.session.trainingContext.zone} · {snapshot.session.trainingContext.goal}. This does not change ratings in another body area.</Typography></Box>
+                            <Box><Typography fontWeight={750}>Rate for this training type</Typography><Typography variant="body2" color="text.secondary">{focusLabel(snapshot.session.trainingContext.zone)} · {snapshot.session.trainingContext.goal}. This does not change ratings in another body area.</Typography></Box>
                             <Stack direction="row" aria-label={`Rate ${currentExercise.exerciseNameSnapshot} out of 5 for this training type`}>{[1, 2, 3, 4, 5].map((value) => <IconButton key={value} aria-label={`${value} out of 5`} disabled={busy} onClick={() => void rateCurrentExercise(value)} sx={{width: 48, height: 48, color: value <= exerciseRating ? 'warning.main' : 'text.secondary'}}>{value <= exerciseRating ? <Star/> : <StarBorder/>}</IconButton>)}</Stack>
                         </Stack>
                     </Paper>}
@@ -484,13 +507,13 @@ export function ActiveWorkoutPage() {
         <Dialog open={setAdjustmentOpen} onClose={() => !busy && setSetAdjustmentOpen(false)}><DialogTitle>Add one set?</DialogTitle><DialogContent><Typography>The app will add one working set to {currentExercise?.exerciseNameSnapshot} and remove one untouched set from the closest future exercise. Completed work is never changed and the session time target stays the same.</Typography></DialogContent><DialogActions><Button disabled={busy} onClick={() => setSetAdjustmentOpen(false)}>Cancel</Button><Button variant="contained" disabled={busy || !canTradeSet} onClick={() => void addCurrentSet()}>Adjust plan</Button></DialogActions></Dialog>
         <Dialog open={Boolean(previewExercise)} onClose={() => setPreviewExercise(undefined)} fullScreen>
             <DialogTitle component="div"><Stack direction="row" justifyContent="space-between" alignItems="center"><Box><Typography variant="overline" color="primary.main">UPCOMING EXERCISE</Typography><Typography variant="h5" component="h2">{previewExercise?.exerciseNameSnapshot}</Typography></Box><IconButton aria-label="Close exercise preview" onClick={() => setPreviewExercise(undefined)}><Close/></IconButton></Stack></DialogTitle>
-            <DialogContent dividers><Stack spacing={2}>{previewMedia.length ? <Box sx={{height: {xs: 300, sm: 430}, display: 'grid', gridTemplateColumns: previewMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider', borderRadius: 3, overflow: 'hidden'}}>{previewMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <StatePanel title="No local photo" description="This exercise has no reviewed local image yet." icon={<FitnessCenter/>}/>}<Stack direction="row" gap={0.75} flexWrap="wrap"><Chip label={previewExercise?.prescriptionSnapshot}/>{previewDetails?.equipmentTags.map((entry) => <Chip key={entry} variant="outlined" label={entry}/>)}</Stack>{previewDetails && <><Typography variant="h6">How to move</Typography><Typography color="text.secondary">{previewDetails.setupInstructions}</Typography><Box component="ol" sx={{pl: 3, m: 0}}>{previewDetails.executionSteps.slice(0, 4).map((step) => <Typography key={step} component="li" sx={{mb: 1}}>{step}</Typography>)}</Box></>}</Stack></DialogContent>
+<DialogContent dividers><Stack spacing={2}>{previewMedia.length ? <Box sx={{height: {xs: 300, sm: 430}, display: 'grid', gridTemplateColumns: previewMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider', borderRadius: 3, overflow: 'hidden'}}>{previewMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <StatePanel title="No local photo" description="This exercise has no reviewed local image yet." icon={<FitnessCenter/>}/>}<Stack direction="row" gap={0.75} flexWrap="wrap">{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && previewDetails && <Chip color={previewDetails.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={previewDetails.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Chip label={previewExercise?.prescriptionSnapshot}/>{previewDetails?.equipmentTags.map((entry) => <Chip key={entry} variant="outlined" label={entry}/>)}</Stack>{previewDetails && <><Typography variant="h6">How to move</Typography><Typography color="text.secondary">{previewDetails.setupInstructions}</Typography><Box component="ol" sx={{pl: 3, m: 0}}>{previewDetails.executionSteps.slice(0, 4).map((step) => <Typography key={step} component="li" sx={{mb: 1}}>{step}</Typography>)}</Box></>}</Stack></DialogContent>
         </Dialog>
         <Dialog open={alternativesOpen} onClose={() => !busy && setAlternativesOpen(false)} fullScreen>
             <DialogTitle component="div"><Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}><Box><Typography variant="overline" color="primary.main">MACHINE OCCUPIED</Typography><Typography variant="h5" component="h2">Choose an alternative</Typography></Box><IconButton aria-label="Close alternatives" disabled={busy} onClick={() => setAlternativesOpen(false)}><Close/></IconButton></Stack></DialogTitle>
-            <DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {
+<DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Typography color="text.secondary" sx={{mb: 2}}>{snapshot.session.trainingContext?.zone ? `Training focus: ${focusLabel(snapshot.session.trainingContext.zone)}. ` : 'Alternatives match the current exercise target. '}{snapshot.session.selectionConstraints?.equipment ? 'Your selected resistance equipment is respected. Check all support badges before choosing.' : 'This older or manual session has no saved equipment filter. Check the required equipment before choosing.'}</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {
                 const media = option.media.find((entry) => entry.kind === 'thumbnail') ?? option.media.find((entry) => entry.kind === 'start-image');
-                return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center">{media && <Box component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: 96, height: 96, objectFit: 'contain', bgcolor: 'background.default', flexShrink: 0}}/>}<Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography><Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
+return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center">{media && <Box component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: 96, height: 96, objectFit: 'contain', bgcolor: 'background.default', flexShrink: 0}}/>}<Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography>{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'} sx={{mt: 0.5}}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><EquipmentBadges exercise={{exerciseId:option.id, equipmentTags:option.equipmentTags}}/><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
             })}{replacementOptions.length === 0 && <StatePanel title="No compatible alternative" description="Use Do later and return when the equipment becomes available." icon={<FitnessCenter/>}/>}</Stack></DialogContent>
         </Dialog>
     </Layout>;

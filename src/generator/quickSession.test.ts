@@ -25,6 +25,85 @@ const input = (durationMinutes: GeneratorInput['durationMinutes']): GeneratorInp
 });
 
 describe('quick session generator', () => {
+    it.each([15,20,25,30] as const)('keeps lower-back %i-minute sessions short and primary-targeted', duration => {
+        const result = generateQuickSession(input(duration), candidates, 'lower-back');
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        if (!result.ok) return;
+        expect(result.program.days[0].exercises.every(e => e.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(duration * 60 * .9);
+        expect(result.program.days[0].duration.total).toBeLessThanOrEqual(duration * 60 * 1.1);
+        expect(result.program.days[0].exercises.every(e => e.exerciseId !== 'fedb:Superman')).toBe(true);
+    });
+    it('refuses to pad a longer lower-back session with unrelated exercises', () => {
+        expect(generateQuickSession(input(45), candidates, 'lower-back')).toMatchObject({ok:false, code:'INVALID_INPUT'});
+        const upper = generateQuickSession(input(45), candidates, 'upper-back');
+        expect(upper.ok, JSON.stringify(upper)).toBe(true);
+        if (upper.ok) expect(upper.program.days[0].exercises.every(e => e.primaryMuscles.some(m => ['middle back','lats','traps'].includes(m)))).toBe(true);
+        const full = generateQuickSession(input(45), candidates, 'back');
+        expect(full.ok).toBe(true);
+    });
+    it.each([15,30,45,60] as const)('keeps the reviewed back-extension bench visible in a %i-minute Full back session', duration => {
+        for (let variation = 0; variation < 12; variation++) {
+            const result = generateQuickSession({...input(duration), seed:`full-back-extension-${duration}-${variation}`}, candidates, 'back');
+            expect(result.ok, `${duration}/${variation}: ${JSON.stringify(result)}`).toBe(true);
+            if (!result.ok) continue;
+            const extension = result.program.days[0].exercises.find(entry => entry.exerciseId === 'fedb:Hyperextensions_Back_Extensions');
+            expect(extension).toBeDefined();
+            expect(extension?.reasons.join(' ')).toContain('Back-extension bench coverage');
+        }
+    });
+    it('respects equipment and Never Suggest instead of forcing the back-extension bench', () => {
+        const noOtherEquipment = generateQuickSession({...input(45), equipment:['barbell','dumbbell','cable','machine','body only','bands','kettlebells']}, candidates, 'back');
+        expect(noOtherEquipment.ok).toBe(true);
+        if (noOtherEquipment.ok) expect(noOtherEquipment.program.days[0].exercises.map(entry => entry.exerciseId)).not.toContain('fedb:Hyperextensions_Back_Extensions');
+
+        const blocked = candidates.map(entry => entry.id === 'fedb:Hyperextensions_Back_Extensions' ? {...entry, effectiveNeverSuggest:true} : entry);
+        const excluded = generateQuickSession(input(45), blocked, 'back');
+        expect(excluded.ok).toBe(true);
+        if (excluded.ok) expect(excluded.program.days[0].exercises.map(entry => entry.exerciseId)).not.toContain('fedb:Hyperextensions_Back_Extensions');
+    });
+    it('uses spare Full back time for one of the least-covered primary back muscles', () => {
+        const result = generateQuickSession({...input(60), seed:'full-back-balanced-extra-set'}, candidates, 'back');
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        if (!result.ok) return;
+        expect(result.program.days[0].exercises.some(entry => entry.reasons.some(reason => reason.includes('least-covered back muscles')))).toBe(true);
+    });
+    it.each([15,20,25,30,35,40,45] as const)('builds an honest %i-minute mixed low-back session', duration => {
+        const result = generateQuickSession(input(duration), candidates, 'lower-back-mixed');
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        if (!result.ok) return;
+        const exercises = result.program.days[0].exercises;
+        expect(exercises.some(entry => entry.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(exercises.some(entry => !entry.primaryMuscles.includes('lower back'))).toBe(true);
+        expect(exercises.every(entry => matchesQuickSessionZone(candidates.find(candidate => candidate.id === entry.exerciseId)!, 'lower-back-mixed'))).toBe(true);
+        expect(exercises.every(entry => !['fedb:Barbell_Squat','fedb:Cable_Deadlifts','fedb:Pull_Through'].includes(entry.exerciseId))).toBe(true);
+        expect(exercises.filter(entry => ['fedb:Barbell_Deadlift', 'fedb:Romanian_Deadlift'].includes(entry.exerciseId))).toHaveLength(exercises.some(entry => ['fedb:Barbell_Deadlift', 'fedb:Romanian_Deadlift'].includes(entry.exerciseId)) ? 1 : 0);
+        expect(exercises.filter(entry => ['fedb:Hyperextensions_Back_Extensions', 'fedb:Hyperextensions_With_No_Hyperextension_Bench', 'fedb:Weighted_Ball_Hyperextension'].includes(entry.exerciseId)).length).toBeLessThanOrEqual(1);
+        expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(duration * 60 * .9);
+        expect(result.program.days[0].duration.total).toBeLessThanOrEqual(duration * 60 * 1.1);
+    });
+    it.each([50,55,60] as const)('does not pad mixed lower back to %i minutes with repetitive hinges', duration => {
+        expect(generateQuickSession(input(duration), candidates, 'lower-back-mixed')).toMatchObject({ok:false,code:'INVALID_INPUT'});
+    });
+    it('keeps 45-minute mixed variations inside the time and class constraints', () => {
+        for (let variation = 0; variation < 32; variation++) {
+            const result = generateQuickSession({...input(45), seed:`mixed-variation-${variation}`}, candidates, 'lower-back-mixed');
+            expect(result.ok, `${variation}: ${JSON.stringify(result)}`).toBe(true);
+            if (!result.ok) continue;
+            expect(result.program.days[0].exercises.some(entry => entry.primaryMuscles.includes('lower back'))).toBe(true);
+            expect(result.program.days[0].exercises.some(entry => !entry.primaryMuscles.includes('lower back'))).toBe(true);
+            expect(result.program.days[0].duration.total).toBeGreaterThanOrEqual(45 * 60 * .9);
+        }
+    });
+    it('fails closed when the mixed focus has no available direct lower-back anchor', () => {
+        const secondaryOnly = candidates.filter(entry => !entry.primaryMuscles.includes('lower back'));
+        expect(generateQuickSession(input(45), secondaryOnly, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+        const directOnly = candidates.filter(entry => !['fedb:Romanian_Deadlift', 'fedb:Kettlebell_One-Legged_Deadlift', 'fedb:Bent_Over_One-Arm_Long_Bar_Row'].includes(entry.id));
+        expect(generateQuickSession(input(45), directOnly, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+        const blocked = {...input(30), blockedExerciseIds:['fedb:Romanian_Deadlift', 'fedb:Kettlebell_One-Legged_Deadlift', 'fedb:Bent_Over_One-Arm_Long_Bar_Row']};
+        expect(generateQuickSession(blocked, candidates, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+        expect(generateQuickSession({...input(30), equipment:['cable']}, candidates, 'lower-back-mixed')).toMatchObject({ok:false,code:'NO_VALID_CANDIDATE'});
+    });
     it.each([15, 20, 25, 30, 35, 40, 45, 50, 55, 60] as const)('generates a duration-coherent arms session in %i minutes', (duration) => {
         const result = generateQuickSession(input(duration), candidates, 'arms');
         expect(result.ok).toBe(true);
@@ -92,7 +171,7 @@ describe('quick session generator', () => {
 
     it('uses variable set counts and keeps equal equipment together', () => {
         const result = generateQuickSession({...input(50), seed: 'variable-sets-and-equipment'}, candidates, 'arms');
-        expect(result.ok).toBe(true);
+        expect(result.ok, JSON.stringify(result)).toBe(true);
         if (!result.ok) return;
         const sets = result.program.days[0].exercises.map((entry) => entry.prescription.workingSets);
         expect(new Set(sets).size).toBeGreaterThan(1);
@@ -193,7 +272,7 @@ describe('quick session generator', () => {
 
     it('never generates or offers catalogue-excluded exercises', () => {
         const excluded = candidates.filter((entry) => !entry.generatorEligible);
-        expect(excluded).toHaveLength(29);
+        expect(excluded).toHaveLength(30);
         let successfulGenerations = 0;
         for (const duration of [15, 30, 45, 60] as const) {
             for (const zone of ['full-body', 'upper-body', 'lower-body', 'chest', 'back', 'shoulders', 'arms', 'glutes', 'core'] as const) {

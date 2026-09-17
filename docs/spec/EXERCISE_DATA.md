@@ -100,6 +100,25 @@ Create a repeatable development pipeline:
 
 The application records the seed revision so future updates can be migrated without overwriting user edits.
 
+Reviewed-7 applies 16 documented metadata corrections from
+`data/exercise-classification-overrides.json` during deterministic catalogue
+generation. IDs, source pins, local media and historical snapshots remain stable.
+`audit-exercise-assets.mjs` also runs the classification invariant audit; it does
+not claim exhaustive biomechanical or medical validation. Resistance tags and
+auxiliary setup stations are distinct. Library muscle filters target primary
+muscles unless the user explicitly enables secondary muscles.
+
+Reviewed-8 adds five distinct back movements from the existing pinned source:
+Superman (controlled floor extension, library-visible but excluded from automatic
+strength-session generation), Weighted Ball Hyperextension (ball-supported loaded
+extension), Lying T-Bar Row (chest-supported machine), Seated One-arm Cable Pulley
+Rows (unilateral seated cable), and Shotgun Row (unilateral standing low cable).
+All ten start/end images are committed locally. Each exercise retains its source
+primary muscle and apparatus classification; secondary lower-back involvement
+does not make it eligible for a Lower back session. No database, export or cache
+schema change is needed: the reviewed seed version refreshes the catalogue while
+preserving user preferences and custom exercises.
+
 ## 9. Attribution screen
 
 The About page lists:

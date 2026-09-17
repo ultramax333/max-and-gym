@@ -1,7 +1,7 @@
 {
   "revision": "b0eed061e1c8",
-  "assetCount": 604,
-  "totalBytes": 40399877,
+  "assetCount": 614,
+  "totalBytes": 41012226,
   "assets": [
     {
       "path": "media/exercises/90-90-hamstring-0.jpg",
@@ -2692,6 +2692,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/lying-t-bar-row-0.jpg",
+      "byteSize": 100488,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/lying-t-bar-row-1.jpg",
+      "byteSize": 91166,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/machine-bench-press-0.jpg",
       "byteSize": 73844,
       "height": 567,
@@ -3196,6 +3208,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/seated-one-arm-cable-pulley-rows-0.jpg",
+      "byteSize": 56804,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/seated-one-arm-cable-pulley-rows-1.jpg",
+      "byteSize": 56192,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/seated-side-lateral-raise-0.jpg",
       "byteSize": 54479,
       "height": 567,
@@ -3218,6 +3242,18 @@
       "byteSize": 60767,
       "height": 567,
       "width": 850
+    },
+    {
+      "path": "media/exercises/shotgun-row-0.jpg",
+      "byteSize": 36417,
+      "height": 500,
+      "width": 750
+    },
+    {
+      "path": "media/exercises/shotgun-row-1.jpg",
+      "byteSize": 37411,
+      "height": 500,
+      "width": 750
     },
     {
       "path": "media/exercises/side-bridge-0.jpg",
@@ -3436,6 +3472,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/superman-0.jpg",
+      "byteSize": 59230,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/superman-1.jpg",
+      "byteSize": 62125,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/suspended-row-0.jpg",
       "byteSize": 71342,
       "height": 567,
@@ -3564,6 +3612,18 @@
     {
       "path": "media/exercises/v-bar-pulldown-1.jpg",
       "byteSize": 66946,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/weighted-ball-hyperextension-0.jpg",
+      "byteSize": 60999,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/weighted-ball-hyperextension-1.jpg",
+      "byteSize": 51517,
       "height": 567,
       "width": 850
     },

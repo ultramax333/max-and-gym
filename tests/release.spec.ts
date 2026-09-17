@@ -25,7 +25,61 @@ test('release identity and subpath routes are available', async ({page}) => {
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v9 / 9', {exact: true})).toBeVisible();
+    await expect(page.getByText('deterministic-v13 / 9', {exact: true})).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+});
+
+test('focused active alternatives reject stale upper-body choices and retain equipment after reload', async ({page}, testInfo) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name:'Start', exact:true}).click();
+    await expect(page.getByRole('button', {name:'Complete set', exact:true})).toBeVisible();
+    // Only this isolated Playwright profile is changed; no user data is used.
+    await page.evaluate(async () => {
+        const request = <T,>(r: IDBRequest<T>) => new Promise<T>((resolve,reject) => {r.onsuccess=()=>resolve(r.result); r.onerror=()=>reject(r.error);});
+        const database = await request(indexedDB.open('weightlog'));
+        const read = database.transaction(['workoutSession','sessionExercise'],'readonly');
+        const sessions = await request(read.objectStore('workoutSession').getAll());
+        const session = sessions.find(s => s.status === 'active');
+        const exercises = await request(read.objectStore('sessionExercise').getAll());
+        const exercise = exercises.find(e => e.id === session.currentSessionExerciseId);
+        const write = database.transaction(['workoutSession','sessionExercise'],'readwrite');
+        write.objectStore('workoutSession').put({...session,trainingContext:{zone:'glutes',goal:'hypertrophy'},selectionConstraints:{equipment:['machine'],blockedExerciseIds:['fedb:Leg_Press'],blockedTags:[]}});
+        write.objectStore('sessionExercise').put({...exercise,exerciseId:'fedb:Barbell_Hip_Thrust',exerciseNameSnapshot:'Barbell Hip Thrust',alternativeExerciseIdsSnapshot:['fedb:Tricep_Dumbbell_Kickback','fedb:Barbell_Full_Squat','fedb:Leg_Press','fedb:Thigh_Abductor']});
+        await new Promise<void>((resolve,reject) => {write.oncomplete=()=>resolve();write.onerror=()=>reject(write.error);});
+        database.close();
+    });
+    await page.reload();
+    await expect(page.getByRole('button', {name:'Choose alternative',exact:true})).toBeEnabled();
+    await page.getByRole('button', {name:'Choose alternative',exact:true}).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText('Thigh Abductor', {exact:true})).toBeVisible();
+    await expect(dialog.getByRole('button',{name:'Use this exercise'})).toHaveCount(1);
+    await expect(dialog.getByText('Tricep Dumbbell Kickback',{exact:true})).toHaveCount(0);
+    await expect(dialog.getByText('Leg Press',{exact:true})).toHaveCount(0);
+    await assertNoHorizontalOverflow(page);
+    await page.screenshot({path:testInfo.outputPath('glutes-alternatives.png')});
+    await dialog.getByRole('button',{name:'Use this exercise'}).click();
+    await expect(page.getByRole('status').filter({hasText:'was replaced with Thigh Abductor'})).toBeVisible();
+    await expect(page.getByText('0/6 sets completed')).toBeVisible();
+});
+
+test('library primary muscle filter excludes incidental glute involvement by default', async ({page}, testInfo) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/library');
+    await page.getByRole('button',{name:'Filters',exact:true}).click();
+    await page.getByLabel('Muscle',{exact:true}).click();
+    await page.getByRole('option',{name:'glutes',exact:true}).click();
+    await expect(page.getByRole('checkbox',{name:'Include secondary muscles'})).not.toBeChecked();
+    await page.getByRole('button',{name:'Apply',exact:true}).click();
+    await expect(page.getByText('Barbell Hip Thrust',{exact:true})).toBeVisible();
+    await expect(page.getByText("Landmine 180's",{exact:true})).toHaveCount(0);
+    await assertNoHorizontalOverflow(page);
+    await page.screenshot({path:testInfo.outputPath('library-muscle-filter.png')});
+    await page.getByRole('button',{name:'Filters',exact:true}).click();
+    await page.getByRole('checkbox',{name:'Include secondary muscles'}).check();
+    await page.getByRole('button',{name:'Apply',exact:true}).click();
+    await expect(page.getByText("Landmine 180's",{exact:true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 
@@ -83,6 +137,42 @@ test('Pixel 9a quick generator previews a coherent local session with photos', a
     await previews.nth(1).click();
     await expect(page.getByText('UPCOMING EXERCISE', {exact: true})).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('img').first()).toBeVisible();
+});
+
+test('back focus separates full, upper and lower back on mobile @visual', async ({page}) => {
+    await bootstrapAnonymousProfile(page);
+    await page.goto('./#/programs/generate');
+    await page.getByLabel('Body area').click();
+    await expect(page.getByRole('option', {name: 'Full back'})).toBeVisible();
+    await expect(page.getByRole('option', {name: 'Upper back'})).toBeVisible();
+    await page.getByRole('option', {name: 'Lower back', exact: true}).click();
+    await expect(page.getByText('A short focus using exercises whose primary target is lower back.')).toBeVisible();
+    await page.getByLabel('Duration').click();
+    await expect(page.getByRole('option', {name: '45 minutes'})).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
+    await expect(page.getByRole('img')).not.toHaveCount(0);
+    await assertNoHorizontalOverflow(page);
+
+    await page.getByLabel('Body area').click();
+    await page.getByRole('option', {name: 'Lower back + supporting work'}).click();
+    await expect(page.getByText('Direct lower-back exercises plus a few reviewed lifts')).toBeVisible();
+    await page.getByLabel('Duration').click();
+    await expect(page.getByRole('option', {name: '60 minutes'})).toBeDisabled();
+    await page.getByRole('option', {name: '45 minutes'}).click();
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByText('SESSION READY', {exact: true})).toBeVisible();
+    await expect(page.getByText('Direct lower back', {exact: true}).first()).toBeVisible();
+    await expect(page.getByText('Lower back secondary', {exact: true}).first()).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+
+    await page.getByLabel('Body area').click();
+    await page.getByRole('option', {name: 'Full back'}).click();
+    await page.getByRole('button', {name: 'Generate session'}).click();
+    await expect(page.getByRole('heading', {name: 'Hyperextensions (Back Extensions)'})).toBeVisible();
+    await expect(page.getByText('Back-extension bench', {exact: true})).toBeVisible();
+    await assertNoHorizontalOverflow(page);
 });
 
 test('equipment order puts bench exercises first and survives reopening @visual', async ({page}) => {

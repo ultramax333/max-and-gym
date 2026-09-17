@@ -420,3 +420,22 @@ Controls:
 - retain a verified private APK and an explicit Install update retry action;
 - record bounded failure reasons without URLs, paths or personal data;
 - publish a public ZIP companion while keeping the versioned APK as the only in-app update candidate.
+
+## FM-39 — Wrong muscle group or equipment in alternatives
+
+Causes: broad movement-name heuristics (triceps kickback classified as a hip hinge),
+same-pattern substitutions without muscle overlap, unchecked historical alternative
+IDs, source equipment errors and implicit inclusion of secondary muscles.
+
+Controls:
+
+- versioned, reasoned catalogue overrides and an automated 302-record consistency audit;
+- primary-muscle library filtering by default; secondary involvement is opt-in;
+- shared zone, eligibility, exclusions and cumulative resistance-equipment checks;
+- rank preferred alternatives only after filtering; revalidate when selected;
+- persist generated equipment/exclusion constraints in new workout snapshots and backups;
+- display auxiliary stations separately from resistance equipment;
+- refresh reviewed metadata without rewriting preferences, custom exercises or history.
+
+Legacy/manual sessions without stored availability use known zone/target constraints
+and explicitly disclose that no equipment-availability filter was saved.

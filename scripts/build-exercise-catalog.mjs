@@ -7,6 +7,7 @@ const revision = 'b0eed061e1c8';
 const sourceFile = path.join(root, 'data', 'upstream', `free-exercise-db-${revision}.json`);
 const outputFile = path.join(root, 'src', 'exerciseCatalog', 'reviewed-exercises.json');
 const reportFile = path.join(root, 'docs', 'reports', 'generated', '04-curation-summary.json');
+const overrides = JSON.parse(await readFile(path.join(root, 'data', 'exercise-classification-overrides.json'), 'utf8'));
 const supportedEquipment = new Set(['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other']);
 const excluded = /(burpee|bunny|rapid.*floor|rapid.*plank|high.*impact.*transition)/i;
 const priority = /(squat|deadlift|row|press|curl|extension|raise|pull|lat|lunge|leg|calf|fly|crunch|plank|carry|sled|hip|glute|hamstring|abdominal|back|shoulder|triceps|biceps|machine|cable)/i;
@@ -32,6 +33,7 @@ const curatedExpansionNames = new Set([
     'Pullups', 'Rope Straight-Arm Pulldown', 'Straight-Arm Pulldown', 'Underhand Cable Pulldowns', 'V-Bar Pulldown',
     'Weighted Pull Ups', 'Wide-Grip Lat Pulldown', 'Leverage High Row', 'One-Arm Dumbbell Row', 'Seated Cable Rows',
     'T-Bar Row with Handle', 'Suspended Row', 'Barbell Shrug', 'Dumbbell Shrug', 'Leverage Shrug',
+    'Lying T-Bar Row', 'Seated One-arm Cable Pulley Rows', 'Shotgun Row',
     // Lower body: machines, unilateral work and distinct posterior-chain patterns.
     'Barbell Hip Thrust', 'Barbell Step Ups', 'Dumbbell Step Ups', 'Leg Extensions', 'Leg Press', 'Narrow Stance Leg Press',
     'Single-Leg Leg Extension', 'Smith Machine Squat', 'Split Squat with Dumbbells', 'Trap Bar Deadlift', 'Wide Stance Barbell Squat',
@@ -39,6 +41,9 @@ const curatedExpansionNames = new Set([
     'Romanian Deadlift', 'Seated Band Hamstring Curl', 'Seated Leg Curl', 'Standing Leg Curl',
     'Butt Lift (Bridge)', 'One-Legged Cable Kickback', 'Pull Through', 'Single Leg Glute Bridge', 'Step-up with Knee Raise',
     'Seated Calf Raise', 'Standing Calf Raises', 'Thigh Adductor', 'Thigh Abductor', 'Monster Walk',
+    // Low-back focus: one distinct floor movement and a ball-supported loaded
+    // extension. Heavy partial deadlift/good-morning variants are not imported.
+    'Superman', 'Weighted Ball Hyperextension',
     // Core: anti-rotation, flexion, stability and loaded options without cosmetic duplicates.
     'Ab Roller', 'Air Bike', 'Alternate Heel Touchers', 'Barbell Ab Rollout - On Knees', 'Dead Bug', 'Dumbbell Side Bend',
     'Hanging Pike', 'Knee/Hip Raise On Parallel Bars', "Landmine 180's", 'Leg Pull-In', 'Pallof Press',
@@ -51,7 +56,7 @@ const generatorExcludedIds = new Set([
     // Mobility, timed holds, grip holds, or undeclared specialist equipment.
     '90_90_Hamstring', 'Chair_Leg_Extended_Stretch', 'Chest_And_Front_Of_Shoulder_Stretch', 'Front_Leg_Raises',
     'Hip_Circles_prone', 'Intermediate_Hip_Flexor_and_Quad_Stretch', 'Plank', 'Side_Bridge', 'Plate_Pinch',
-    'Bosu_Ball_Cable_Crunch_With_Side_Bends', 'Crunch_-_Legs_On_Exercise_Ball',
+    'Bosu_Ball_Cable_Crunch_With_Side_Bends', 'Crunch_-_Legs_On_Exercise_Ball', 'Superman',
     // Technical, explosive, atypical, or needlessly risky for a general-purpose generator.
     'Barbell_Guillotine_Bench_Press', 'Anti-Gravity_Press', 'Bent_Press', 'Bradford_Rocky_Presses',
     'Clean_and_Press', 'Double_Kettlebell_Push_Press', 'Box_Squat_with_Chains', 'Freehand_Jump_Squat',
@@ -94,12 +99,13 @@ function category(value) {
 }
 
 function movementPattern(entry) {
+    if (overrides[entry.id]?.movementPattern) return overrides[entry.id].movementPattern;
     const lower = entry.name.toLowerCase();
     if ((entry.primaryMuscles ?? []).includes('abdominals')) return 'core';
     if (/(squat|lunge|leg press|step[ -]?ups?)/.test(lower)) return 'squat';
     if (/(deadlift|good morning|hip thrust|glute|butt lift|hip lift|hip extension|kickback|pull through)/.test(lower)) return 'hinge';
     if (/(row|pull[ -]?ups?|pullups?|pulldown|chin[ -]?ups?|bench pull)/.test(lower)) return 'pull';
-    if (/(press|push-up|dip)/.test(lower)) return 'push';
+    if (/(press|push[ -]?ups?|dip)/.test(lower)) return 'push';
     if (/(carry|walk)/.test(lower)) return 'carry';
     return 'accessory';
 }
@@ -110,6 +116,7 @@ function metricType(equipment) {
 
 function buildExercise(entry) {
     const asset = slug(entry.id);
+    const equipmentTags = overrides[entry.id]?.equipmentTags ?? [entry.equipment ?? 'other'];
     const instructions = (entry.instructions ?? []).map((item) => item.replace(/\s+/g, ' ').trim()).filter(Boolean);
     return {
         id: `fedb:${entry.id}`,
@@ -121,16 +128,16 @@ function buildExercise(entry) {
         category: category(entry.category),
         force: entry.force ?? 'mixed',
         mechanic: entry.mechanic ?? 'compound',
-        equipmentTags: [entry.equipment ?? 'other'],
-        primaryMuscles: entry.primaryMuscles ?? [],
+        equipmentTags,
+        primaryMuscles: overrides[entry.id]?.primaryMuscles ?? entry.primaryMuscles ?? [],
         secondaryMuscles: entry.secondaryMuscles ?? [],
         ...(generatorFocusZones.has(entry.name) ? {generatorFocusZones: generatorFocusZones.get(entry.name)} : {}),
         movementPattern: movementPattern(entry),
-        positionTags: /plank|floor|sit-up|crunch/i.test(entry.name) ? ['floor'] : ['standing-or-supported'],
+        positionTags: overrides[entry.id]?.positionTags ?? (/plank|floor|sit-up|crunch/i.test(entry.name) ? ['floor'] : ['standing-or-supported']),
         transitionTags: /jump|burpee/i.test(entry.name) ? ['high-impact-transition'] : [],
         impactTags: /jump/i.test(entry.name) ? ['high-impact'] : [],
-        setupTags: [entry.equipment ?? 'other'],
-        metricType: metricType(entry.equipment),
+        setupTags: equipmentTags,
+        metricType: metricType(equipmentTags.length === 1 ? equipmentTags[0] : undefined),
         defaultRestSeconds: entry.category === 'cardio' ? 30 : 75,
         defaultRepRange: {min: entry.category === 'cardio' ? 12 : 8, max: entry.category === 'cardio' ? 20 : 12},
         defaultRirRange: {min: 1, max: 3},
@@ -139,7 +146,7 @@ function buildExercise(entry) {
         neverSuggest: false,
         archived: libraryArchivedIds.has(entry.id),
         setupInstructions: instructions[0] ?? 'Set up with controlled posture and a stable range of motion.',
-        executionSteps: instructions.slice(1, 5),
+        executionSteps: instructions.slice(1, 5).map(step => entry.id === 'Cable_Hip_Adduction' ? step.replace('to abduct the hip', 'to adduct the hip') : step),
         breathingCue: 'Breathe steadily; exhale through the effort.',
         commonMistakes: ['Rushing repetitions', 'Losing a stable trunk position'],
         sourceName: 'Free Exercise DB',
@@ -154,7 +161,7 @@ function buildExercise(entry) {
 }
 
 const raw = JSON.parse(await readFile(sourceFile, 'utf8'));
-const candidates = raw.filter((entry) => supportedEquipment.has(entry.equipment) && (['strength', 'cardio', 'stretching'].includes(entry.category) || curatedExpansionNames.has(entry.name)) && !excluded.test(entry.name) && Array.isArray(entry.images) && entry.images.length >= 2);
+const candidates = raw.filter((entry) => (supportedEquipment.has(entry.equipment) || curatedExpansionNames.has(entry.name)) && (['strength', 'cardio', 'stretching'].includes(entry.category) || curatedExpansionNames.has(entry.name)) && !excluded.test(entry.name) && Array.isArray(entry.images) && entry.images.length >= 2);
 const initialEntries = candidates
     .filter((entry) => !curatedExpansionNames.has(entry.name))
     .map((entry) => ({entry, score: priority.test(entry.name) ? 0 : 1}))
@@ -170,8 +177,11 @@ if (missingExpansionNames.length > 0 || expansionEntries.length !== curatedExpan
     throw new Error(`Curated expansion mismatch: ${missingExpansionNames.join(', ')}`);
 }
 const reviewed = [...initialEntries, ...expansionEntries].map((entry) => buildExercise(entry));
+for (const [id, override] of Object.entries(overrides)) {
+    if (!reviewed.some(entry => entry.sourceId === id) || !override.reason || override.equipmentTags?.some(tag => !supportedEquipment.has(tag))) throw new Error(`Invalid reviewed classification override: ${id}`);
+}
 const duplicateNames = reviewed.filter((entry, index) => reviewed.findIndex((other) => other.name.toLowerCase() === entry.name.toLowerCase()) !== index);
-if (reviewed.length !== 302 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
+if (reviewed.length !== 307 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
 await mkdir(path.dirname(outputFile), {recursive: true});
 await mkdir(path.dirname(reportFile), {recursive: true});
 await writeFile(outputFile, JSON.stringify(reviewed, null, 2) + '\n');

@@ -165,3 +165,32 @@ Order:
 - Selected exercises are grouped by their primary equipment tag with stable ordering inside each group.
 - A contextual rating is resolved before generation by exercise ID, body area and goal. It affects ranking only inside that exact context. A high non-strength rating may extend the optional upper repetition target by one; it never changes a completed record or applies a load automatically.
 - Normalized rating inputs are sorted and included in the identity hash so generation remains reproducible.
+
+## 12. Classification and replacement consistency (generator v10)
+
+- Focus matching uses primary muscles or explicit reviewed focus annotations, never incidental secondary involvement.
+- Availability tags are cumulative: a band-assisted pull-up requires both bands and bodyweight enabled. Auxiliary support stations remain visible at setup.
+- Generation and substitution always reject intrinsic high-impact transition tags, even if the input block list is empty.
+- Generator preview and active-workout alternatives share one selection policy. A focused session stays within its focus; broad and legacy sessions additionally preserve the exercise's primary/reviewed target overlap. Matching a movement pattern alone is insufficient.
+- Generated and saved generated sessions copy equipment and exclusions into an optional, unindexed workout selection snapshot. Legacy sessions do not invent missing availability.
+- Corrected isolation roles can reduce estimated duration. If the quick planner is below its 90% lower bound, it may fill an existing exercise up to five working sets, deterministically, without exceeding the 110% upper bound. Recovery and repetition ranges are unchanged; infeasible plans still fail validation.
+
+## 13. Back focus and post-session explanations (generator v11)
+
+- The old `back` zone ID remains stable for saved plans and contextual ratings; its visible name is Full back. Upper back targets middle back, lats and traps; Lower back targets primary lower-back exercises only. Incidental secondary involvement is not sufficient.
+- Lower back quick sessions are limited to 15–30 minutes. The longer duration choices are disabled rather than filling a focused session with unrelated exercises. Full back remains available for 35–60 minutes.
+- Proposals appear after a **saved-program** workout with progression rules. A directly generated one-off session saves loads and repetitions in history but creates no proposal. The summary says so instead of offering an empty link.
+- Each proposal explains logged working sets, the saved target and the optional future default. Accepting a load proposal updates the saved program prescription, not the completed workout; deciding later or dismissing makes no change. The owner may edit the proposed load before accepting it.
+
+## 14. Opt-in secondary lower-back work (generator v12)
+
+- `lower-back` remains strict: primary lower-back exercise only, 15–30 minutes. The separate `lower-back-mixed` choice combines at least one direct lower-back exercise with at least one reviewed movement whose **source secondary** muscle is lower back. Its visible label and each exercise badge distinguish direct from secondary work.
+- Only the existing Romanian Deadlift, Kettlebell One-Legged Deadlift and Bent Over One-Arm Long Bar Row enter this secondary pool. The generic secondary tag alone is insufficient: squats, abdominal movements, side laterals, cable deadlifts and glute pull-throughs are not reclassified. Hard exclusions, equipment availability, favourites and Never Suggest still apply before selection.
+- The mixed choice offers 15–45 minutes, keeping one back-extension family member and at most one heavy barbell hinge per session. Fifty- and sixty-minute requests return clear invalid-input guidance to use Full back rather than pad the low-back focus with repeated variants or additional lumbar loading.
+- Generation fails closed if either direct or secondary pool is unavailable. Preview and active-workout alternatives preserve the last remaining exercise of each class; explicit saved-program editing still remains user-controlled. The generator version advances to v12 so existing v11 snapshots remain identifiable.
+
+## 15. Full-back coverage balancing (generator v13)
+
+- When the reviewed **Hyperextensions (Back Extensions)** exercise is eligible and its `other` equipment class is available, a Full back quick session uses it as the direct lower-back coverage anchor. Its Back-extension bench station and local start/end photos remain visible. Never Suggest, explicit exclusions and equipment availability still win; the generator does not force the exercise when those constraints reject it.
+- Full back time-fitting assigns one additional working set, when the upper duration bound permits it, to a selected exercise covering one of the least-represented primary back muscles. Further time-fit sets use the same least-covered-first ordering. The rule never exceeds five working sets, shortens recovery or adds an unrelated exercise.
+- The generated explanation identifies both the bench-extension anchor and the balancing set. Other body areas and the strict/mixed lower-back modes retain their existing behavior. Generator identity advances to v13 so v12 snapshots remain reproducible.

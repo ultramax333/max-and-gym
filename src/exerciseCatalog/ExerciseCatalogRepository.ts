@@ -2,6 +2,7 @@ import seed from './reviewed-exercises.json';
 import {DexieDB} from '../db/db';
 import {EXERCISE_SEED_VERSION} from '../config/buildIdentity';
 import {CustomExerciseRecord, ExercisePreference, LibraryExercise, LibraryFilters, ReviewedExercise} from './types';
+import {AlternativeOptions, selectExerciseAlternatives} from './selection';
 
 const MAX_CUSTOM_IMAGE_BYTES = 5 * 1024 * 1024;
 const EXERCISE_SEED_META_KEY = 'exerciseCatalogSeedVersion';
@@ -49,7 +50,7 @@ export class ExerciseCatalogRepository {
             const searchable = normalize([entry.name, ...entry.aliases, ...entry.primaryMuscles, ...entry.equipmentTags].join(' '));
             if (search && !searchable.includes(search)) return false;
             if (filters.equipment && !entry.equipmentTags.includes(filters.equipment)) return false;
-            if (filters.muscle && !entry.primaryMuscles.includes(filters.muscle) && !entry.secondaryMuscles.includes(filters.muscle)) return false;
+            if (filters.muscle && !entry.primaryMuscles.includes(filters.muscle) && !(filters.includeSecondaryMuscles && entry.secondaryMuscles.includes(filters.muscle))) return false;
             if (filters.movementPattern && entry.movementPattern !== filters.movementPattern) return false;
             if (filters.position && !entry.positionTags.includes(filters.position)) return false;
             if (filters.status === 'eligible' && (!entry.generatorEligible || entry.effectiveNeverSuggest)) return false;
@@ -65,9 +66,9 @@ export class ExerciseCatalogRepository {
         return merge(exercise, await this.db.exercisePreference.get(id));
     }
 
-    async alternatives(exercise: LibraryExercise): Promise<LibraryExercise[]> {
+    async alternatives(exercise: LibraryExercise, options: AlternativeOptions = {}): Promise<LibraryExercise[]> {
         const all = await this.list();
-        return all.filter((entry) => entry.id !== exercise.id && entry.generatorEligible && !entry.effectiveNeverSuggest && (entry.movementPattern === exercise.movementPattern || entry.primaryMuscles.some((muscle) => exercise.primaryMuscles.includes(muscle)))).slice(0, 20);
+        return selectExerciseAlternatives(all, exercise, options);
     }
 
     async updatePreference(id: string, change: Partial<Pick<ExercisePreference, 'favourite' | 'neverSuggest'>>): Promise<void> {

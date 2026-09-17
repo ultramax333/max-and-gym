@@ -35,7 +35,9 @@ export function WorkoutSetupPage() {
         void catalog.list().then((library) => {
             if (!mounted) return;
             const byId = new Map(library.map((exercise) => [exercise.id, exercise]));
-            const exercises = input.exercises.map((exercise) => ({...exercise, equipmentTags: exercise.equipmentTags?.length ? exercise.equipmentTags : byId.get(exercise.exerciseId)?.equipmentTags}));
+            // Resolve reviewed equipment for this new session only; do not edit
+            // the saved program or any previous session's snapshot.
+            const exercises = input.exercises.map((exercise) => ({...exercise, equipmentTags: byId.get(exercise.exerciseId)?.equipmentTags ?? exercise.equipmentTags}));
             setPrepared({...input, exercises});
             setOrder(availableStations(exercises));
         }).catch(() => {

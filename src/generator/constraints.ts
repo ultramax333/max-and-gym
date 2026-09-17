@@ -1,10 +1,8 @@
 import {CandidateExclusion, GeneratorCandidate, GeneratorInput, GeneratorRole} from './types';
+import {HARD_EXCLUSION_TAGS, hasAvailableEquipment} from '../exerciseCatalog/selection';
+export {hasAvailableEquipment} from '../exerciseCatalog/selection';
 
 export interface ConstraintResult {allowed: boolean; exclusion?: CandidateExclusion}
-
-export function hasAvailableEquipment(candidate: Pick<GeneratorCandidate, 'equipmentTags'>, equipment: string[]): boolean {
-    return candidate.equipmentTags.some((tag) => equipment.includes(tag));
-}
 
 function excludes(role: GeneratorRole | 'core', candidate: GeneratorCandidate, reasonCode: string, reason: string): ConstraintResult {
     return {allowed: false, exclusion: {exerciseId: candidate.id, role, reasonCode, reason}};
@@ -15,7 +13,7 @@ export function evaluateHardConstraints(candidate: GeneratorCandidate, input: Ge
     if (candidate.neverSuggest || candidate.effectiveNeverSuggest || input.neverSuggestExerciseIds.includes(candidate.id)) return excludes(role, candidate, 'NEVER_SUGGEST', 'Marked Never Suggest.');
     if (input.blockedExerciseIds.includes(candidate.id)) return excludes(role, candidate, 'EXERCISE_BLOCKED', 'Exercise is explicitly blocked.');
     const tags = [...candidate.impactTags, ...candidate.positionTags, ...candidate.transitionTags, ...candidate.setupTags];
-    const blockedTag = tags.find((tag) => input.blockedTags.includes(tag));
+    const blockedTag = tags.find((tag) => HARD_EXCLUSION_TAGS.includes(tag) || input.blockedTags.includes(tag));
     if (blockedTag) return excludes(role, candidate, 'TAG_BLOCKED', `Contrainte bloquante : ${blockedTag}.`);
     if (!hasAvailableEquipment(candidate, input.equipment)) return excludes(role, candidate, 'EQUIPMENT_UNAVAILABLE', 'Equipment is unavailable.');
     return {allowed: true};

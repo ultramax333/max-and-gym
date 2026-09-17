@@ -10,6 +10,14 @@ export const EQUIPMENT_STATIONS = {
     bands: {label: 'Bands', color: '#FFE083'},
     kettlebell: {label: 'Kettlebells', color: '#9BC9E7'},
     preacher: {label: 'Preacher bench', color: '#D4B3EF'},
+    pullup: {label: 'Pull-up bar', color: '#A7CBE8'},
+    parallel: {label: 'Dip / leg-raise station', color: '#C2C5EE'},
+    platform: {label: 'Step / box', color: '#F0C299'},
+    ball: {label: 'Exercise ball', color: '#B7DAAA'},
+    suspension: {label: 'Suspension trainer', color: '#E3CE89'},
+    hyperextension: {label: 'Back-extension bench', color: '#D4B3EF'},
+    legSupport: {label: 'Anchored leg support', color: '#D4B3EF'},
+    trapbar: {label: 'Trap bar', color: '#FFB578'},
     other: {label: 'Other equipment', color: '#C1CAD6'},
 } as const;
 export type EquipmentStation = keyof typeof EQUIPMENT_STATIONS;
@@ -24,6 +32,8 @@ export interface EquipmentExercise {
 // Reviewed catalogue IDs, not a name search: e.g. Machine Bench Press stays
 // at a machine and a floor press is not assigned a bench.
 const benchExercises = new Set([
+    'Barbell_Squat_To_A_Bench', 'Front_Barbell_Squat_To_A_Bench', 'Push-Ups_With_Feet_Elevated',
+    'Standing_Palm-In_One-Arm_Dumbbell_Press',
     'Alternate_Incline_Dumbbell_Curl', 'Anti-Gravity_Press', 'Arnold_Dumbbell_Press',
     'Barbell_Bench_Press_-_Medium_Grip', 'Barbell_Curls_Lying_Against_An_Incline',
     'Barbell_Guillotine_Bench_Press', 'Barbell_Incline_Bench_Press_-_Medium_Grip',
@@ -57,6 +67,21 @@ const benchExercises = new Set([
     'Seated_Triceps_Press',
 ].map((id) => `fedb:${id}`));
 
+// Auxiliary setups are reviewed against the pinned instructions. A machine's
+// built-in seat is not a separate bench; optional standing/seated variants do
+// not gain a mandatory bench. Smith presses retain their machine station first.
+const additionalStations: Partial<Record<string, EquipmentStation[]>> = {
+    'Band_Assisted_Pull-Up': ['pullup'], Bodyweight_Mid_Row: ['pullup'], 'Chin-Up': ['pullup'], Pullups: ['pullup'],
+    Weighted_Pull_Ups: ['pullup'], Hanging_Leg_Raise: ['pullup'], Hanging_Pike: ['pullup'], Gorilla_Chin_Crunch: ['pullup'],
+    'Dips_-_Chest_Version': ['parallel'], 'Dips_-_Triceps_Version': ['parallel'], Knee_Hip_Raise_On_Parallel_Bars: ['parallel'],
+    Elevated_Back_Lunge: ['platform'], Elevated_Cable_Rows: ['platform'], Barbell_Step_Ups: ['platform'], Dumbbell_Step_Ups: ['platform'],
+    'Step-up_with_Knee_Raise': ['platform'], Split_Squat_with_Dumbbells: ['platform'],
+    Cable_Russian_Twists: ['ball'], 'Crunch_-_Legs_On_Exercise_Ball': ['ball'], Bosu_Ball_Cable_Crunch_With_Side_Bends: ['ball'], Weighted_Ball_Hyperextension:['ball'],
+    Suspended_Row: ['suspension'], Hyperextensions_Back_Extensions: ['hyperextension'], Natural_Glute_Ham_Raise: ['legSupport'],
+    Trap_Bar_Deadlift: ['trapbar'],
+    Decline_Smith_Press: ['bench'], Smith_Machine_Bench_Press: ['bench'], 'Smith_Machine_Close-Grip_Bench_Press': ['bench'], Smith_Machine_Incline_Bench_Press: ['bench'],
+};
+
 function stationForTag(tag: string): EquipmentStation {
     switch (tag.trim().toLowerCase()) {
         case 'bench': return 'bench';
@@ -75,7 +100,12 @@ export function requiredStations(exercise: EquipmentExercise): EquipmentStation[
     const stations = [...new Set((exercise.equipmentTags ?? []).filter((tag) => tag.trim()).map(stationForTag))];
     if (benchExercises.has(exercise.exerciseId) && !stations.includes('bench')) stations.unshift('bench');
     if (['fedb:Preacher_Curl', 'fedb:One_Arm_Dumbbell_Preacher_Curl', 'fedb:Cable_Preacher_Curl'].includes(exercise.exerciseId)) stations.unshift('preacher');
-    return stations.length ? stations : ['other'];
+    const additional = additionalStations[exercise.exerciseId.replace(/^fedb:/, '')] ?? [];
+    if (additional.length && stations.every(station => ['other', 'bodyweight'].includes(station))) {
+        if (stations.includes('other')) stations.splice(stations.indexOf('other'), 1);
+        stations.unshift(...additional);
+    } else stations.push(...additional);
+    return stations.length ? [...new Set(stations)] : ['other'];
 }
 
 export function equipmentStation(exercise: EquipmentExercise): EquipmentStation {
