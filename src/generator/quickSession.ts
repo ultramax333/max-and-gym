@@ -38,11 +38,13 @@ export function primaryEquipment(equipmentTags: string[] | undefined): string {
 export function groupExercisesByEquipment(exercises: GeneratedExercise[]): GeneratedExercise[] {
     const groupOrder = new Map<string, number>();
     for (const exercise of exercises) {
-        const equipment = primaryEquipment(exercise.equipmentTags);
+        const equipment = exercise.primaryEquipmentStation ?? primaryEquipment(exercise.equipmentTags);
         if (!groupOrder.has(equipment)) groupOrder.set(equipment, groupOrder.size);
     }
     return exercises.map((exercise, index) => ({exercise, index})).sort((left, right) => {
-        const groupDifference = (groupOrder.get(primaryEquipment(left.exercise.equipmentTags)) ?? 0) - (groupOrder.get(primaryEquipment(right.exercise.equipmentTags)) ?? 0);
+        const leftEquipment = left.exercise.primaryEquipmentStation ?? primaryEquipment(left.exercise.equipmentTags);
+        const rightEquipment = right.exercise.primaryEquipmentStation ?? primaryEquipment(right.exercise.equipmentTags);
+        const groupDifference = (groupOrder.get(leftEquipment) ?? 0) - (groupOrder.get(rightEquipment) ?? 0);
         return groupDifference || left.index - right.index;
     }).map(({exercise}) => exercise);
 }
@@ -100,8 +102,14 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const rotationScore = parseInt(stableHash(`${input.seed}:${zone}:${candidate.id}`).slice(0, 4), 16) / 0xffff * 18;
         const recentPenalty = input.recentExerciseIds?.includes(candidate.id) ? 45 : 0;
         const contextualRating = input.contextualExerciseRatings?.find((entry) => entry.exerciseId === candidate.id)?.rating;
-        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore - recentPenalty + (contextualRating === undefined ? 0 : (contextualRating - 3) * 12);
-        return [{candidate, role, score, targetScore, contextualRating}];
+        const accessDifficulty = candidate.accessDifficulty ?? 'normal';
+        const accessPenalty = input.gymContext?.occupancyLevel === 'busy'
+            ? accessDifficulty === 'hard' || candidate.requiredStationCount === 2 ? 70 : accessDifficulty === 'limited' ? 35 : 0
+            : input.gymContext?.occupancyLevel === 'moderate'
+                ? accessDifficulty === 'hard' || candidate.requiredStationCount === 2 ? 25 : accessDifficulty === 'limited' ? 10 : 0
+                : 0;
+        const score = targetScore * 30 + secondaryScore * 3 + (candidate.favourite ? 15 : 0) + (candidate.media.length >= 2 ? 5 : 0) + rotationScore - recentPenalty - accessPenalty + (contextualRating === undefined ? 0 : (contextualRating - 3) * 12);
+        return [{candidate, role, score, targetScore, contextualRating, accessPenalty}];
     }).sort((a, b) => b.targetScore - a.targetScore || b.score - a.score || a.candidate.id.localeCompare(b.candidate.id));
     if (zone === 'lower-back-mixed' && !candidates.some(entry => entry.candidate.primaryMuscles.includes('lower back'))) return {ok: false, code: 'NO_VALID_CANDIDATE', message: 'At least one direct lower-back exercise is needed. Re-enable suitable equipment or choose Full back.', exclusions};
     if (zone === 'lower-back-mixed' && !candidates.some(entry => isReviewedSecondaryLowerBack(entry.candidate))) return {ok: false, code: 'NO_VALID_CANDIDATE', message: 'No reviewed secondary lower-back movement is available with your equipment and exclusions. Choose Lower back or change the filters.', exclusions};
@@ -142,8 +150,8 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const primaryZoneMatch = entry.candidate.primaryMuscles.some((muscle) => zoneDefinition.muscles.includes(muscle));
         const reasons = [primaryZoneMatch || zoneDefinition.muscles.length === 0
             ? zone === 'lower-back-mixed' ? 'Directly targets lower back.' : `Targets ${zoneDefinition.label.toLowerCase()}.`
-            : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, ...(zone === 'back' && entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID ? ['Back-extension bench coverage keeps lower back represented in a Full back session.'] : []), 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : [])];
-        const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], equipmentTags: [...entry.candidate.equipmentTags], role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && (!primaryZoneMatch || other.candidate.primaryMuscles.includes('lower back') || zone !== 'lower-back-mixed')).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
+            : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, ...(zone === 'back' && entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID ? ['Back-extension bench coverage keeps lower back represented in a Full back session.'] : []), 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : []), ...(entry.accessPenalty ? ['Kept despite limited equipment access because it remains a coherent fit.'] : [])];
+        const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], equipmentTags: [...entry.candidate.equipmentTags], requiredEquipmentStations: entry.candidate.requiredEquipmentStations ? [...entry.candidate.requiredEquipmentStations] : undefined, primaryEquipmentStation: entry.candidate.primaryEquipmentStation, accessDifficulty: entry.candidate.accessDifficulty, requiredStationCount: entry.candidate.requiredStationCount, role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && (!primaryZoneMatch || other.candidate.primaryMuscles.includes('lower back') || zone !== 'lower-back-mixed')).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
         const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
         if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
         exercises.push(exercise);

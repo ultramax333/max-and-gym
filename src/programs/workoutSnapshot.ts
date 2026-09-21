@@ -74,6 +74,8 @@ export function generatedSessionWorkoutInput(program: GeneratedProgram, day: Gen
             locked: entry.locked,
             alternativeExerciseIds: entry.alternativeExerciseIds,
             equipmentTags: entry.equipmentTags,
+            requiredEquipmentStations: entry.requiredEquipmentStations,
+            equipmentStation: entry.primaryEquipmentStation,
             setScheme: entry.prescription.setScheme ?? 'straight',
             warmupSets: entry.prescription.warmupSets ?? 0,
             dropSets: entry.prescription.dropSets ?? 0,

@@ -26,12 +26,15 @@ import {hasAvailableEquipment} from '../../generator/constraints';
 import {ExerciseLoadRecommendation, recommendExerciseLoad} from '../../workout/loadRecommendation';
 import {EquipmentBadges} from '../../components/ui/EquipmentBadge';
 import {isReviewedSecondaryLowerBack, isSelectionEligible} from '../../exerciseCatalog/selection';
+import {GymPreferenceRepository} from '../../gym/GymPreferenceRepository';
+import {CrowdMode, GYM_LOCATIONS, GymLocationId, occupancyLabel, occupancyLevel} from '../../gym/occupancy';
 
 const catalog = new ExerciseCatalogRepository(db);
 const programs = new ProgramRepository(db);
 const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
 const quickSessionState = new QuickSessionGenerationStateRepository(db);
 const contextRatings = new ExerciseContextRatingRepository(db);
+const gymPreferences = new GymPreferenceRepository(db);
 const allEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'];
 type SelectableGoal = Exclude<GoalBlend, 'balanced'>;
 const goalRecovery: Record<SelectableGoal, number> = {strength: 180, hypertrophy: 90, endurance: 60};
@@ -100,12 +103,24 @@ function QuickSessionBuilder() {
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
     const [advancedOpen, setAdvancedOpen] = useState(false);
+    const [gymId, setGymId] = useState<GymLocationId>('tunnel');
+    const [crowdMode, setCrowdMode] = useState<CrowdMode>('auto');
+    const currentOccupancy = occupancyLevel(gymId, new Date(), crowdMode);
 
     useEffect(() => {
         let active = true;
         void quickSessionState.get(zone).then((state) => { if (active) setVariationNumber(state.nextVariation); });
         return () => { active = false; };
     }, [zone]);
+    useEffect(() => {
+        let active = true;
+        void gymPreferences.get().then((preference) => {
+            if (!active) return;
+            setGymId(preference.gymId);
+            setCrowdMode(preference.crowdMode);
+        });
+        return () => { active = false; };
+    }, []);
 
     const generate = async () => {
         setBusy(true);
@@ -135,6 +150,7 @@ function QuickSessionBuilder() {
                 coreMinutes: 10,
                 lowBackComfortWarmup: true,
                 sessionRestSeconds,
+                gymContext: {gymId, occupancyLevel: currentOccupancy, evaluatedAt: new Date().toISOString()},
                 seed: `${seed}:variation-${variation}`,
                 generatorVersion: BUILD_GENERATOR_VERSION,
                 exerciseSeedVersion: EXERCISE_SEED_VERSION,
@@ -213,6 +229,10 @@ function QuickSessionBuilder() {
             movementPattern: replacement.movementPattern,
             primaryMuscles: [...replacement.primaryMuscles],
             equipmentTags: [...replacement.equipmentTags],
+            requiredEquipmentStations: replacement.requiredEquipmentStations ? [...replacement.requiredEquipmentStations] : undefined,
+            primaryEquipmentStation: replacement.primaryEquipmentStation,
+            accessDifficulty: replacement.accessDifficulty,
+            requiredStationCount: replacement.requiredStationCount,
             alternativeExerciseIds: [],
             reasons: ['Manually selected from the local exercise alternatives.'],
         };
@@ -288,7 +308,7 @@ function QuickSessionBuilder() {
             <Divider/>
             <Box sx={{px: {xs: 2, sm: 3}, py: 1}}>
                 <Button fullWidth color="inherit" startIcon={<Tune/>} endIcon={<ExpandMore sx={{transform: advancedOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms'}}/>} onClick={() => setAdvancedOpen((open) => !open)} sx={{justifyContent: 'space-between'}}>Equipment and variation</Button>
-                <Collapse in={advancedOpen}><Stack spacing={1.5} sx={{py: 1.5}}><TextField label="Variation seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/><Typography variant="subtitle2">Equipment available</Typography><Stack direction="row" gap={0.25} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => { setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item)); setPreview(undefined); }}/>} label={item}/>)}</Stack></Stack></Collapse>
+                <Collapse in={advancedOpen}><Stack spacing={1.5} sx={{py: 1.5}}><TextField label="Variation seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/><Typography variant="subtitle2">Gym access</Typography><Stack direction={{xs: 'column', sm: 'row'}} gap={1.5}><FormControl fullWidth><InputLabel id="quick-gym">Gym</InputLabel><Select labelId="quick-gym" label="Gym" value={gymId} onChange={(event) => { const next = event.target.value as GymLocationId; setGymId(next); setPreview(undefined); void gymPreferences.save({gymId: next, crowdMode}); }}>{GYM_LOCATIONS.map((gym) => <MenuItem key={gym.id} value={gym.id}>{gym.label}</MenuItem>)}</Select></FormControl><FormControl fullWidth><InputLabel id="quick-crowd-mode">Crowd level</InputLabel><Select labelId="quick-crowd-mode" label="Crowd level" value={crowdMode} onChange={(event) => { const next = event.target.value as CrowdMode; setCrowdMode(next); setPreview(undefined); void gymPreferences.save({gymId, crowdMode: next}); }}><MenuItem value="auto">Automatic · official average</MenuItem><MenuItem value="force-quiet">Looks quiet now</MenuItem><MenuItem value="force-busy">Looks busy now</MenuItem></Select></FormControl></Stack><Alert severity={currentOccupancy === 'busy' ? 'warning' : 'info'}>{occupancyLabel(currentOccupancy)}. Hard-to-access and two-station exercises are {currentOccupancy === 'busy' ? 'strongly deprioritized' : currentOccupancy === 'moderate' ? 'slightly deprioritized' : 'ranked normally'}.</Alert><Typography variant="subtitle2">Equipment available</Typography><Stack direction="row" gap={0.25} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => { setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item)); setPreview(undefined); }}/>} label={item}/>)}</Stack></Stack></Collapse>
             </Box>
             <Box sx={{p: {xs: 2, sm: 3}, pt: 1}}><PrimaryButton fullWidth size="large" startIcon={<AutoAwesome/>} disabled={busy || equipment.length === 0} onClick={() => void generate()}>{busy ? 'Working…' : preview ? 'Generate another variation' : 'Generate session'}</PrimaryButton></Box>
         </Paper>
@@ -318,7 +338,7 @@ function QuickSessionBuilder() {
             })}
             <Alert severity="info">Save it to My sessions to find it later from Train or Programs, then rename, reorder or edit it at any time.</Alert>
         </Stack>}
-{preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>Choose an exercise whose reviewed training focus matches the selected body area. Sets, reps and rest are kept. Blocked exercises stay excluded from future sessions. A mixed lower-back plan retains one direct lower-back exercise.</Typography><TextField fullWidth label="Search alternatives" value={replacementSearch} onChange={(event) => setReplacementSearch(event.target.value)} InputProps={{startAdornment: <Search sx={{mr: 1, color: 'text.secondary'}}/>}} sx={{mb: 1}}/><Typography variant="caption" color="text.secondary" sx={{display: 'block', mb: 2}}>{visibleReplacementOptions.length} compatible exercise{visibleReplacementOptions.length === 1 ? '' : 's'}</Typography>{visibleReplacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{visibleReplacementOptions.map((option) => { const image = option.media.find((media) => media.kind === 'thumbnail') ?? option.media.find((media) => media.kind === 'start-image'); return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}>{image && <CardMedia component="img" image={catalogMediaUrl(image.path)} alt={image.altText} loading="lazy" sx={{width: 96, height: 96, objectFit: 'cover'}}/>}<CardContent sx={{minWidth: 0, flex: 1}}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Typography fontWeight={700}>{option.name}</Typography><Stack direction="row"><Button size="small" aria-label={option.favourite ? `Remove ${option.name} from favourites` : `Add ${option.name} to favourites`} onClick={() => void toggleFavourite(option)}>{option.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</Button><Button size="small" color="warning" aria-label={`Never suggest ${option.name}`} onClick={() => void markNeverSuggest(option)}><Block/></Button></Stack></Stack>{zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')}</Typography><EquipmentBadges exercise={{exerciseId: option.id, equipmentTags: option.equipmentTags}}/><Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative matches this search.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
+{preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>Choose an exercise whose reviewed training focus matches the selected body area. Sets, reps and rest are kept. Blocked exercises stay excluded from future sessions. A mixed lower-back plan retains one direct lower-back exercise.</Typography><TextField fullWidth label="Search alternatives" value={replacementSearch} onChange={(event) => setReplacementSearch(event.target.value)} InputProps={{startAdornment: <Search sx={{mr: 1, color: 'text.secondary'}}/>}} sx={{mb: 1}}/><Typography variant="caption" color="text.secondary" sx={{display: 'block', mb: 2}}>{visibleReplacementOptions.length} compatible exercise{visibleReplacementOptions.length === 1 ? '' : 's'}</Typography>{visibleReplacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{visibleReplacementOptions.map((option) => { const image = option.media.find((media) => media.kind === 'thumbnail') ?? option.media.find((media) => media.kind === 'start-image'); return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}>{image && <CardMedia component="img" image={catalogMediaUrl(image.path)} alt={image.altText} loading="lazy" sx={{width: 96, height: 96, objectFit: 'cover'}}/>}<CardContent sx={{minWidth: 0, flex: 1}}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Typography fontWeight={700}>{option.name}</Typography><Stack direction="row"><Button size="small" aria-label={option.favourite ? `Remove ${option.name} from favourites` : `Add ${option.name} to favourites`} onClick={() => void toggleFavourite(option)}>{option.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</Button><Button size="small" color="warning" aria-label={`Never suggest ${option.name}`} onClick={() => void markNeverSuggest(option)}><Block/></Button></Stack></Stack>{zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')}</Typography><EquipmentBadges exercise={option}/>{option.accessDifficulty !== 'normal' && <Chip size="small" color="warning" label={option.accessDifficulty === 'hard' ? 'Hard access' : 'Often occupied'} sx={{mt: 0.75}}/>}<Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative matches this search.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
     </Stack>;
 }
 

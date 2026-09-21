@@ -22,9 +22,12 @@ export const EQUIPMENT_STATIONS = {
 } as const;
 export type EquipmentStation = keyof typeof EQUIPMENT_STATIONS;
 export interface EquipmentExercise {
-    exerciseId: string;
+    exerciseId?: string;
+    id?: string;
     equipmentTags?: string[];
     equipmentStation?: EquipmentStation;
+    primaryEquipmentStation?: EquipmentStation;
+    requiredEquipmentStations?: EquipmentStation[];
     groupId?: string;
     groupSequenceIndex?: number;
 }
@@ -97,10 +100,13 @@ function stationForTag(tag: string): EquipmentStation {
 }
 
 export function requiredStations(exercise: EquipmentExercise): EquipmentStation[] {
+    const exerciseId = exercise.exerciseId ?? exercise.id ?? '';
+    const personalStations = exercise.requiredEquipmentStations?.filter((station) => Object.hasOwn(EQUIPMENT_STATIONS, station));
+    if (personalStations?.length) return [...new Set(personalStations)];
     const stations = [...new Set((exercise.equipmentTags ?? []).filter((tag) => tag.trim()).map(stationForTag))];
-    if (benchExercises.has(exercise.exerciseId) && !stations.includes('bench')) stations.unshift('bench');
-    if (['fedb:Preacher_Curl', 'fedb:One_Arm_Dumbbell_Preacher_Curl', 'fedb:Cable_Preacher_Curl'].includes(exercise.exerciseId)) stations.unshift('preacher');
-    const additional = additionalStations[exercise.exerciseId.replace(/^fedb:/, '')] ?? [];
+    if (benchExercises.has(exerciseId) && !stations.includes('bench')) stations.unshift('bench');
+    if (['fedb:Preacher_Curl', 'fedb:One_Arm_Dumbbell_Preacher_Curl', 'fedb:Cable_Preacher_Curl'].includes(exerciseId)) stations.unshift('preacher');
+    const additional = additionalStations[exerciseId.replace(/^fedb:/, '')] ?? [];
     if (additional.length && stations.every(station => ['other', 'bodyweight'].includes(station))) {
         if (stations.includes('other')) stations.splice(stations.indexOf('other'), 1);
         stations.unshift(...additional);
@@ -109,7 +115,8 @@ export function requiredStations(exercise: EquipmentExercise): EquipmentStation[
 }
 
 export function equipmentStation(exercise: EquipmentExercise): EquipmentStation {
-    return exercise.equipmentStation && Object.hasOwn(EQUIPMENT_STATIONS, exercise.equipmentStation) ? exercise.equipmentStation : requiredStations(exercise)[0];
+    const preferred = exercise.equipmentStation ?? exercise.primaryEquipmentStation;
+    return preferred && Object.hasOwn(EQUIPMENT_STATIONS, preferred) && requiredStations(exercise).includes(preferred) ? preferred : requiredStations(exercise)[0];
 }
 
 export function availableStations(exercises: EquipmentExercise[]): EquipmentStation[] {
@@ -132,8 +139,9 @@ export function orderByEquipment<T extends EquipmentExercise>(exercises: T[], re
         }
     }
     return blocks.map((block, index) => {
+        const preferred = block.map((exercise) => exercise.equipmentStation ?? exercise.primaryEquipmentStation).find((entry): entry is EquipmentStation => Boolean(entry && order.includes(entry)));
         const required = new Set(block.flatMap(requiredStations));
-        const station = order.find((entry) => required.has(entry)) ?? 'other';
+        const station = preferred ?? order.find((entry) => required.has(entry)) ?? 'other';
         return {block, index, station};
     }).sort((a, b) => order.indexOf(a.station) - order.indexOf(b.station) || a.index - b.index)
         .flatMap(({block, station}) => [...block].sort((a, b) => (a.groupSequenceIndex ?? 0) - (b.groupSequenceIndex ?? 0))

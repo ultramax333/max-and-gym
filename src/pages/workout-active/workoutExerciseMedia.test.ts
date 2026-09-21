@@ -43,6 +43,8 @@ function exercise(id: string): LibraryExercise {
         ],
         favourite: false,
         effectiveNeverSuggest: false,
+        accessDifficulty: 'normal',
+        requiredStationCount: 1,
     };
 }
 

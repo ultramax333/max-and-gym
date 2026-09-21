@@ -559,7 +559,9 @@ Required invariants:
 - no generated program containing a hard-blocked exercise/tag;
 - no historical session depends on mutable live program text.
 
-Contextual exercise ratings are stored in the existing `appMeta` backup surface under a versioned key. Their compound logical identity is body area + training goal + exercise ID. Workout and saved-program snapshots may carry optional training-context and equipment-tag fields; these are additive non-indexed fields and require no schema migration. Session exercises can also carry an optional `equipmentStationSnapshot` chosen during pre-start equipment ordering. It changes neither availability tags nor the saved program, and is cleared when substituting an exercise.
+Contextual exercise ratings are stored in the existing `appMeta` backup surface under a versioned key. Their compound logical identity is body area + training goal + exercise ID. Workout and saved-program snapshots may carry optional training-context and equipment-tag fields; these are additive non-indexed fields and require no schema migration. Personal exercise preferences may override the required equipment stations, choose one primary station for grouping, and describe access difficulty plus the number of simultaneously occupied stations. Session exercises snapshot those values so an active or historical workout does not change when the catalogue preference is edited later. Substituting an exercise replaces the equipment snapshots with those of the replacement.
+
+The selected gym and occupancy mode are stored in the existing `appMeta` backup surface. The built-in occupancy bands are static local planning data, not live attendance records. They require no network request, user location or new IndexedDB index.
 
 ## 32. Migration requirements
 

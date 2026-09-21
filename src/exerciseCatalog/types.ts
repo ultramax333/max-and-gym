@@ -45,6 +45,10 @@ export interface ExercisePreference {
     exerciseId: string;
     favourite: boolean;
     neverSuggest: boolean;
+    requiredEquipmentStations?: import('../workout/equipmentStations').EquipmentStation[];
+    primaryEquipmentStation?: import('../workout/equipmentStations').EquipmentStation;
+    accessDifficulty?: 'normal' | 'limited' | 'hard';
+    requiredStationCount?: 1 | 2;
     updatedAt: string;
 }
 
@@ -59,6 +63,10 @@ export interface CustomExerciseRecord extends ReviewedExercise {
 export interface LibraryExercise extends ReviewedExercise {
     favourite: boolean;
     effectiveNeverSuggest: boolean;
+    requiredEquipmentStations?: import('../workout/equipmentStations').EquipmentStation[];
+    primaryEquipmentStation?: import('../workout/equipmentStations').EquipmentStation;
+    accessDifficulty: 'normal' | 'limited' | 'hard';
+    requiredStationCount: 1 | 2;
 }
 
 export interface LibraryFilters {

@@ -46,6 +46,12 @@ describe('equipment stations', () => {
         expect(orderByEquipment([curl, unknown, bench], ['bench', 'bench']).map((exercise) => exercise.exerciseId)).toEqual([bench.exerciseId, curl.exerciseId, unknown.exerciseId]);
         expect(orderByEquipment([], [])).toEqual([]);
     });
+    it('uses a personal multi-equipment correction and its chosen primary station', () => {
+        const corrected = {exerciseId: 'custom:corrected', equipmentTags: ['barbell'], requiredEquipmentStations: ['barbell', 'bench'] as import('./equipmentStations').EquipmentStation[], primaryEquipmentStation: 'bench' as const};
+        expect(requiredStations(corrected)).toEqual(['barbell', 'bench']);
+        expect(equipmentStation(corrected)).toBe('bench');
+        expect(orderByEquipment([corrected], ['bench', 'barbell'])[0].equipmentStation).toBe('bench');
+    });
     it('keeps every named badge readable on the dark card background', () => {
         for (const station of Object.values(EQUIPMENT_STATIONS)) expect(getContrastRatio(station.color, '#101720')).toBeGreaterThanOrEqual(4.5);
     });

@@ -188,7 +188,7 @@ export class DexieWorkoutRepository implements WorkoutRepository {
             if (active) throw new WorkoutDomainError('WORKOUT_ACTIVE_SESSION_CONFLICT', 'An active session already exists.');
             await this.db.workoutOperation.put({operationId, kind: 'start', status: 'started', sessionId, startedAt: now});
             const exerciseIds = input.exercises.map(() => this.clock.id());
-            const exercises: SessionExerciseRecord[] = input.exercises.map((entry, sequenceIndex) => ({id: exerciseIds[sequenceIndex], sessionId, exerciseId: entry.exerciseId, exerciseNameSnapshot: entry.exerciseName, prescriptionSnapshot: entry.prescriptionSnapshot, programExerciseId: entry.programExerciseId, lockedSnapshot: entry.locked ?? false, alternativeExerciseIdsSnapshot: [...(entry.alternativeExerciseIds ?? [])], equipmentTagsSnapshot: [...(entry.equipmentTags ?? [])], equipmentStationSnapshot: entry.equipmentStation, groupIdSnapshot: entry.groupId, groupTypeSnapshot: entry.groupType ?? 'single', groupSequenceIndexSnapshot: entry.groupSequenceIndex ?? 0, setSchemeSnapshot: entry.setScheme ?? 'straight', sequenceIndex, status: sequenceIndex === 0 ? 'active' : 'pending', createdAt: now, updatedAt: now}));
+            const exercises: SessionExerciseRecord[] = input.exercises.map((entry, sequenceIndex) => ({id: exerciseIds[sequenceIndex], sessionId, exerciseId: entry.exerciseId, exerciseNameSnapshot: entry.exerciseName, prescriptionSnapshot: entry.prescriptionSnapshot, programExerciseId: entry.programExerciseId, lockedSnapshot: entry.locked ?? false, alternativeExerciseIdsSnapshot: [...(entry.alternativeExerciseIds ?? [])], equipmentTagsSnapshot: [...(entry.equipmentTags ?? [])], equipmentStationSnapshot: entry.equipmentStation, requiredEquipmentStationsSnapshot: entry.requiredEquipmentStations ? [...entry.requiredEquipmentStations] : undefined, groupIdSnapshot: entry.groupId, groupTypeSnapshot: entry.groupType ?? 'single', groupSequenceIndexSnapshot: entry.groupSequenceIndex ?? 0, setSchemeSnapshot: entry.setScheme ?? 'straight', sequenceIndex, status: sequenceIndex === 0 ? 'active' : 'pending', createdAt: now, updatedAt: now}));
             const sets: PerformedSetRecord[] = input.exercises.flatMap((entry, exerciseIndex) => {
                 const warmupSets = Math.max(0, entry.warmupSets ?? 0);
                 const dropSets = Math.max(0, entry.dropSets ?? 0);
@@ -267,7 +267,8 @@ export class DexieWorkoutRepository implements WorkoutRepository {
                 substitutionReason: input.reason,
                 alternativeExerciseIdsSnapshot: [...new Set(input.alternativeExerciseIds ?? [])].filter((id) => id !== input.replacementExerciseId),
                 equipmentTagsSnapshot: [...(input.replacementEquipmentTags ?? [])],
-                equipmentStationSnapshot: undefined,
+                equipmentStationSnapshot: input.replacementPrimaryEquipmentStation,
+                requiredEquipmentStationsSnapshot: input.replacementRequiredEquipmentStations ? [...input.replacementRequiredEquipmentStations] : undefined,
                 updatedAt: now,
             });
             await this.db.performedSet.where('sessionExerciseId').equals(exercise.id).filter((entry) => entry.status !== 'completed').modify({targetLoadKg: replacementLoad, updatedAt: now});

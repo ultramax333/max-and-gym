@@ -1,6 +1,6 @@
 import {ExercisePrescriptionRecord, ProgramDurationMinutes, ProgramFrequency} from '../programs/types';
 
-export const GENERATOR_VERSION = 'deterministic-v13';
+export const GENERATOR_VERSION = 'deterministic-v14';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 
 export type GoalBlend = 'strength' | 'balanced' | 'hypertrophy' | 'endurance';
@@ -12,6 +12,10 @@ export interface GeneratorCandidate {
     name: string;
     movementPattern: string;
     equipmentTags: string[];
+    requiredEquipmentStations?: import('../workout/equipmentStations').EquipmentStation[];
+    primaryEquipmentStation?: import('../workout/equipmentStations').EquipmentStation;
+    accessDifficulty?: 'normal' | 'limited' | 'hard';
+    requiredStationCount?: 1 | 2;
     primaryMuscles: string[];
     secondaryMuscles: string[];
     generatorFocusZones?: string[];
@@ -56,6 +60,11 @@ export interface GeneratorInput {
     coreMinutes: 10 | 15;
     lowBackComfortWarmup: boolean;
     sessionRestSeconds?: number;
+    gymContext?: {
+        gymId: import('../gym/occupancy').GymLocationId;
+        occupancyLevel: import('../gym/occupancy').OccupancyLevel;
+        evaluatedAt: string;
+    };
     seed: string;
     generatorVersion: string;
     exerciseSeedVersion: string;
@@ -75,6 +84,10 @@ export interface GeneratedExercise {
     movementPattern: string;
     primaryMuscles: string[];
     equipmentTags: string[];
+    requiredEquipmentStations?: import('../workout/equipmentStations').EquipmentStation[];
+    primaryEquipmentStation?: import('../workout/equipmentStations').EquipmentStation;
+    accessDifficulty?: 'normal' | 'limited' | 'hard';
+    requiredStationCount?: 1 | 2;
     role: GeneratorRole;
     prescription: ExercisePrescriptionRecord;
     locked: boolean;
