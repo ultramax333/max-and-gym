@@ -40,7 +40,7 @@ if (!/apksigner["']?\s+verify --verbose --print-certs/.test(workflow)) {
     throw new Error('The Android workflow does not verify the signed release APK.');
 }
 
-if (!workflow.includes("if: github.ref == 'refs/heads/master'\n        id: signing") || !workflow.includes('ANDROID_KEYSTORE_BASE64')) {
+if (!/if: github\.ref == 'refs\/heads\/master'\r?\n\s+id: signing/.test(workflow) || !workflow.includes('ANDROID_KEYSTORE_BASE64')) {
     throw new Error('Signing secrets must be referenced only by a master-gated step.');
 }
 
