@@ -1,3 +1,4 @@
+import {effectiveEquipmentTags} from '../../workout/equipmentStations';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Alert, Box, Button, Card, CardContent, IconButton, LinearProgress, Stack, Typography} from '@mui/material';
 import {ArrowDownward, ArrowUpward, PlayArrow} from '@mui/icons-material';
@@ -37,7 +38,15 @@ export function WorkoutSetupPage() {
             const byId = new Map(library.map((exercise) => [exercise.id, exercise]));
             // Resolve reviewed equipment for this new session only; do not edit
             // the saved program or any previous session's snapshot.
-            const exercises = input.exercises.map((exercise) => ({...exercise, equipmentTags: byId.get(exercise.exerciseId)?.equipmentTags ?? exercise.equipmentTags}));
+            const exercises = input.exercises.map((exercise) => {
+                const details = byId.get(exercise.exerciseId);
+                return {
+                    ...exercise,
+                    equipmentTags: details ? effectiveEquipmentTags(details) : exercise.equipmentTags,
+                    requiredEquipmentStations: details?.requiredEquipmentStations ?? exercise.requiredEquipmentStations,
+                    equipmentStation: details?.primaryEquipmentStation ?? exercise.equipmentStation,
+                };
+            });
             setPrepared({...input, exercises});
             setOrder(availableStations(exercises));
         }).catch(() => {

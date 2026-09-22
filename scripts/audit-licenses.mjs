@@ -1,4 +1,4 @@
-import {access, readFile} from 'node:fs/promises';
+import {access, readFile, readdir} from 'node:fs/promises';
 import path from 'node:path';
 import {readJson, root, writeAudit} from './lib/audit-utils.mjs';
 
@@ -6,6 +6,7 @@ const lock = await readJson('package-lock.json');
 const summary = {};
 const unknownInstalled = [];
 const absentOptional = [];
+const pnpmEntries = await readdir(path.join(root, 'node_modules/.pnpm')).catch(() => []);
 
 function normalizeLicense(value) {
     if (typeof value === 'string' && value.trim()) return value.trim();
@@ -18,7 +19,18 @@ for (const [packagePath, meta] of Object.entries(lock.packages ?? {})) {
     let license = normalizeLicense(meta.license);
     const manifestPath = path.join(root, packagePath, 'package.json');
     try {
-        const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+        let manifest;
+        try { manifest = JSON.parse(await readFile(manifestPath, 'utf8')); }
+        catch (error) {
+            // npm's lock paths can differ from pnpm's physical installation.
+            // Resolve only the exact locked name/version, never a nearby version.
+            const name = packagePath.split('node_modules/').at(-1);
+            const prefix = `${name.replace('/', '+')}@${meta.version}`;
+            const entry = pnpmEntries.find(value => value === prefix || value.startsWith(prefix + '_'));
+            if (!entry) throw error;
+            manifest = JSON.parse(await readFile(path.join(root, 'node_modules/.pnpm', entry, 'node_modules', name, 'package.json'), 'utf8'));
+            if (manifest.name !== name || manifest.version !== meta.version) throw error;
+        }
         license = normalizeLicense(manifest.license ?? manifest.licenses ?? license);
     } catch {
         if (meta.optional) {

@@ -227,6 +227,21 @@ describe('quick session generator', () => {
         }
     });
 
+    it('deprioritizes personally flagged two-station exercises during peak hours', () => {
+        const quietInput = {...input(30), seed: 'peak-access', gymContext: {gymId: 'tunnel' as const, occupancyLevel: 'quiet' as const, evaluatedAt: '2026-09-21T10:00:00.000Z'}};
+        const quiet = generateQuickSession(quietInput, candidates, 'arms');
+        expect(quiet.ok).toBe(true);
+        if (!quiet.ok) return;
+        const flaggedId = quiet.program.days[0].exercises[0].exerciseId;
+        const quietScore = quiet.program.explanation.selections.find((entry) => entry.exerciseId === flaggedId)?.score;
+        const flagged = candidates.map((entry) => entry.id === flaggedId ? {...entry, accessDifficulty: 'hard' as const, requiredStationCount: 2 as const} : entry);
+        const busy = generateQuickSession({...quietInput, gymContext: {...quietInput.gymContext, occupancyLevel: 'busy'}}, flagged, 'arms');
+        expect(busy.ok).toBe(true);
+        if (!busy.ok) return;
+        const busySelection = busy.program.explanation.selections.find((entry) => entry.exerciseId === flaggedId);
+        expect(busySelection === undefined || (quietScore !== undefined && busySelection.score <= quietScore - 70)).toBe(true);
+    });
+
     it('never offers a leg exercise as an arms-session replacement', () => {
         const current = {
             exerciseId: 'current',

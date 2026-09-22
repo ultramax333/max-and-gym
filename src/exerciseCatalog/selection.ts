@@ -1,4 +1,5 @@
 import type {GeneratorCandidate} from '../generator/types';
+import {effectiveEquipmentTags, EquipmentExercise} from '../workout/equipmentStations';
 
 export type QuickSessionZone = 'full-body' | 'upper-body' | 'lower-body' | 'chest' | 'back' | 'upper-back' | 'lower-back' | 'lower-back-mixed' | 'shoulders' | 'arms' | 'glutes' | 'core';
 export const QUICK_SESSION_ZONES: Array<{value: QuickSessionZone; label: string; muscles: string[]}> = [
@@ -50,8 +51,9 @@ export const HARD_EXCLUSION_TAGS = ['bunny-jump', 'burpee-like', 'plank-to-stand
 
 // Resistance tags are cumulative requirements, not interchangeable setups.
 // Auxiliary stations (bench, pull-up bar, etc.) are separately shown at setup.
-export function hasAvailableEquipment(candidate: Pick<GeneratorCandidate, 'equipmentTags'>, equipment: string[]): boolean {
-    return candidate.equipmentTags.length > 0 && candidate.equipmentTags.every(tag => equipment.includes(tag));
+export function hasAvailableEquipment(candidate: EquipmentExercise, equipment: string[]): boolean {
+    const tags = effectiveEquipmentTags(candidate);
+    return tags.length > 0 && tags.every(tag => equipment.includes(tag));
 }
 
 export function isSelectionEligible(candidate: GeneratorCandidate, constraints: SelectionConstraints = {}): boolean {

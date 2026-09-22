@@ -1,5 +1,6 @@
 import {ExerciseCatalogRepository} from '../../exerciseCatalog/ExerciseCatalogRepository';
-import {ExerciseMediaAsset, LibraryExercise} from '../../exerciseCatalog/types';
+import {LibraryExercise} from '../../exerciseCatalog/types';
+import {displayExerciseMedia, DisplayExerciseMedia} from '../../exerciseCatalog/displayMedia';
 
 type CatalogLookup = Pick<ExerciseCatalogRepository, 'get' | 'list'>;
 
@@ -12,11 +13,11 @@ function normalize(value: string): string {
     return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
 }
 
-function exerciseMedia(exercise: LibraryExercise | undefined): ExerciseMediaAsset[] {
-    return exercise?.media.filter((entry) => entry.kind === 'start-image' || entry.kind === 'end-image') ?? [];
+function exerciseMedia(exercise: LibraryExercise | undefined): DisplayExerciseMedia[] {
+    return displayExerciseMedia(exercise);
 }
 
-export async function resolveWorkoutExerciseMedia(catalog: CatalogLookup, exerciseId: string, exerciseName: string): Promise<ExerciseMediaAsset[]> {
+export async function resolveWorkoutExerciseMedia(catalog: CatalogLookup, exerciseId: string, exerciseName: string): Promise<DisplayExerciseMedia[]> {
     const direct = await catalog.get(exerciseId);
     if (direct) return exerciseMedia(direct);
 

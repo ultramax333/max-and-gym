@@ -49,6 +49,7 @@ export interface StartWorkoutInput {
         alternativeExerciseIds?: string[];
         equipmentTags?: string[];
         equipmentStation?: import('./equipmentStations').EquipmentStation;
+        requiredEquipmentStations?: import('./equipmentStations').EquipmentStation[];
         groupId?: string;
         groupType?: 'single' | 'superset' | 'triset' | 'circuit';
         groupSequenceIndex?: number;
@@ -72,6 +73,7 @@ export interface SessionExerciseRecord {
     alternativeExerciseIdsSnapshot: string[];
     equipmentTagsSnapshot?: string[];
     equipmentStationSnapshot?: import('./equipmentStations').EquipmentStation;
+    requiredEquipmentStationsSnapshot?: import('./equipmentStations').EquipmentStation[];
     groupIdSnapshot?: string;
     groupTypeSnapshot?: 'single' | 'superset' | 'triset' | 'circuit';
     groupSequenceIndexSnapshot?: number;
@@ -152,6 +154,8 @@ export interface ReplaceSessionExerciseInput {
     replacementExerciseId: string;
     replacementExerciseName: string;
     replacementEquipmentTags?: string[];
+    replacementRequiredEquipmentStations?: import('./equipmentStations').EquipmentStation[];
+    replacementPrimaryEquipmentStation?: import('./equipmentStations').EquipmentStation;
     alternativeExerciseIds?: string[];
     reason: 'equipment-unavailable' | 'user-choice';
 }

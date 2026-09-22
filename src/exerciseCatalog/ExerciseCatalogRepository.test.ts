@@ -96,6 +96,27 @@ describe('reviewed local exercise catalogue', () => {
         expect((await repository.list({status: 'eligible'}).then((entries) => entries.map((entry) => entry.id)))).not.toContain(exercise.id);
     });
 
+    it('stores personal equipment grouping and peak-hour access metadata separately from the reviewed seed', async () => {
+        const exercise = (await repository.list({status: 'eligible'}))[0];
+        const originalTags = [...exercise.equipmentTags];
+        await repository.updatePreference(exercise.id, {
+            requiredEquipmentStations: ['barbell', 'bench'],
+            primaryEquipmentStation: 'bench',
+            accessDifficulty: 'hard',
+            requiredStationCount: 2,
+        });
+        expect(await repository.get(exercise.id)).toMatchObject({
+            equipmentTags: originalTags,
+            requiredEquipmentStations: ['barbell', 'bench'],
+            primaryEquipmentStation: 'bench',
+            accessDifficulty: 'hard',
+            requiredStationCount: 2,
+        });
+        await repository.resetEquipmentPreference(exercise.id);
+        expect(await repository.get(exercise.id)).toMatchObject({equipmentTags: originalTags, accessDifficulty: 'normal', requiredStationCount: 1});
+        expect((await repository.get(exercise.id))?.requiredEquipmentStations).toBeUndefined();
+    });
+
     it('refreshes stale reviewed records with local media without changing preferences', async () => {
         const gobletSquat = (seed as ReviewedExercise[]).find((entry) => entry.id === 'fedb:Goblet_Squat');
         expect(gobletSquat).toBeDefined();

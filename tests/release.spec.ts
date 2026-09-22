@@ -1,5 +1,6 @@
 import {expect, Page, test} from '@playwright/test';
 import {readFileSync} from 'node:fs';
+import {GENERATOR_VERSION} from '../src/generator/types';
 
 const packageVersion = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {version: string}).version;
 
@@ -20,12 +21,55 @@ async function assertNoHorizontalOverflow(page: Page): Promise<void> {
     expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
 }
 
+test('equipment save errors are recoverable and workout photo editing preserves the draft', async ({page}, testInfo) => {
+    await bootstrapAnonymousProfile(page);
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.name));
+    await page.goto('./#/library/fedb%3ABarbell_Curl');
+    await page.getByRole('button', {name: 'Correct equipment'}).click();
+    await page.evaluate(() => {
+        const put = IDBObjectStore.prototype.put;
+        let rejectOnce = true;
+        IDBObjectStore.prototype.put = function (...args: Parameters<typeof put>) {
+            if (this.name === 'exercisePreference' && rejectOnce) {
+                rejectOnce = false;
+                throw new DOMException('Synthetic test', 'QuotaExceededError');
+            }
+            return put.apply(this, args);
+        };
+    });
+    await page.getByRole('button', {name: 'Save', exact: true}).click();
+    await expect(page.getByRole('dialog').getByText(/Could not save equipment/)).toBeVisible();
+    expect(errors).toEqual([]);
+    await page.getByRole('button', {name: 'Save', exact: true}).click();
+    await expect(page.getByText('Equipment and access saved.')).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.goto('./#/workout/active');
+    await page.getByRole('button', {name: 'Start', exact: true}).click();
+    const load = page.getByRole('spinbutton', {name: 'Load', exact: true});
+    await load.fill('123');
+    await page.getByRole('button', {name: 'Correct equipment'}).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await assertNoHorizontalOverflow(page);
+    await page.screenshot({path: testInfo.outputPath('equipment-editor-active.png'), animations: 'disabled'});
+    await page.getByRole('button', {name: 'Save', exact: true}).click();
+    await expect(page.getByText(/Saved for future sessions and alternatives/)).toBeVisible();
+    await page.getByRole('button', {name: 'OK', exact: true}).click();
+    await expect(load).toHaveValue('123');
+    await page.getByRole('button', {name: /^Enlarge /}).first().click();
+    await expect(page.getByRole('dialog').getByRole('img')).toBeVisible();
+    await page.screenshot({path: testInfo.outputPath('enlarged-workout-photo.png'), animations: 'disabled'});
+    await page.getByRole('button', {name: 'Close photo'}).click();
+    await expect(load).toHaveValue('123');
+    expect(errors).toEqual([]);
+});
+
 test('release identity and subpath routes are available', async ({page}) => {
     await bootstrapAnonymousProfile(page);
     await page.goto('./#/diagnostics');
     await expect(page.getByText(packageVersion, {exact: true})).toBeVisible();
     await expect(page.getByText('8 / 2', {exact: true})).toBeVisible();
-    await expect(page.getByText('deterministic-v13 / 9', {exact: true})).toBeVisible();
+    await expect(page.getByText(`${GENERATOR_VERSION} / 9`, {exact: true})).toBeVisible();
     await assertNoHorizontalOverflow(page);
 });
 

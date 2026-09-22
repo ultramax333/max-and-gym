@@ -58,10 +58,10 @@ export default defineConfig({
     },
     plugins: [react(), VitePWA({
         disable: isAndroidBuild,
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         injectRegister: false,
         workbox: {
-            skipWaiting: true,
+            skipWaiting: false,
             clientsClaim: true,
             maximumFileSizeToCacheInBytes: 3000000,
             globPatterns: ['**/*.{js,css,html,ico,png,svg}'],

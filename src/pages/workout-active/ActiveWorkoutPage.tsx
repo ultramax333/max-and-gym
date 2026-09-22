@@ -1,3 +1,6 @@
+import {ExercisePhotos} from '../../components/ui/ExercisePhotos';
+import {EquipmentEditorDialog} from '../../exerciseCatalog/EquipmentEditorDialog';
+import {DisplayExerciseMedia} from '../../exerciseCatalog/displayMedia';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
 import {AddCircleOutline, Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SkipNext, Star, StarBorder, SwapHoriz, Undo, Visibility} from '@mui/icons-material';
@@ -7,7 +10,7 @@ import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../..
 import {recordDiagnostic} from '../../diagnostics/service';
 import {ActiveWorkoutSnapshot, ExercisePerformanceSummary, SessionExerciseRecord} from '../../workout/types';
 import {useWorkoutService} from '../../workout/useWorkoutService';
-import {ExerciseMediaAsset, LibraryExercise} from '../../exerciseCatalog/types';
+import {LibraryExercise} from '../../exerciseCatalog/types';
 import {ExerciseContextRatingRepository, ExerciseRatingContext} from '../../exerciseCatalog/ExerciseContextRatingRepository';
 import {useExerciseCatalog} from '../../exerciseCatalog/useExerciseCatalog';
 import {db} from '../../db/db';
@@ -73,7 +76,7 @@ export function ActiveWorkoutPage() {
     const [loadInput, setLoadInput] = useState('0');
     const [repsInput, setRepsInput] = useState('0');
     const [rir, setRir] = useState(2);
-    const [exerciseMedia, setExerciseMedia] = useState<ExerciseMediaAsset[]>([]);
+    const [exerciseMedia, setExerciseMedia] = useState<DisplayExerciseMedia[]>([]);
     const [exerciseDetails, setExerciseDetails] = useState<LibraryExercise>();
     const [previousHistory, setPreviousHistory] = useState<ExercisePerformanceSummary[]>([]);
     const [exerciseChangeNotice, setExerciseChangeNotice] = useState('');
@@ -84,8 +87,10 @@ export function ActiveWorkoutPage() {
     const [replacementOptions, setReplacementOptions] = useState<LibraryExercise[]>([]);
     const [exerciseRating, setExerciseRating] = useState<number>(0);
     const [previewExercise, setPreviewExercise] = useState<SessionExerciseRecord>();
+    const [equipmentEdit, setEquipmentEdit] = useState<LibraryExercise>();
+    const [equipmentNotice, setEquipmentNotice] = useState('');
     const [previewDetails, setPreviewDetails] = useState<LibraryExercise>();
-    const [previewMedia, setPreviewMedia] = useState<ExerciseMediaAsset[]>([]);
+    const [previewMedia, setPreviewMedia] = useState<DisplayExerciseMedia[]>([]);
     const [setAdjustmentOpen, setSetAdjustmentOpen] = useState(false);
     const previousExerciseId = useRef<string>();
     const pendingExerciseChangeNotice = useRef<string>();
@@ -177,6 +182,9 @@ export function ActiveWorkoutPage() {
             service?.exerciseHistoryList(currentExercise.exerciseId, snapshot?.session.id, 3),
         ]).then(([media, details, history]) => {
             if (!cancelled) { setExerciseMedia(media); setExerciseDetails(details); setPreviousHistory(history ?? []); }
+        }).catch(() => {
+            if (!cancelled) setError('Could not load exercise details. Your saved workout is unchanged; reopen the session to retry.');
+            recordDiagnostic({level: 'error', subsystem: 'MEDIA', code: 'CATALOG_READ_FAILED', safeMessage: 'Workout exercise lookup failed.'});
         });
         return () => { cancelled = true; };
     }, [catalog, currentExercise, service, snapshot?.session.id]);
@@ -298,6 +306,8 @@ export function ActiveWorkoutPage() {
                 replacementExerciseId: freshReplacement.id,
                 replacementExerciseName: freshReplacement.name,
                 replacementEquipmentTags: freshReplacement.equipmentTags,
+                replacementRequiredEquipmentStations: freshReplacement.requiredEquipmentStations,
+                replacementPrimaryEquipmentStation: freshReplacement.primaryEquipmentStation,
                 alternativeExerciseIds: allowed.filter(entry => entry.id !== freshReplacement.id).slice(0, 5).map(entry => entry.id),
                 reason: 'equipment-unavailable',
             }));
@@ -379,9 +389,9 @@ export function ActiveWorkoutPage() {
 
                 {!allSetsDone && currentExercise && currentSet && <>
                     <Box sx={{height: {xs: 196, sm: 300}, borderRadius: '24px', overflow: 'hidden', position: 'relative', bgcolor: '#191D21', border: '1px solid rgba(255,255,255,.08)'}}>
-                        {exerciseMedia.length ? <Box sx={{height: '100%', display: 'grid', gridTemplateColumns: exerciseMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{exerciseMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{display: 'block', width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <Box sx={{height: '100%', display: 'grid', placeItems: 'center'}}><Stack alignItems="center"><FitnessCenter sx={{fontSize: 56, color: 'primary.main'}}/><Typography color="text.secondary">No local exercise photo</Typography></Stack></Box>}
+                        <ExercisePhotos media={exerciseMedia}/>
                         <Box sx={{position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(180deg, transparent 56%, rgba(6,9,13,.92) 100%)'}}/>
-                        {exerciseDetails && <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{position: 'absolute', left: 14, right: 14, bottom: 14}}><Chip size="small" label={exerciseDetails.primaryMuscles[0] ?? exerciseDetails.movementPattern}/><EquipmentBadges exercise={{exerciseId: exerciseDetails.id, equipmentTags: exerciseDetails.equipmentTags}}/></Stack>}
+                        {exerciseDetails && <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{position: 'absolute', left: 14, right: 14, bottom: 14}}><Chip size="small" label={exerciseDetails.primaryMuscles[0] ?? exerciseDetails.movementPattern}/><EquipmentBadges exercise={exerciseDetails}/></Stack>}
                     </Box>
 
                     <Box>
@@ -439,6 +449,7 @@ export function ActiveWorkoutPage() {
                         <Typography variant="body2" color="text.secondary" sx={{mt: 0.25}}>Do this exercise later without losing progress, or choose a compatible alternative before logging its first set.</Typography>
                         <Stack direction={{xs: 'column', sm: 'row'}} gap={1} sx={{mt: 1.25}}>
                             <Button variant="outlined" startIcon={<SkipNext/>} disabled={busy || !canSwitchExercise} onClick={() => void deferCurrentExercise()}>Do later</Button>
+                            <Button variant="outlined" disabled={!exerciseDetails} onClick={() => setEquipmentEdit(exerciseDetails)}>Correct equipment</Button>
                             <Button variant="outlined" startIcon={<SwapHoriz/>} disabled={busy || !canReplaceCurrent || !exerciseDetails} onClick={() => void openAlternatives()}>Choose alternative</Button>
                             <Button variant="outlined" startIcon={<AddCircleOutline/>} disabled={busy || !canTradeSet} onClick={() => setSetAdjustmentOpen(true)}>Add one set</Button>
                         </Stack>
@@ -458,10 +469,10 @@ export function ActiveWorkoutPage() {
                         const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
                         const isCurrent = exercise.id === currentExercise?.id && !allSetsDone;
                         const canSwitch = !isCurrent && completedSets < exerciseSets.length;
-                        const equipment = equipmentStation({exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot});
+                        const equipment = equipmentStation({exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot, requiredEquipmentStations: exercise.requiredEquipmentStationsSnapshot});
                         const previous = snapshot.exercises[exerciseIndex - 1];
-                        const previousEquipment = previous ? equipmentStation({exerciseId: previous.exerciseId, equipmentTags: previous.equipmentTagsSnapshot, equipmentStation: previous.equipmentStationSnapshot}) : undefined;
-                        return <React.Fragment key={exercise.id}>{equipment !== previousEquipment && <Box sx={{pt: exerciseIndex ? 1.5 : 0.5, pb: 0.75, borderTop: exerciseIndex ? 1 : 0, borderColor: 'divider'}}><EquipmentBadge station={equipment}/></Box>}<Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1, pl: 1, borderLeft: `3px solid ${EQUIPMENT_STATIONS[equipment].color}`, borderBottom: 1, borderBottomColor: 'divider'}}><Button color="inherit" startIcon={<Visibility/>} onClick={() => void openExercisePreview(exercise)} sx={{justifyContent: 'flex-start', textAlign: 'left', minHeight: 48, minWidth: 0}}><Box minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography><EquipmentBadges exercise={{exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot}}/></Box></Button><Stack direction="row" gap={1} alignItems="center" justifyContent="space-between"><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => switchToExercise(exercise)}>Switch here</Button>}</Stack></Stack></React.Fragment>;
+                        const previousEquipment = previous ? equipmentStation({exerciseId: previous.exerciseId, equipmentTags: previous.equipmentTagsSnapshot, equipmentStation: previous.equipmentStationSnapshot, requiredEquipmentStations: previous.requiredEquipmentStationsSnapshot}) : undefined;
+                        return <React.Fragment key={exercise.id}>{equipment !== previousEquipment && <Box sx={{pt: exerciseIndex ? 1.5 : 0.5, pb: 0.75, borderTop: exerciseIndex ? 1 : 0, borderColor: 'divider'}}><EquipmentBadge station={equipment}/></Box>}<Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems={{xs: 'stretch', sm: 'center'}} gap={1} sx={{py: 1, pl: 1, borderLeft: `3px solid ${EQUIPMENT_STATIONS[equipment].color}`, borderBottom: 1, borderBottomColor: 'divider'}}><Button color="inherit" startIcon={<Visibility/>} onClick={() => void openExercisePreview(exercise)} sx={{justifyContent: 'flex-start', textAlign: 'left', minHeight: 48, minWidth: 0}}><Box minWidth={0}><Typography fontWeight={700}>{exercise.exerciseNameSnapshot}</Typography><Typography variant="body2" color="text.secondary">{exercise.prescriptionSnapshot}</Typography><EquipmentBadges exercise={{exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot, requiredEquipmentStations: exercise.requiredEquipmentStationsSnapshot}}/></Box></Button><Stack direction="row" gap={1} alignItems="center" justifyContent="space-between"><Chip size="small" color={isCurrent ? 'primary' : exercise.status === 'completed' ? 'success' : 'default'} label={isCurrent ? 'Current' : `${completedSets}/${exerciseSets.length} sets`}/>{canSwitch && <Button size="small" variant="outlined" startIcon={<SwapHoriz/>} disabled={busy} onClick={() => switchToExercise(exercise)}>Switch here</Button>}</Stack></Stack></React.Fragment>;
                     })}</Stack></Collapse>
                 </Paper>
 
@@ -505,15 +516,21 @@ export function ActiveWorkoutPage() {
 
         <Dialog open={finishOpen} onClose={() => setFinishOpen(false)}><DialogTitle>Finish workout?</DialogTitle><DialogContent><Typography>Remaining sets will stay incomplete in this summary.</Typography></DialogContent><DialogActions><Button onClick={() => setFinishOpen(false)}>Continue</Button><Button variant="contained" color="error" startIcon={<Flag/>} onClick={() => void perform(async () => { const result = await service!.finish(snapshot.session.id); navigate(`/workout/summary/${snapshot.session.id}`); return result; })}>Finish</Button></DialogActions></Dialog>
         <Dialog open={setAdjustmentOpen} onClose={() => !busy && setSetAdjustmentOpen(false)}><DialogTitle>Add one set?</DialogTitle><DialogContent><Typography>The app will add one working set to {currentExercise?.exerciseNameSnapshot} and remove one untouched set from the closest future exercise. Completed work is never changed and the session time target stays the same.</Typography></DialogContent><DialogActions><Button disabled={busy} onClick={() => setSetAdjustmentOpen(false)}>Cancel</Button><Button variant="contained" disabled={busy || !canTradeSet} onClick={() => void addCurrentSet()}>Adjust plan</Button></DialogActions></Dialog>
+        {equipmentNotice && <Dialog open onClose={() => setEquipmentNotice('')}><DialogTitle>Equipment saved</DialogTitle><DialogContent><Typography>{equipmentNotice}</Typography></DialogContent><DialogActions><Button onClick={() => setEquipmentNotice('')}>OK</Button></DialogActions></Dialog>}
+        {equipmentEdit && <EquipmentEditorDialog exercise={equipmentEdit} open onClose={() => setEquipmentEdit(undefined)} onSaved={async () => {
+            const updated = await catalog?.get(equipmentEdit.id);
+            if (updated?.id === exerciseDetails?.id) setExerciseDetails(updated);
+            if (updated?.id === previewDetails?.id) setPreviewDetails(updated);
+            setEquipmentNotice('Saved for future sessions and alternatives. The current workout order and completed sets are unchanged.');
+        }}/>}
         <Dialog open={Boolean(previewExercise)} onClose={() => setPreviewExercise(undefined)} fullScreen>
             <DialogTitle component="div"><Stack direction="row" justifyContent="space-between" alignItems="center"><Box><Typography variant="overline" color="primary.main">UPCOMING EXERCISE</Typography><Typography variant="h5" component="h2">{previewExercise?.exerciseNameSnapshot}</Typography></Box><IconButton aria-label="Close exercise preview" onClick={() => setPreviewExercise(undefined)}><Close/></IconButton></Stack></DialogTitle>
-<DialogContent dividers><Stack spacing={2}>{previewMedia.length ? <Box sx={{height: {xs: 300, sm: 430}, display: 'grid', gridTemplateColumns: previewMedia.length > 1 ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider', borderRadius: 3, overflow: 'hidden'}}>{previewMedia.map((media) => <Box key={`${media.kind}-${media.path}`} component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>)}</Box> : <StatePanel title="No local photo" description="This exercise has no reviewed local image yet." icon={<FitnessCenter/>}/>}<Stack direction="row" gap={0.75} flexWrap="wrap">{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && previewDetails && <Chip color={previewDetails.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={previewDetails.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Chip label={previewExercise?.prescriptionSnapshot}/>{previewDetails?.equipmentTags.map((entry) => <Chip key={entry} variant="outlined" label={entry}/>)}</Stack>{previewDetails && <><Typography variant="h6">How to move</Typography><Typography color="text.secondary">{previewDetails.setupInstructions}</Typography><Box component="ol" sx={{pl: 3, m: 0}}>{previewDetails.executionSteps.slice(0, 4).map((step) => <Typography key={step} component="li" sx={{mb: 1}}>{step}</Typography>)}</Box></>}</Stack></DialogContent>
+<DialogContent dividers><Stack spacing={2}><Box sx={{height: {xs: 300, sm: 430}}}><ExercisePhotos media={previewMedia}/></Box><Stack direction="row" gap={0.75} flexWrap="wrap">{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && previewDetails && <Chip color={previewDetails.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={previewDetails.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Chip label={previewExercise?.prescriptionSnapshot}/>{previewDetails?.equipmentTags.map((entry) => <Chip key={entry} variant="outlined" label={entry}/>)}</Stack>{previewDetails && <><EquipmentBadges exercise={previewDetails}/><Button variant="outlined" onClick={() => setEquipmentEdit(previewDetails)}>Correct equipment</Button><Typography variant="h6">How to move</Typography><Typography color="text.secondary">{previewDetails.setupInstructions}</Typography><Box component="ol" sx={{pl: 3, m: 0}}>{previewDetails.executionSteps.slice(0, 4).map((step) => <Typography key={step} component="li" sx={{mb: 1}}>{step}</Typography>)}</Box></>}</Stack></DialogContent>
         </Dialog>
         <Dialog open={alternativesOpen} onClose={() => !busy && setAlternativesOpen(false)} fullScreen>
             <DialogTitle component="div"><Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}><Box><Typography variant="overline" color="primary.main">MACHINE OCCUPIED</Typography><Typography variant="h5" component="h2">Choose an alternative</Typography></Box><IconButton aria-label="Close alternatives" disabled={busy} onClick={() => setAlternativesOpen(false)}><Close/></IconButton></Stack></DialogTitle>
 <DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>The set count, repetition target and recovery stay unchanged. The replacement load uses its saved history when available; otherwise it starts at 0 kg.</Typography><Typography color="text.secondary" sx={{mb: 2}}>{snapshot.session.trainingContext?.zone ? `Training focus: ${focusLabel(snapshot.session.trainingContext.zone)}. ` : 'Alternatives match the current exercise target. '}{snapshot.session.selectionConstraints?.equipment ? 'Your selected resistance equipment is respected. Check all support badges before choosing.' : 'This older or manual session has no saved equipment filter. Check the required equipment before choosing.'}</Typography><Stack spacing={1.25}>{replacementOptions.map((option) => {
-                const media = option.media.find((entry) => entry.kind === 'thumbnail') ?? option.media.find((entry) => entry.kind === 'start-image');
-return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center">{media && <Box component="img" src={`${import.meta.env.BASE_URL}${media.path}`} alt={media.altText} sx={{width: 96, height: 96, objectFit: 'contain', bgcolor: 'background.default', flexShrink: 0}}/>}<Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography>{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'} sx={{mt: 0.5}}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><EquipmentBadges exercise={{exerciseId:option.id, equipmentTags:option.equipmentTags}}/><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
+                return <Paper key={option.id} variant="outlined" sx={{overflow: 'hidden'}}><Stack direction="row" gap={1.5} alignItems="center"><Box sx={{width: 96, height: 96, flexShrink: 0}}><ExercisePhotos exercise={option} compact/></Box><Box sx={{flex: 1, py: 1.25, pr: 1.25, minWidth: 0}}><Typography fontWeight={750}>{option.name}</Typography>{snapshot.session.trainingContext?.zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'} sx={{mt: 0.5}}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')} · {option.equipmentTags.join(', ')}</Typography><EquipmentBadges exercise={option}/><Button sx={{mt: 1}} variant="contained" size="small" disabled={busy} onClick={() => void replaceCurrentExercise(option)}>Use this exercise</Button></Box></Stack></Paper>;
             })}{replacementOptions.length === 0 && <StatePanel title="No compatible alternative" description="Use Do later and return when the equipment becomes available." icon={<FitnessCenter/>}/>}</Stack></DialogContent>
         </Dialog>
     </Layout>;

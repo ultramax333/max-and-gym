@@ -1,3 +1,4 @@
+import {effectiveEquipmentTags} from '../workout/equipmentStations';
 import {evaluateHardConstraints, matchesRole} from './constraints';
 import {CandidateExclusion, CandidateSelection, GeneratedDay, GeneratedExercise, GeneratedProgram, GenerationResult, GeneratorCandidate, GeneratorDurationBreakdown, GeneratorInput, GeneratorRole, NormalizedGeneratorInput, WarmupStep} from './types';
 import {ProgramDurationMinutes} from '../programs/types';
@@ -94,7 +95,7 @@ function selectExercise(role: GeneratorRole, dayIndex: number, candidates: Gener
     const reasons = stable?.exerciseId === selected.candidate.id ? ['Stable primary exercise retained.', ...selected.reasons] : selected.reasons;
     selections.push({exerciseId: selected.candidate.id, role, score: selected.score, reasons});
     const alternatives = ranked.slice(1, 4).map((entry) => entry.candidate.id);
-    return {exerciseId: selected.candidate.id, exerciseName: selected.candidate.name, movementPattern: selected.candidate.movementPattern, primaryMuscles: [...selected.candidate.primaryMuscles], equipmentTags: [...selected.candidate.equipmentTags], role, prescription, locked: stable?.exerciseId === selected.candidate.id ? stable.locked : ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(role), stableUntil: stable?.stableUntil, alternativeExerciseIds: alternatives, score: selected.score, reasons};
+    return {exerciseId: selected.candidate.id, exerciseName: selected.candidate.name, movementPattern: selected.candidate.movementPattern, primaryMuscles: [...selected.candidate.primaryMuscles], equipmentTags: effectiveEquipmentTags(selected.candidate), requiredEquipmentStations: selected.candidate.requiredEquipmentStations ? [...selected.candidate.requiredEquipmentStations] : undefined, primaryEquipmentStation: selected.candidate.primaryEquipmentStation, role, prescription, locked: stable?.exerciseId === selected.candidate.id ? stable.locked : ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(role), stableUntil: stable?.stableUntil, alternativeExerciseIds: alternatives, score: selected.score, reasons};
 }
 
 export function generateProgram(rawInput: GeneratorInput, rawCandidates: GeneratorCandidate[]): GenerationResult {

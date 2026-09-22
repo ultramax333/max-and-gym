@@ -52,7 +52,7 @@ export function ExerciseRail({snapshot, currentExercise, busy, onSelect}: {
             const completedSets = exerciseSets.filter((entry) => entry.status === 'completed').length;
             const complete = completedSets === exerciseSets.length;
             const current = exercise.id === currentExercise?.id;
-            const station = EQUIPMENT_STATIONS[equipmentStation({exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot})];
+            const station = EQUIPMENT_STATIONS[equipmentStation({exerciseId: exercise.exerciseId, equipmentTags: exercise.equipmentTagsSnapshot, equipmentStation: exercise.equipmentStationSnapshot, requiredEquipmentStations: exercise.requiredEquipmentStationsSnapshot})];
             return <Chip
                 key={exercise.id}
                 clickable={!current && !complete}
