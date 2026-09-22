@@ -1,8 +1,9 @@
+import {GENERATOR_VERSION} from '../generator/types';
+export {GENERATOR_VERSION} from '../generator/types';
 export const DATABASE_SCHEMA_VERSION = 8;
 export const EXPORT_FORMAT_VERSION = 2;
 export const EXERCISE_SEED_VERSION = 'fedb-b0eed061e1c8-reviewed-8';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
-export const GENERATOR_VERSION = 'deterministic-v13';
 export const CACHE_VERSION = '9';
 
 export interface BuildIdentity {

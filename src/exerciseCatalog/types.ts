@@ -61,6 +61,7 @@ export interface CustomExerciseRecord extends ReviewedExercise {
 }
 
 export interface LibraryExercise extends ReviewedExercise {
+    customImage?: Blob;
     favourite: boolean;
     effectiveNeverSuggest: boolean;
     requiredEquipmentStations?: import('../workout/equipmentStations').EquipmentStation[];

@@ -1,5 +1,5 @@
 import {execFileSync} from 'node:child_process';
-import {existsSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {readJson, root} from './lib/audit-utils.mjs';
@@ -9,6 +9,8 @@ const command = (args) => {
     try { return execFileSync('git', args, {cwd: root, encoding: 'utf8'}).trim(); }
     catch { return 'unavailable'; }
 };
+const identity = readFileSync(path.join(root, 'src/config/buildIdentity.ts'), 'utf8');
+const vite = readFileSync(path.join(root, 'vite.config.ts'), 'utf8');
 const facts = {
     node: process.version,
     npm: process.env.npm_config_user_agent ?? 'run via npm script',
@@ -19,8 +21,8 @@ const facts = {
     lockfile: existsSync(path.join(root, 'package-lock.json')),
     dependenciesInstalled: existsSync(path.join(root, 'node_modules')),
     viteBase: '/max-and-gym/',
-    databaseSchemaVersion: 3,
-    serviceWorkerUpdate: 'prompt',
+    databaseSchemaVersion: Number(identity.match(/DATABASE_SCHEMA_VERSION = (\d+)/)?.[1]) || 'unavailable',
+    serviceWorkerUpdate: vite.match(/registerType: '([^']+)'/)?.[1] ?? 'unavailable',
     sourcePins: existsSync(path.join(root, 'SOURCE_PINS.json')),
     package: `${pkg.name}@${pkg.version}`,
 };

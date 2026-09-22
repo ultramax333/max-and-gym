@@ -11,7 +11,11 @@ const findings = [];
 for (const file of files) {
     const relative = path.relative(root, file).replaceAll('\\', '/');
     const source = await readFile(file, 'utf8');
-    const scanSource = source.replace(/https?:\/\/[^\s'"`]+/g, (url) => ' '.repeat(url.length));
+    // Proper street names are not interface translations. Keep a narrow,
+    // file-specific allowlist so other French copy still fails the audit.
+    const properNames = relative === 'src/gym/occupancy.ts' ? ['Rue de Genève 8'] : [];
+    const scanSource = properNames.reduce((text, name) => text.replaceAll(name, ' '.repeat(name.length)), source)
+        .replace(/https?:\/\/[^\s'"`]+/g, (url) => ' '.repeat(url.length));
     for (const match of scanSource.matchAll(frenchCopy)) {
         const line = scanSource.slice(0, match.index).split('\n').length;
         findings.push({file: relative, line, text: match[0]});

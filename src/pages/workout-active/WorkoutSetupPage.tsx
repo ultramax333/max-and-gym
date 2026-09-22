@@ -1,3 +1,4 @@
+import {effectiveEquipmentTags} from '../../workout/equipmentStations';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {Alert, Box, Button, Card, CardContent, IconButton, LinearProgress, Stack, Typography} from '@mui/material';
 import {ArrowDownward, ArrowUpward, PlayArrow} from '@mui/icons-material';
@@ -41,7 +42,7 @@ export function WorkoutSetupPage() {
                 const details = byId.get(exercise.exerciseId);
                 return {
                     ...exercise,
-                    equipmentTags: details?.equipmentTags ?? exercise.equipmentTags,
+                    equipmentTags: details ? effectiveEquipmentTags(details) : exercise.equipmentTags,
                     requiredEquipmentStations: details?.requiredEquipmentStations ?? exercise.requiredEquipmentStations,
                     equipmentStation: details?.primaryEquipmentStation ?? exercise.equipmentStation,
                 };

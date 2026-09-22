@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Alert, Box, Button, Card, CardContent, CardMedia, Checkbox, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Paper, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
+import React, {useEffect, useRef, useState} from 'react';
+import {Alert, Box, Button, Card, CardContent, Checkbox, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Paper, Select, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography} from '@mui/material';
 import {AutoAwesome, Block, ExpandMore, Favorite, FavoriteBorder, FitnessCenter, KeyboardArrowDown, KeyboardArrowUp, PlayArrow, Save, Schedule, Search, Tune} from '@mui/icons-material';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useLiveQuery} from 'dexie-react-hooks';
@@ -24,6 +24,8 @@ import {RELEASE_DEFAULTS} from '../../config/releaseDefaults';
 import {QuickSessionGenerationStateRepository} from '../../generator/QuickSessionGenerationStateRepository';
 import {hasAvailableEquipment} from '../../generator/constraints';
 import {ExerciseLoadRecommendation, recommendExerciseLoad} from '../../workout/loadRecommendation';
+import {ExercisePhotos} from '../../components/ui/ExercisePhotos';
+import {recordDiagnostic} from '../../diagnostics/service';
 import {EquipmentBadges} from '../../components/ui/EquipmentBadge';
 import {isReviewedSecondaryLowerBack, isSelectionEligible} from '../../exerciseCatalog/selection';
 import {GymPreferenceRepository} from '../../gym/GymPreferenceRepository';
@@ -57,10 +59,6 @@ async function loadAdviceForProgram(program: GeneratedProgram): Promise<Record<s
         })] as const;
     }));
     return Object.fromEntries(entries);
-}
-
-function catalogMediaUrl(path: string): string {
-    return `${import.meta.env.BASE_URL}${path}`;
 }
 
 export function ProgramsWithGeneratorPage() {
@@ -105,7 +103,26 @@ function QuickSessionBuilder() {
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const [gymId, setGymId] = useState<GymLocationId>('tunnel');
     const [crowdMode, setCrowdMode] = useState<CrowdMode>('auto');
-    const currentOccupancy = occupancyLevel(gymId, new Date(), crowdMode);
+    const [gymSaving, setGymSaving] = useState(false);
+    const gymSavingRef = useRef(false);
+    const [clock, setClock] = useState(() => new Date());
+    const currentOccupancy = occupancyLevel(gymId, clock, crowdMode);
+    useEffect(() => {
+        const interval = window.setInterval(() => setClock(new Date()), 60000);
+        return () => window.clearInterval(interval);
+    }, []);
+    const saveGym = async (next: GymLocationId) => {
+        if (gymSavingRef.current) return;
+        gymSavingRef.current = true;
+        setGymSaving(true);
+        try {
+            await gymPreferences.save({gymId: next, crowdMode: 'auto'});
+            setGymId(next); setPreview(undefined); setError('');
+        } catch {
+            setError('Could not save your gym. Try again.');
+            recordDiagnostic({level: 'error', subsystem: 'UI', code: 'GYM_PREFERENCE_FAILED', safeMessage: 'Gym preference save failed.'});
+        } finally { gymSavingRef.current = false; setGymSaving(false); }
+    };
 
     useEffect(() => {
         let active = true;
@@ -117,7 +134,11 @@ function QuickSessionBuilder() {
         void gymPreferences.get().then((preference) => {
             if (!active) return;
             setGymId(preference.gymId);
-            setCrowdMode(preference.crowdMode);
+            // Manual observations apply only while this generator is open.
+            setCrowdMode('auto');
+        }).catch(() => {
+            if (active) setError('Could not load your gym preference. The default gym is shown.');
+            recordDiagnostic({level: 'error', subsystem: 'UI', code: 'GYM_PREFERENCE_FAILED', safeMessage: 'Gym preference load failed.'});
         });
         return () => { active = false; };
     }, []);
@@ -150,7 +171,7 @@ function QuickSessionBuilder() {
                 coreMinutes: 10,
                 lowBackComfortWarmup: true,
                 sessionRestSeconds,
-                gymContext: {gymId, occupancyLevel: currentOccupancy, evaluatedAt: new Date().toISOString()},
+                gymContext: {gymId, occupancyLevel: occupancyLevel(gymId, new Date(), crowdMode), evaluatedAt: new Date().toISOString()},
                 seed: `${seed}:variation-${variation}`,
                 generatorVersion: BUILD_GENERATOR_VERSION,
                 exerciseSeedVersion: EXERCISE_SEED_VERSION,
@@ -308,9 +329,10 @@ function QuickSessionBuilder() {
             <Divider/>
             <Box sx={{px: {xs: 2, sm: 3}, py: 1}}>
                 <Button fullWidth color="inherit" startIcon={<Tune/>} endIcon={<ExpandMore sx={{transform: advancedOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms'}}/>} onClick={() => setAdvancedOpen((open) => !open)} sx={{justifyContent: 'space-between'}}>Equipment and variation</Button>
-                <Collapse in={advancedOpen}><Stack spacing={1.5} sx={{py: 1.5}}><TextField label="Variation seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/><Typography variant="subtitle2">Gym access</Typography><Stack direction={{xs: 'column', sm: 'row'}} gap={1.5}><FormControl fullWidth><InputLabel id="quick-gym">Gym</InputLabel><Select labelId="quick-gym" label="Gym" value={gymId} onChange={(event) => { const next = event.target.value as GymLocationId; setGymId(next); setPreview(undefined); void gymPreferences.save({gymId: next, crowdMode}); }}>{GYM_LOCATIONS.map((gym) => <MenuItem key={gym.id} value={gym.id}>{gym.label}</MenuItem>)}</Select></FormControl><FormControl fullWidth><InputLabel id="quick-crowd-mode">Crowd level</InputLabel><Select labelId="quick-crowd-mode" label="Crowd level" value={crowdMode} onChange={(event) => { const next = event.target.value as CrowdMode; setCrowdMode(next); setPreview(undefined); void gymPreferences.save({gymId, crowdMode: next}); }}><MenuItem value="auto">Automatic · official average</MenuItem><MenuItem value="force-quiet">Looks quiet now</MenuItem><MenuItem value="force-busy">Looks busy now</MenuItem></Select></FormControl></Stack><Alert severity={currentOccupancy === 'busy' ? 'warning' : 'info'}>{occupancyLabel(currentOccupancy)}. Hard-to-access and two-station exercises are {currentOccupancy === 'busy' ? 'strongly deprioritized' : currentOccupancy === 'moderate' ? 'slightly deprioritized' : 'ranked normally'}.</Alert><Typography variant="subtitle2">Equipment available</Typography><Stack direction="row" gap={0.25} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => { setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item)); setPreview(undefined); }}/>} label={item}/>)}</Stack></Stack></Collapse>
+                <Collapse in={advancedOpen}><Stack spacing={1.5} sx={{py: 1.5}}><TextField label="Variation seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/><Typography variant="subtitle2">Equipment available</Typography><Stack direction="row" gap={0.25} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => { setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item)); setPreview(undefined); }}/>} label={item}/>)}</Stack></Stack></Collapse>
             </Box>
-            <Box sx={{p: {xs: 2, sm: 3}, pt: 1}}><PrimaryButton fullWidth size="large" startIcon={<AutoAwesome/>} disabled={busy || equipment.length === 0} onClick={() => void generate()}>{busy ? 'Working…' : preview ? 'Generate another variation' : 'Generate session'}</PrimaryButton></Box>
+            <Box sx={{px: {xs: 2, sm: 3}, pb: 2}}><Stack spacing={1.5}><Typography variant="subtitle2">Gym access</Typography><Stack direction={{xs: 'column', sm: 'row'}} gap={1.5}><FormControl fullWidth><InputLabel id="quick-gym">Gym</InputLabel><Select labelId="quick-gym" label="Gym" value={gymId} disabled={gymSaving || busy} onChange={(event) => void saveGym(event.target.value as GymLocationId)}>{GYM_LOCATIONS.map((gym) => <MenuItem key={gym.id} value={gym.id}>{gym.label}</MenuItem>)}</Select></FormControl><FormControl fullWidth><InputLabel id="quick-crowd-mode">Crowd level</InputLabel><Select labelId="quick-crowd-mode" label="Crowd level" value={crowdMode} onChange={(event) => { const next = event.target.value as CrowdMode; setCrowdMode(next); setPreview(undefined); }}><MenuItem value="auto">Automatic · local estimate</MenuItem><MenuItem value="force-quiet">Quiet · this visit</MenuItem><MenuItem value="force-busy">Busy · this visit</MenuItem></Select></FormControl></Stack><Alert severity={currentOccupancy === 'busy' ? 'warning' : 'info'}>{occupancyLabel(currentOccupancy)}. Hard-to-access and two-station exercises are {currentOccupancy === 'busy' ? 'strongly deprioritized' : currentOccupancy === 'moderate' ? 'slightly deprioritized' : 'ranked normally'}.</Alert><Typography variant="caption" color="text.secondary">Local estimate, not live occupancy. Manual crowd choices reset when you leave this generator.</Typography></Stack></Box>
+            <Box sx={{p: {xs: 2, sm: 3}, pt: 1}}><PrimaryButton fullWidth size="large" startIcon={<AutoAwesome/>} disabled={busy || gymSaving || equipment.length === 0} onClick={() => void generate()}>{busy ? 'Working…' : preview ? 'Generate another variation' : 'Generate session'}</PrimaryButton></Box>
         </Paper>
         {error && <Alert severity="error">{error}</Alert>}
         {preview && <Stack spacing={1.5}>
@@ -329,16 +351,14 @@ function QuickSessionBuilder() {
             </Paper>
             {preview.days[0].exercises.map((exercise, index) => {
                 const details = libraryExercises.find((entry) => entry.id === exercise.exerciseId);
-                const startImage = details?.media.find((media) => media.kind === 'start-image') ?? details?.media.find((media) => media.kind === 'thumbnail');
-                const endImage = details?.media.find((media) => media.kind === 'end-image');
                 return <Card key={`${exercise.exerciseId}-${index}`} variant="outlined" sx={{overflow: 'hidden', borderRadius: '20px', bgcolor: '#15181B'}}><Stack direction={{xs: 'column', sm: 'row'}}>
-                    <Box sx={{width: {xs: '100%', sm: 220}, height: {xs: 205, sm: 220}, flexShrink: 0, display: 'grid', gridTemplateColumns: endImage ? '1fr 1fr' : '1fr', gap: '1px', bgcolor: 'divider'}}>{startImage && <CardMedia component="img" image={catalogMediaUrl(startImage.path)} alt={startImage.altText} loading="lazy" sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>}{endImage && <CardMedia component="img" image={catalogMediaUrl(endImage.path)} alt={endImage.altText} loading="lazy" sx={{width: '100%', height: '100%', objectFit: 'contain', bgcolor: 'background.default'}}/>}{!startImage && <Box sx={{height: '100%', bgcolor: 'background.default', display: 'grid', placeItems: 'center'}}><Typography variant="caption" color="text.secondary">No local photo</Typography></Box>}</Box>
+                    <Box sx={{width: {xs: '100%', sm: 220}, height: {xs: 205, sm: 220}, flexShrink: 0}}><ExercisePhotos exercise={details}/></Box>
 <CardContent sx={{minWidth: 0, flex: 1, p: 2}}><Stack spacing={1}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Box><Typography variant="overline" color="primary.main">EXERCISE {index + 1}</Typography><Typography component="h3" variant="h6">{exercise.exerciseName}</Typography>{zone === 'lower-back-mixed' && <Chip size="small" color={exercise.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={exercise.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'} sx={{mr: 0.5}}/>}<EquipmentBadges exercise={exercise}/></Box>{details && <Stack direction="row"><IconButton aria-label={details.favourite ? `Remove ${details.name} from favourites` : `Add ${details.name} to favourites`} onClick={() => void toggleFavourite(details)}>{details.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</IconButton><IconButton color="warning" aria-label={`Never suggest ${details.name}`} disabled={busy} onClick={() => void markNeverSuggest(details)}><Block/></IconButton></Stack>}</Stack><Stack direction="row" gap={0.75} flexWrap="wrap"><Chip size="small" label={`${exercise.prescription.workingSets} × ${exercise.prescription.repsMin}–${exercise.prescription.repsMax}`}/><Chip size="small" variant="outlined" label={`RIR ${exercise.prescription.targetRir}`}/><Chip size="small" variant="outlined" label={`${exercise.prescription.restSeconds} s rest`}/></Stack>{loadAdvice[exercise.exerciseId] && <Box sx={{p: 1.25, borderRadius: '12px', bgcolor: 'rgba(126,161,248,.08)'}}><Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap"><Typography variant="body2" fontWeight={750}>{formatLoadRange(loadAdvice[exercise.exerciseId])}</Typography>{loadAdvice[exercise.exerciseId].status === 'recommended' && <Chip size="small" color="secondary" variant="outlined" label={`${loadAdvice[exercise.exerciseId].confidence} confidence`}/>}</Stack><Typography variant="caption" color="text.secondary">{loadAdvice[exercise.exerciseId].reason} Saved manual defaults still take priority.</Typography></Box>}<Typography variant="body2" color="text.secondary">{exercise.reasons.join(' ')}</Typography><Stack direction="row" gap={0.5} alignItems="center" flexWrap="wrap"><Button variant="outlined" disabled={libraryExercises.length === 0} onClick={() => { setReplacementSearch(''); setReplaceIndex(index); }}>Replace exercise</Button><IconButton aria-label={`Move ${exercise.exerciseName} earlier`} disabled={index === 0} onClick={() => movePreviewExercise(index, -1)}><KeyboardArrowUp/></IconButton><IconButton aria-label={`Move ${exercise.exerciseName} later`} disabled={index === preview.days[0].exercises.length - 1} onClick={() => movePreviewExercise(index, 1)}><KeyboardArrowDown/></IconButton></Stack></Stack></CardContent>
                 </Stack></Card>;
             })}
             <Alert severity="info">Save it to My sessions to find it later from Train or Programs, then rename, reorder or edit it at any time.</Alert>
         </Stack>}
-{preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>Choose an exercise whose reviewed training focus matches the selected body area. Sets, reps and rest are kept. Blocked exercises stay excluded from future sessions. A mixed lower-back plan retains one direct lower-back exercise.</Typography><TextField fullWidth label="Search alternatives" value={replacementSearch} onChange={(event) => setReplacementSearch(event.target.value)} InputProps={{startAdornment: <Search sx={{mr: 1, color: 'text.secondary'}}/>}} sx={{mb: 1}}/><Typography variant="caption" color="text.secondary" sx={{display: 'block', mb: 2}}>{visibleReplacementOptions.length} compatible exercise{visibleReplacementOptions.length === 1 ? '' : 's'}</Typography>{visibleReplacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{visibleReplacementOptions.map((option) => { const image = option.media.find((media) => media.kind === 'thumbnail') ?? option.media.find((media) => media.kind === 'start-image'); return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}>{image && <CardMedia component="img" image={catalogMediaUrl(image.path)} alt={image.altText} loading="lazy" sx={{width: 96, height: 96, objectFit: 'cover'}}/>}<CardContent sx={{minWidth: 0, flex: 1}}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Typography fontWeight={700}>{option.name}</Typography><Stack direction="row"><Button size="small" aria-label={option.favourite ? `Remove ${option.name} from favourites` : `Add ${option.name} to favourites`} onClick={() => void toggleFavourite(option)}>{option.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</Button><Button size="small" color="warning" aria-label={`Never suggest ${option.name}`} onClick={() => void markNeverSuggest(option)}><Block/></Button></Stack></Stack>{zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')}</Typography><EquipmentBadges exercise={option}/>{option.accessDifficulty !== 'normal' && <Chip size="small" color="warning" label={option.accessDifficulty === 'hard' ? 'Hard access' : 'Often occupied'} sx={{mt: 0.75}}/>}<Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative matches this search.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
+{preview && <Dialog open={replaceIndex !== null} onClose={() => setReplaceIndex(null)} fullWidth maxWidth="md"><DialogTitle>Replace exercise</DialogTitle><DialogContent dividers><Typography color="text.secondary" sx={{mb: 2}}>Choose an exercise whose reviewed training focus matches the selected body area. Sets, reps and rest are kept. Blocked exercises stay excluded from future sessions. A mixed lower-back plan retains one direct lower-back exercise.</Typography><TextField fullWidth label="Search alternatives" value={replacementSearch} onChange={(event) => setReplacementSearch(event.target.value)} InputProps={{startAdornment: <Search sx={{mr: 1, color: 'text.secondary'}}/>}} sx={{mb: 1}}/><Typography variant="caption" color="text.secondary" sx={{display: 'block', mb: 2}}>{visibleReplacementOptions.length} compatible exercise{visibleReplacementOptions.length === 1 ? '' : 's'}</Typography>{visibleReplacementOptions.length ? <Box sx={{display: 'grid', gridTemplateColumns: {xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))'}, gap: 1.5}}>{visibleReplacementOptions.map((option) => { return <Card key={option.id} variant="outlined"><Stack direction="row" gap={1}><Box sx={{width: 96, height: 96, flexShrink: 0}}><ExercisePhotos exercise={option} compact/></Box><CardContent sx={{minWidth: 0, flex: 1}}><Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}><Typography fontWeight={700}>{option.name}</Typography><Stack direction="row"><Button size="small" aria-label={option.favourite ? `Remove ${option.name} from favourites` : `Add ${option.name} to favourites`} onClick={() => void toggleFavourite(option)}>{option.favourite ? <Favorite color="error"/> : <FavoriteBorder/>}</Button><Button size="small" color="warning" aria-label={`Never suggest ${option.name}`} onClick={() => void markNeverSuggest(option)}><Block/></Button></Stack></Stack>{zone === 'lower-back-mixed' && <Chip size="small" color={option.primaryMuscles.includes('lower back') ? 'primary' : 'secondary'} variant="outlined" label={option.primaryMuscles.includes('lower back') ? 'Direct lower back' : 'Lower back secondary'}/>}<Typography variant="body2" color="text.secondary">{option.primaryMuscles.join(', ')}</Typography><EquipmentBadges exercise={option}/>{option.accessDifficulty !== 'normal' && <Chip size="small" color="warning" label={option.accessDifficulty === 'hard' ? 'Hard access' : 'Often occupied'} sx={{mt: 0.75}}/>}<Button size="small" sx={{mt: 1}} onClick={() => replaceExercise(replaceIndex ?? 0, option)}>Use this exercise</Button></CardContent></Stack></Card>; })}</Box> : <Alert severity="info">No compatible unused alternative matches this search.</Alert>}</DialogContent><DialogActions><Button onClick={() => setReplaceIndex(null)}>Cancel</Button></DialogActions></Dialog>}
     </Stack>;
 }
 

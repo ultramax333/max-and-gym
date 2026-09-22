@@ -3,7 +3,7 @@ import {DexieDB} from '../db/db';
 import {EXERCISE_SEED_VERSION} from '../config/buildIdentity';
 import {CustomExerciseRecord, ExercisePreference, LibraryExercise, LibraryFilters, ReviewedExercise} from './types';
 import {AlternativeOptions, selectExerciseAlternatives} from './selection';
-import {EquipmentStation, EQUIPMENT_STATIONS} from '../workout/equipmentStations';
+import {effectiveEquipmentTags, EquipmentStation, EQUIPMENT_STATIONS} from '../workout/equipmentStations';
 
 const MAX_CUSTOM_IMAGE_BYTES = 5 * 1024 * 1024;
 const EXERCISE_SEED_META_KEY = 'exerciseCatalogSeedVersion';
@@ -61,9 +61,9 @@ export class ExerciseCatalogRepository {
         const preferenceMap = new Map(preferences.map((entry) => [entry.exerciseId, entry]));
         const search = normalize(filters.search ?? '');
         return [...reviewed, ...custom].map((entry) => merge(entry, preferenceMap.get(entry.id))).filter((entry) => {
-            const searchable = normalize([entry.name, ...entry.aliases, ...entry.primaryMuscles, ...entry.equipmentTags].join(' '));
+            const searchable = normalize([entry.name, ...entry.aliases, ...entry.primaryMuscles, ...effectiveEquipmentTags(entry)].join(' '));
             if (search && !searchable.includes(search)) return false;
-            if (filters.equipment && !entry.equipmentTags.includes(filters.equipment)) return false;
+            if (filters.equipment && !effectiveEquipmentTags(entry).includes(filters.equipment)) return false;
             if (filters.muscle && !entry.primaryMuscles.includes(filters.muscle) && !(filters.includeSecondaryMuscles && entry.secondaryMuscles.includes(filters.muscle))) return false;
             if (filters.movementPattern && entry.movementPattern !== filters.movementPattern) return false;
             if (filters.position && !entry.positionTags.includes(filters.position)) return false;
@@ -86,30 +86,34 @@ export class ExerciseCatalogRepository {
     }
 
     async updatePreference(id: string, change: Partial<Pick<ExercisePreference, 'favourite' | 'neverSuggest' | 'requiredEquipmentStations' | 'primaryEquipmentStation' | 'accessDifficulty' | 'requiredStationCount'>>): Promise<void> {
-        const previous = await this.db.exercisePreference.get(id);
-        const neverSuggest = change.neverSuggest ?? previous?.neverSuggest ?? false;
-        const favourite = neverSuggest ? false : (change.favourite ?? previous?.favourite ?? false);
-        const requiredEquipmentStations = change.requiredEquipmentStations ?? previous?.requiredEquipmentStations;
-        const primaryEquipmentStation = change.primaryEquipmentStation ?? previous?.primaryEquipmentStation;
-        await this.db.exercisePreference.put({
-            ...previous,
-            exerciseId: id,
-            favourite,
-            neverSuggest,
-            requiredEquipmentStations,
-            primaryEquipmentStation: primaryEquipmentStation && requiredEquipmentStations?.includes(primaryEquipmentStation) ? primaryEquipmentStation : requiredEquipmentStations?.[0],
-            accessDifficulty: change.accessDifficulty ?? previous?.accessDifficulty,
-            requiredStationCount: change.requiredStationCount ?? previous?.requiredStationCount,
-            updatedAt: new Date().toISOString(),
+        await this.db.transaction('rw', this.db.exercisePreference, async () => {
+            const previous = await this.db.exercisePreference.get(id);
+            const neverSuggest = change.neverSuggest ?? previous?.neverSuggest ?? false;
+            const favourite = neverSuggest ? false : (change.favourite ?? previous?.favourite ?? false);
+            const requiredEquipmentStations = change.requiredEquipmentStations ?? previous?.requiredEquipmentStations;
+            const primaryEquipmentStation = change.primaryEquipmentStation ?? previous?.primaryEquipmentStation;
+            await this.db.exercisePreference.put({
+                ...previous,
+                exerciseId: id,
+                favourite,
+                neverSuggest,
+                requiredEquipmentStations,
+                primaryEquipmentStation: primaryEquipmentStation && requiredEquipmentStations?.includes(primaryEquipmentStation) ? primaryEquipmentStation : requiredEquipmentStations?.[0],
+                accessDifficulty: change.accessDifficulty ?? previous?.accessDifficulty,
+                requiredStationCount: change.requiredStationCount ?? previous?.requiredStationCount,
+                updatedAt: new Date().toISOString(),
+        });
         });
     }
 
     async resetEquipmentPreference(id: string): Promise<void> {
-        const previous = await this.db.exercisePreference.get(id);
-        if (!previous) return;
-        const {requiredEquipmentStations: _stations, primaryEquipmentStation: _primary, accessDifficulty: _difficulty, requiredStationCount: _count, ...kept} = previous;
-        void _stations; void _primary; void _difficulty; void _count;
-        await this.db.exercisePreference.put({...kept, updatedAt: new Date().toISOString()});
+        await this.db.transaction('rw', this.db.exercisePreference, async () => {
+            const previous = await this.db.exercisePreference.get(id);
+            if (!previous) return;
+            const {requiredEquipmentStations: _stations, primaryEquipmentStation: _primary, accessDifficulty: _difficulty, requiredStationCount: _count, ...kept} = previous;
+            void _stations; void _primary; void _difficulty; void _count;
+            await this.db.exercisePreference.put({...kept, updatedAt: new Date().toISOString()});
+        });
     }
 
     async createCustom(input: {name: string; equipment: string; primaryMuscle: string; image?: Blob}): Promise<CustomExerciseRecord> {

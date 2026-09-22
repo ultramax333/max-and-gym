@@ -32,6 +32,17 @@ export interface EquipmentExercise {
     groupSequenceIndex?: number;
 }
 
+// Personal corrections replace resistance requirements, while supports alone
+// retain the original resistance (e.g. selecting a bench does not imply no load).
+export function effectiveEquipmentTags(exercise: EquipmentExercise): string[] {
+    const tags: Partial<Record<EquipmentStation, string>> = {
+        dumbbell: 'dumbbell', barbell: 'barbell', cable: 'cable', machine: 'machine',
+        bodyweight: 'body only', bands: 'bands', kettlebell: 'kettlebells', trapbar: 'barbell', other: 'other',
+    };
+    const corrected = exercise.requiredEquipmentStations?.flatMap(station => tags[station] ? [tags[station]!] : []);
+    return [...new Set(corrected?.length ? corrected : exercise.equipmentTags ?? [])];
+}
+
 // Reviewed catalogue IDs, not a name search: e.g. Machine Bench Press stays
 // at a machine and a floor press is not assigned a bench.
 const benchExercises = new Set([

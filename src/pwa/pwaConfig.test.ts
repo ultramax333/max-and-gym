@@ -5,11 +5,12 @@ describe('PWA update policy', () => {
     const viteConfig = readFileSync('vite.config.ts', 'utf8');
     const provider = readFileSync('src/pwa/PwaContext.tsx', 'utf8');
 
-    it('activates verified updates automatically and lets the persisted workout recover', () => {
-        expect(viteConfig).toContain("registerType: 'autoUpdate'");
-        expect(viteConfig).toContain('skipWaiting: true');
+    it('defers activation and preserves the current page', () => {
+        expect(viteConfig).toContain("registerType: 'prompt'");
+        expect(viteConfig).toContain('skipWaiting: false');
         expect(viteConfig).toContain('clientsClaim: true');
-        expect(provider).not.toContain('hasActiveWorkoutMarker');
+        expect(provider).toContain('readAndroidUpdateBlockReason(db)');
+        expect(provider).not.toContain('location.reload(');
     });
 
     it('uses only a bounded cache for local reviewed exercise media', () => {
