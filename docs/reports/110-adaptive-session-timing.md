@@ -31,7 +31,14 @@ Optional set active-elapsed and timer duration/stop snapshots need no store/inde
 change: schema 8, export 2 and cache 9 remain unchanged. Backup/restore preserves
 the optional fields. Legacy unpaused history is used only when recovery can be
 separated reliably; old paused history without elapsed snapshots is excluded.
-No network calls, new dependencies, donor code or real user fixtures added.
+No network calls, new packages, donor code or real user fixtures added.
+
+CI discovered existing critical advisory GHSA-rvm3-566m-v7fv in
+@capacitor/android 8.5.0. Update only that package to 8.5.3 (same minor), retaining
+compatible core/CLI 8.5.0. Registry peer requirements remain ^8.5.0; exact tarball
+and integrity come from publisher metadata. The maintained advisory identifies
+8.5.1 as patched: https://github.com/ionic-team/capacitor/security/advisories/GHSA-rvm3-566m-v7fv.
+Do not waive the security gate; rerun it and native compilation on the new head.
 
 ## Verification
 
