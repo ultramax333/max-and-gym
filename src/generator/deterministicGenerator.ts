@@ -3,6 +3,7 @@ import {evaluateHardConstraints, matchesRole} from './constraints';
 import {CandidateExclusion, CandidateSelection, GeneratedDay, GeneratedExercise, GeneratedProgram, GenerationResult, GeneratorCandidate, GeneratorDurationBreakdown, GeneratorInput, GeneratorRole, NormalizedGeneratorInput, WarmupStep} from './types';
 import {ProgramDurationMinutes} from '../programs/types';
 import {WEEKLY_ROLE_TEMPLATES} from './seedPrograms';
+import {estimatedSetSeconds, ExerciseTimingProfile} from '../workout/timing';
 
 export function stableHash(value: string): string {
     let hash = 2166136261;
@@ -17,8 +18,11 @@ export function normalizeGeneratorInput(input: GeneratorInput): NormalizedGenera
         .filter((entry) => entry.exerciseId.trim() && Number.isInteger(entry.rating) && entry.rating >= 1 && entry.rating <= 5)
         .map((entry) => ({exerciseId: entry.exerciseId.trim(), rating: entry.rating}))
         .sort((left, right) => left.exerciseId.localeCompare(right.exerciseId));
+    const exerciseTimingProfiles = [...(input.exerciseTimingProfiles ?? [])]
+        .filter(entry => entry.exerciseId.trim() && Number.isFinite(entry.multiplier) && entry.multiplier >= 0.6 && entry.multiplier <= 4 && Number.isInteger(entry.sampleCount) && entry.sampleCount >= 3 && Number.isFinite(entry.meanSecondsPerSet) && entry.meanSecondsPerSet > 0)
+        .sort((a,b) => a.exerciseId.localeCompare(b.exerciseId));
     const normalized: GeneratorInput = {...input, equipment: uniqueSorted(input.equipment), priorityMuscles: uniqueSorted(input.priorityMuscles), blockedExerciseIds: uniqueSorted(input.blockedExerciseIds), blockedTags: uniqueSorted(input.blockedTags), favouriteExerciseIds: uniqueSorted(input.favouriteExerciseIds), neverSuggestExerciseIds: uniqueSorted(input.neverSuggestExerciseIds), recentExerciseIds: uniqueSorted(input.recentExerciseIds ?? []), contextualExerciseRatings, stableExercises: [...input.stableExercises].sort((a, b) => a.dayIndex - b.dayIndex || a.role.localeCompare(b.role) || a.exerciseId.localeCompare(b.exerciseId)), seed: input.seed.trim() || 'maxgym-default'};
-    return {...normalized, inputHash: stableHash(JSON.stringify(normalized))};
+    return {...normalized, exerciseTimingProfiles, inputHash: stableHash(JSON.stringify({...normalized, exerciseTimingProfiles}))};
 }
 
 function prescriptionFor(role: GeneratorRole, duration: ProgramDurationMinutes, goal: GeneratorInput['goal'], id: string) {
@@ -47,11 +51,13 @@ function warmup(lowBackComfort: boolean, duration: ProgramDurationMinutes): Warm
     return [{id: 'easy-cardio', name: 'Easy cardio', seconds: 120, reason: 'Raise body temperature gradually.'}, {id: 'dynamic-prep', name: 'Targeted dynamic mobility', seconds: 120, reason: 'Prepare the joints used.'}, ...(duration >= 60 ? [{id: 'movement-practice', name: 'Unloaded movement practice', seconds: 180, reason: 'Prepare the first primary movement.'}] : [{id: 'movement-practice', name: 'Unloaded movement practice', seconds: 60, reason: 'Prepare the first primary movement.'}])];
 }
 
-export function estimateGeneratedDay(exercises: GeneratedExercise[], warmupSeconds: number, conditioningSeconds: number, targetMinutes: ProgramDurationMinutes): GeneratorDurationBreakdown {
+export function estimateGeneratedDay(exercises: GeneratedExercise[], warmupSeconds: number, conditioningSeconds: number, targetMinutes: ProgramDurationMinutes, profiles: ExerciseTimingProfile[] = []): GeneratorDurationBreakdown {
     const ramp = exercises.filter((entry) => ['knee-dominant', 'hinge', 'horizontal-push', 'vertical-push'].includes(entry.role)).length * 180;
     const execution = exercises.reduce((sum, entry) => {
         const averageReps = (entry.prescription.repsMin + entry.prescription.repsMax) / 2;
-        const secondsPerSet = Math.min(85, Math.max(40, Math.round(10 + averageReps * 3)));
+        const secondsPerSet = profiles.some(profile => profile.exerciseId === entry.exerciseId)
+            ? estimatedSetSeconds(entry.exerciseId, averageReps, profiles)
+            : Math.min(85, Math.max(40, Math.round(10 + averageReps * 3)));
         return sum + entry.prescription.workingSets * secondsPerSet;
     }, 0);
     const rest = exercises.reduce((sum, entry) => sum + Math.max(0, entry.prescription.workingSets - 1) * entry.prescription.restSeconds, 0);
@@ -117,11 +123,18 @@ export function generateProgram(rawInput: GeneratorInput, rawCandidates: Generat
         const warmupSteps = warmup(input.lowBackComfortWarmup, input.durationMinutes);
         const warmupSeconds = warmupSteps.reduce((sum, entry) => sum + entry.seconds, 0);
         let conditioningSeconds = input.durationMinutes === 40 ? 240 : 360;
-        let duration = estimateGeneratedDay(exercises, warmupSeconds, conditioningSeconds, input.durationMinutes);
+        const estimate = () => estimateGeneratedDay(exercises, warmupSeconds, conditioningSeconds, input.durationMinutes, input.exerciseTimingProfiles);
+        let duration = estimate();
         const upper = input.durationMinutes * 66;
         const lower = input.durationMinutes * 54;
-        if (duration.total > upper && exercises.at(-1)?.role === 'accessory') { exercises.pop(); duration = estimateGeneratedDay(exercises, warmupSeconds, conditioningSeconds, input.durationMinutes); }
-        if (duration.total < lower) { conditioningSeconds += Math.min(600 - conditioningSeconds, lower - duration.total); duration = estimateGeneratedDay(exercises, warmupSeconds, conditioningSeconds, input.durationMinutes); }
+        if (duration.total > upper && exercises.at(-1)?.role === 'accessory') { exercises.pop(); duration = estimate(); }
+        while (duration.total > upper) {
+            const reducible = [...exercises].filter(exercise => !exercise.locked && exercise.prescription.workingSets > 2).sort((a,b) => b.prescription.workingSets-a.prescription.workingSets)[0];
+            if (!reducible) break;
+            reducible.prescription.workingSets--;
+            duration = estimate();
+        }
+        if (duration.total < lower) { conditioningSeconds += Math.min(600 - conditioningSeconds, lower - duration.total); duration = estimate(); }
         const warnings: string[] = [];
         if (duration.total < lower || duration.total > upper) warnings.push(`Duration outside tolerance : ${Math.round(duration.total / 60)} min.`);
         days.push({name: template.name, emphasis: template.emphasis, targetDurationMinutes: input.durationMinutes, warmup: warmupSteps, conditioning: {kind: 'low-impact', name: 'Cycling, incline walking or sled depending on availability', seconds: conditioningSeconds}, exercises, duration, warnings});

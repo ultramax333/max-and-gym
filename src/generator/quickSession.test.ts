@@ -24,6 +24,22 @@ const input = (durationMinutes: GeneratorInput['durationMinutes']): GeneratorInp
     programSeedVersion: PROGRAM_SEED_VERSION,
 });
 
+describe('personal pace time budgets', () => {
+    it('generates less work for a slower observed pace while retaining selected recovery', () => {
+        const base=generateQuickSession({...input(45),sessionRestSeconds:90},candidates,'arms');
+        const profiles=candidates.map(candidate => ({exerciseId:candidate.id,multiplier:2.5,sampleCount:12,meanSecondsPerSet:100}));
+        const slower=generateQuickSession({...input(45),sessionRestSeconds:90,exerciseTimingProfiles:profiles},candidates,'arms');
+        expect(base.ok).toBe(true); expect(slower.ok).toBe(true);
+        if(!base.ok || !slower.ok) return;
+        const count=(result:typeof base)=>result.program.days[0].exercises.reduce((sum,entry)=>sum+entry.prescription.workingSets,0);
+        expect(count(slower)).toBeLessThan(count(base));
+        expect(slower.program.days[0].exercises.every(entry=>entry.prescription.restSeconds===90)).toBe(true);
+        expect(slower.program.days[0].duration.total).toBeGreaterThanOrEqual(45*54);
+        expect(slower.program.days[0].duration.total).toBeLessThanOrEqual(45*66);
+        expect(generateQuickSession({...input(45),sessionRestSeconds:90,exerciseTimingProfiles:[...profiles].reverse()},candidates,'arms')).toEqual(slower);
+    });
+});
+
 describe('quick session generator', () => {
     it.each([15,20,25,30] as const)('keeps lower-back %i-minute sessions short and primary-targeted', duration => {
         const result = generateQuickSession(input(duration), candidates, 'lower-back');

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T23:13:49.658Z",
+  "generatedAt": "2026-10-11T15:04:39.193Z",
   "checks": [
     {
       "check": "lockfile version",
@@ -9,12 +9,12 @@
     {
       "check": "application version parity",
       "status": "pass",
-      "detail": "1.0.0 / 1.0.0 / 1.0.0"
+      "detail": "1.13.0 / 1.13.0 / 1.13.0"
     },
     {
       "check": "root dependencies locked",
       "status": "pass",
-      "detail": "42 dependencies"
+      "detail": "45 dependencies"
     },
     {
       "check": "registry integrity hashes",
@@ -37,6 +37,6 @@
       "detail": "1.61.1"
     }
   ],
-  "packageCount": 777,
+  "packageCount": 842,
   "externalAdvisoryGate": "npm audit --omit=dev --audit-level=high in GitHub Actions"
 }

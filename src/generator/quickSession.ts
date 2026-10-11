@@ -3,6 +3,7 @@ import {evaluateHardConstraints} from './constraints';
 import {normalizeGeneratorInput, stableHash} from './deterministicGenerator';
 import {CandidateExclusion, CandidateSelection, GeneratedExercise, GeneratedProgram, GenerationResult, GeneratorCandidate, GeneratorInput, GeneratorRole} from './types';
 import {ProgramDurationMinutes} from '../programs/types';
+import {estimatedSetSeconds, ExerciseTimingProfile} from '../workout/timing';
 import {isReviewedSecondaryLowerBack, matchesQuickSessionZone, QUICK_SESSION_ZONES, QuickSessionZone, selectExerciseAlternatives} from '../exerciseCatalog/selection';
 export {matchesQuickSessionZone, QUICK_SESSION_ZONES, type QuickSessionZone} from '../exerciseCatalog/selection';
 
@@ -71,10 +72,10 @@ function exercisePrescription(duration: ProgramDurationMinutes, role: GeneratorR
     return {id: `quick:${duration}:${goal}:${index}`, workingSets, repsMin: profile.repsMin, repsMax: profile.repsMax + optionalRepIncrease, targetRir: 2, restSeconds: sessionRestSeconds ?? profile.restSeconds, loadReferenceKg: 0};
 }
 
-function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: ProgramDurationMinutes) {
+export function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: ProgramDurationMinutes, profiles: ExerciseTimingProfile[] = []) {
     const execution = exercises.reduce((sum, exercise) => {
         const averageReps = (exercise.prescription.repsMin + exercise.prescription.repsMax) / 2;
-        const secondsPerSet = Math.min(85, Math.max(30, Math.round(10 + averageReps * 3)));
+        const secondsPerSet = estimatedSetSeconds(exercise.exerciseId, averageReps, profiles);
         return sum + exercise.prescription.workingSets * secondsPerSet;
     }, 0);
     const rest = exercises.reduce((sum, exercise) => sum + Math.max(0, exercise.prescription.workingSets - 1) * exercise.prescription.restSeconds, 0);
@@ -85,6 +86,7 @@ function quickSessionDuration(exercises: GeneratedExercise[], targetMinutes: Pro
 
 export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: GeneratorCandidate[], zone: QuickSessionZone): GenerationResult {
     const input = normalizeGeneratorInput({...rawInput, frequency: 1});
+    const durationFor = (exercises: GeneratedExercise[], targetMinutes: ProgramDurationMinutes) => quickSessionDuration(exercises, targetMinutes, input.exerciseTimingProfiles);
     const zoneDefinition = QUICK_SESSION_ZONES.find((entry) => entry.value === zone);
     if (!zoneDefinition || !input.equipment.length || !QUICK_SESSION_DURATIONS.includes(input.durationMinutes) || (input.sessionRestSeconds !== undefined && (!Number.isInteger(input.sessionRestSeconds) || input.sessionRestSeconds <= 0))) return {ok: false, code: 'INVALID_INPUT', message: 'Choose a body area, duration, recovery time and at least one equipment option.', exclusions: []};
     if (zone === 'lower-back' && input.durationMinutes > LOWER_BACK_MAX_DURATION_MINUTES) return {ok: false, code: 'INVALID_INPUT', message: 'Lower back is a short focus (15–30 minutes) in this library. Choose Full back for a longer session.', exclusions: []};
@@ -144,7 +146,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     const exercises: GeneratedExercise[] = [];
     for (const entry of ordered) {
         if (exercises.length >= 10) break;
-        if (exercises.length >= minimumExercises && quickSessionDuration(exercises, input.durationMinutes).total >= lowerBound) break;
+        if (exercises.length >= minimumExercises && durationFor(exercises, input.durationMinutes).total >= lowerBound) break;
         if (zone === 'lower-back-mixed' && [MIXED_LOWER_BACK_EXTENSION_IDS, MIXED_LOWER_BACK_HEAVY_HINGE_IDS].some(family => family.has(entry.candidate.id) && exercises.some(exercise => family.has(exercise.exerciseId)))) continue;
         const index = exercises.length;
         const prescription = exercisePrescription(input.durationMinutes, entry.role, input.goal, index, input.sessionRestSeconds, entry.contextualRating);
@@ -153,7 +155,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
             ? zone === 'lower-back-mixed' ? 'Directly targets lower back.' : `Targets ${zoneDefinition.label.toLowerCase()}.`
             : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, ...(zone === 'back' && entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID ? ['Back-extension bench coverage keeps lower back represented in a Full back session.'] : []), 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : []), ...(entry.accessPenalty ? ['Kept despite limited equipment access because it remains a coherent fit.'] : [])];
         const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], equipmentTags: effectiveEquipmentTags(entry.candidate), requiredEquipmentStations: entry.candidate.requiredEquipmentStations ? [...entry.candidate.requiredEquipmentStations] : undefined, primaryEquipmentStation: entry.candidate.primaryEquipmentStation, accessDifficulty: entry.candidate.accessDifficulty, requiredStationCount: entry.candidate.requiredStationCount, role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && (!primaryZoneMatch || other.candidate.primaryMuscles.includes('lower back') || zone !== 'lower-back-mixed')).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
-        const proposedDuration = quickSessionDuration([...exercises, exercise], input.durationMinutes).total;
+        const proposedDuration = durationFor([...exercises, exercise], input.durationMinutes).total;
         if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
         exercises.push(exercise);
         selections.push({exerciseId: entry.candidate.id, role: entry.role, score: entry.score, reasons});
@@ -161,6 +163,13 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     if (exercises.length < minimumExercises) return {ok: false, code: 'NO_VALID_CANDIDATE', message: `Not enough eligible exercises for a ${input.durationMinutes}-minute ${zoneDefinition.label.toLowerCase()} session. Adjust equipment or exercise exclusions.`, exclusions};
     if (zone === 'lower-back-mixed' && !exercises.some(exercise => exercise.primaryMuscles.includes('lower back'))) return {ok: false, code: 'VALIDATION_FAILED', message: 'The session needs at least one direct lower-back exercise.', exclusions};
     if (zone === 'lower-back-mixed' && !exercises.some(exercise => candidates.some(entry => entry.candidate.id === exercise.exerciseId && isReviewedSecondaryLowerBack(entry.candidate)))) return {ok: false, code: 'VALIDATION_FAILED', message: 'The session needs at least one reviewed secondary lower-back movement.', exclusions};
+    // With slower personal pace, keep useful exercise coverage and reduce volume first.
+    while (durationFor(exercises, input.durationMinutes).total > upperBound) {
+        const reducible = [...exercises].filter(exercise => exercise.prescription.workingSets > 2)
+            .sort((a,b) => b.prescription.workingSets-a.prescription.workingSets || a.exerciseId.localeCompare(b.exerciseId))[0];
+        if (!reducible) break;
+        reducible.prescription.workingSets--;
+    }
     const backMuscleSetTotals = () => Object.fromEntries(zoneDefinition.muscles.map((muscle) => [muscle, exercises.reduce((sum, exercise) => sum + (exercise.primaryMuscles.includes(muscle) ? exercise.prescription.workingSets : 0), 0)]));
     const leastCoveredSets = (exercise: GeneratedExercise, totals: Record<string, number>) => {
         const covered = exercise.primaryMuscles.filter((muscle) => zoneDefinition.muscles.includes(muscle));
@@ -170,7 +179,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const totals = backMuscleSetTotals();
         const recipient = [...exercises].filter((exercise) => exercise.prescription.workingSets < 5)
             .sort((a, b) => leastCoveredSets(a, totals) - leastCoveredSets(b, totals) || a.prescription.workingSets - b.prescription.workingSets)
-            .find((exercise) => quickSessionDuration(exercises.map((entry) => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
+            .find((exercise) => durationFor(exercises.map((entry) => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
         if (recipient) {
             recipient.prescription.workingSets++;
             recipient.reasons.push('An extra working set was assigned to one of the least-covered back muscles; recovery is unchanged.');
@@ -179,10 +188,10 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     // Corrected isolation classifications can shorten the initial plan. Fill a
     // small remaining budget with balanced working sets, never shorter rests or
     // an unrelated exercise. Keep the documented maximum of five sets.
-    while (quickSessionDuration(exercises, input.durationMinutes).total < lowerBound) {
+    while (durationFor(exercises, input.durationMinutes).total < lowerBound) {
         const backMuscleSets = backMuscleSetTotals();
         const next = [...exercises].sort((a, b) => (zone === 'back' ? leastCoveredSets(a, backMuscleSets) - leastCoveredSets(b, backMuscleSets) : 0) || a.prescription.workingSets - b.prescription.workingSets)
-            .find(exercise => exercise.prescription.workingSets < 5 && quickSessionDuration(exercises.map(entry => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
+            .find(exercise => exercise.prescription.workingSets < 5 && durationFor(exercises.map(entry => entry === exercise ? {...entry, prescription: {...entry.prescription, workingSets: entry.prescription.workingSets + 1}} : entry), input.durationMinutes).total <= upperBound);
         if (!next) break;
         next.prescription.workingSets++;
         const reason = zone === 'back'
@@ -191,7 +200,7 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         if (!next.reasons.includes(reason)) next.reasons.push(reason);
     }
     const groupedExercises = groupExercisesByEquipment(exercises);
-    const duration = quickSessionDuration(groupedExercises, input.durationMinutes);
+    const duration = durationFor(groupedExercises, input.durationMinutes);
     if (duration.total < lowerBound || duration.total > upperBound) return {ok: false, code: 'VALIDATION_FAILED', message: `Could not build a coherent ${input.durationMinutes}-minute session with the selected equipment.`, exclusions};
     const goalLabel = input.goal === 'strength' ? 'Strength' : input.goal === 'endurance' ? 'Endurance' : input.goal === 'hypertrophy' ? 'Hypertrophy' : 'Balanced';
     const day = {name: `${zoneDefinition.label} session`, emphasis: `${goalLabel} · focused ${zoneDefinition.label.toLowerCase()} training`, targetDurationMinutes: input.durationMinutes, warmup: [], conditioning: {kind: 'low-impact' as const, name: 'No finisher added', seconds: 0}, exercises: groupedExercises, duration, warnings: []};

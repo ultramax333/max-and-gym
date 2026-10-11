@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-08-06T23:13:50.700Z",
+  "generatedAt": "2026-10-11T14:50:15.741Z",
   "baseline": {
     "cp7EntryBytes": 2124140
   },
   "entry": {
-    "path": "assets/index-xmQKrTje.js",
-    "bytes": 659525
+    "path": "assets/index-CxUlp07L.js",
+    "bytes": 658027
   },
   "largestRoute": {
-    "path": "assets/ExerciseCatalogRepository-B6LlV5oA.js",
-    "bytes": 395966
+    "path": "assets/emoji-picker-react.esm-DWHR4bnk.js",
+    "bytes": 309104
   },
-  "totalBytes": 31033854,
+  "totalBytes": 48127691,
   "checks": [
     {
       "check": "initial JavaScript",
       "status": "pass",
-      "detail": "659525 bytes"
+      "detail": "658027 bytes"
     },
     {
       "check": "CP7 entry reduction",
@@ -26,12 +26,12 @@
     {
       "check": "largest non-data route chunk",
       "status": "pass",
-      "detail": "assets/ExerciseCatalogRepository-B6LlV5oA.js: 395966 bytes"
+      "detail": "assets/emoji-picker-react.esm-DWHR4bnk.js: 309104 bytes"
     },
     {
-      "check": "reviewed exercise data chunk",
+      "check": "reviewed exercise data chunks",
       "status": "pass",
-      "detail": "lazy and below 900000 bytes"
+      "detail": "lazy and each below 900000 bytes"
     }
   ]
 }

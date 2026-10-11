@@ -1,3 +1,3 @@
 # Exercise media audit
 
-Reviewed exercises: 180. Local images: 360. Invalid: 0.
+Reviewed exercises: 307. Local images: 614. Invalid: 0.

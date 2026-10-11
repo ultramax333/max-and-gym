@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T23:13:49.763Z",
+  "generatedAt": "2026-10-11T14:46:14.571Z",
   "checks": [
     {
       "check": "pure domain boundaries",
@@ -19,18 +19,20 @@
     {
       "check": "legacy direct UI database access",
       "status": "warning",
-      "detail": "15 legacy page file(s)"
+      "detail": "17 legacy page file(s)"
     }
   ],
   "domainViolations": [],
   "secondUiSystems": [],
   "directUiDatabase": [
     "src/pages/backup/BackupPage.tsx",
+    "src/pages/core/CoreVideoRepository.ts",
     "src/pages/diagnostics/DiagnosticsPage.tsx",
     "src/pages/history/history.tsx",
     "src/pages/onboarding/onboarding.tsx",
     "src/pages/profile/metrics.tsx",
-    "src/pages/progression/ProgressionProposalsPage.tsx",
+    "src/pages/programs/ProgramPages.test.tsx",
+    "src/pages/progression/ProgressionProposalsPage.test.tsx",
     "src/pages/workout/addExercisePicker.tsx",
     "src/pages/workout/postWorkout.tsx",
     "src/pages/workout/workout.tsx",

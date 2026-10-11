@@ -233,6 +233,13 @@ Controls:
 - do not shorten heavy rest to fit;
 - duration tolerance tests;
 - show breakdown.
+- learn bounded per-exercise pace from consecutive working sets in local history;
+- exclude workout pauses, ambiguous paused legacy history, grouped sets and outliers;
+- store active-elapsed completion and recovery metadata as optional local fields;
+- keep chosen recovery fixed while fitting generated volume to the time budget;
+- recalculate remaining/projected time after plan edits and substitutions;
+- allow removing only unstarted sets, keeping at least one working set and valid position;
+- do not refill a removed set when the session is already forecast over its target.
 
 ## FM-23 — Same input produces different program unexpectedly
 

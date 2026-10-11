@@ -130,6 +130,18 @@ describe('DexieWorkoutRepository', () => {
         expect(await db.workoutOperation.where('kind').equals('adjust-sets').count()).toBe(1);
     });
 
+    it('removes an unstarted current set and redistributes its time without changing completed work', async () => {
+        let snapshot = await repository.startSample('remove-start');
+        snapshot = await repository.completeSet({sessionId: snapshot.session.id, setId: snapshot.session.currentSetId, operationId: 'remove-complete', actualLoadKg: 16, actualReps: 8});
+        const completed = snapshot.sets.find(set => set.status === 'completed')!;
+        const input = {sessionId: snapshot.session.id, currentSessionExerciseId: snapshot.exercises[0].id, operationId: 'remove-trade', delta: -1 as const};
+        const removed = await repository.adjustWorkingSets(input);
+        expect(removed.snapshot.sets.filter(set => set.sessionExerciseId === snapshot.exercises[0].id)).toHaveLength(2);
+        expect(removed.snapshot.sets.find(set => set.id === completed.id)).toEqual(completed);
+        expect(removed.snapshot.sets.some(set => set.id === removed.snapshot.session.currentSetId)).toBe(true);
+        expect((await repository.adjustWorkingSets(input)).snapshot.sets).toEqual(removed.snapshot.sets);
+    });
+
     it('refuses a set trade when no untouched exercise can remain at two working sets', async () => {
         const started = await repository.startProgramDay({name: 'Short session', exercises: [
             {exerciseId: 'curl', exerciseName: 'Curl', prescriptionSnapshot: '2 × 10', workingSets: 2, repsMin: 10, repsMax: 10, targetLoadKg: 12, targetRir: 2, restSeconds: 60},
@@ -137,6 +149,63 @@ describe('DexieWorkoutRepository', () => {
         ]}, 'short-start');
         await expect(repository.adjustWorkingSets({sessionId: started.session.id, currentSessionExerciseId: started.exercises[0].id, operationId: 'unsafe-trade'})).rejects.toMatchObject({code: 'DB_INVARIANT_VIOLATION'});
         expect((await repository.get(started.session.id))?.sets).toHaveLength(4);
+    });
+
+    it('reassigns a removed set within the time budget but adds no work when overdue', async () => {
+        const snapshot = await repository.startProgramDay({name:'Budget',plannedDurationSeconds:2400,exercises:[
+            {exerciseId:'curl',exerciseName:'Curl',prescriptionSnapshot:'3 × 10',workingSets:3,repsMin:10,repsMax:10,targetLoadKg:0,targetRir:2,restSeconds:90},
+            {exerciseId:'extension',exerciseName:'Extension',prescriptionSnapshot:'3 × 10',workingSets:3,repsMin:10,repsMax:10,targetLoadKg:0,targetRir:2,restSeconds:90},
+        ]},'budget-start');
+        const changed = await repository.adjustWorkingSets({sessionId:snapshot.session.id,currentSessionExerciseId:snapshot.exercises[0].id,delta:-1,operationId:'budget-remove'});
+        expect(changed.addedExerciseName).toBe('Extension');
+        expect(changed.snapshot.sets).toHaveLength(6);
+        expect(changed.snapshot.sets.filter(set => set.sessionExerciseId === snapshot.exercises[0].id)).toHaveLength(2);
+        nowMs += 2400_000;
+        const overdue = await repository.adjustWorkingSets({sessionId:snapshot.session.id,currentSessionExerciseId:snapshot.exercises[0].id,delta:-1,operationId:'overdue-remove'});
+        expect(overdue.addedExerciseName).toBeUndefined();
+        expect(overdue.snapshot.sets).toHaveLength(5);
+        expect(overdue.snapshot.session.plannedDurationSeconds).toBe(2400);
+        await expect(repository.adjustWorkingSets({sessionId:snapshot.session.id,currentSessionExerciseId:snapshot.exercises[0].id,delta:-1,operationId:'last-remove'})).rejects.toMatchObject({code:'DB_INVARIANT_VIOLATION'});
+    });
+
+    it('moves the active position when the only unstarted current set is removed', async () => {
+        let snapshot = await repository.startSample('remove-position');
+        for (let index=0;index<2;index++) snapshot = await repository.completeSet({sessionId:snapshot.session.id,setId:snapshot.session.currentSetId,operationId:`position-${index}`,actualLoadKg:16,actualReps:8});
+        const removedId=snapshot.session.currentSetId;
+        const changed=await repository.adjustWorkingSets({sessionId:snapshot.session.id,currentSessionExerciseId:snapshot.exercises[0].id,delta:-1,operationId:'position-remove'});
+        expect(changed.snapshot.sets.some(set => set.id === removedId)).toBe(false);
+        expect(changed.snapshot.session.currentSessionExerciseId).toBe(snapshot.exercises[1].id);
+        expect(changed.snapshot.exercises[0].status).toBe('completed');
+        expect(changed.snapshot.sets.filter(set => set.status === 'completed')).toHaveLength(2);
+        expect(changed.snapshot.timer?.performedSetId).toBe(snapshot.timer?.performedSetId);
+    });
+
+    it('does not redistribute a removed set to a more expensive exercise beyond the target', async () => {
+        const snapshot = await repository.startProgramDay({name:'Different recovery costs',plannedDurationSeconds:700,exercises:[
+            {exerciseId:'curl',exerciseName:'Curl',prescriptionSnapshot:'3 × 10',workingSets:3,repsMin:10,repsMax:10,targetLoadKg:0,targetRir:2,restSeconds:30},
+            {exerciseId:'extension',exerciseName:'Extension',prescriptionSnapshot:'3 × 10',workingSets:3,repsMin:10,repsMax:10,targetLoadKg:0,targetRir:2,restSeconds:120},
+        ]},'different-cost-start');
+        const changed = await repository.adjustWorkingSets({sessionId:snapshot.session.id,currentSessionExerciseId:snapshot.exercises[0].id,delta:-1,operationId:'different-cost-remove'});
+        expect(changed.addedExerciseName).toBeUndefined();
+        expect(changed.snapshot.sets).toHaveLength(5);
+        expect(changed.snapshot.sets.filter(set => set.sessionExerciseId === snapshot.exercises[1].id).every(set => set.restSeconds === 120)).toBe(true);
+    });
+
+    it('learns pace from completed sessions while excluding workout pauses and skipped recovery', async () => {
+        const started=await repository.startProgramDay({name:'Timing',trainingContext:{zone:'arms',goal:'hypertrophy'},exercises:[{exerciseId:'curl',exerciseName:'Curl',prescriptionSnapshot:'4 × 10',workingSets:4,repsMin:10,repsMax:10,targetLoadKg:0,targetRir:2,restSeconds:60}]},'timing-start');
+        let snapshot=started;
+        nowMs+=40_000;
+        snapshot=await repository.completeSet({sessionId:started.session.id,setId:snapshot.session.currentSetId,operationId:'timing-0',actualLoadKg:0,actualReps:10});
+        for(let index=1;index<4;index++) {
+            nowMs+=20_000;
+            await repository.skipTimer(started.session.id);
+            if(index===1) {await repository.pause(started.session.id);nowMs+=600_000;await repository.resume(started.session.id);}
+            nowMs+=80_000;
+            snapshot=await repository.completeSet({sessionId:started.session.id,setId:snapshot.session.currentSetId,operationId:`timing-${index}`,actualLoadKg:0,actualReps:10});
+        }
+        await repository.finish(started.session.id,'timing-finish');
+        expect(await repository.exerciseTimingProfiles('hypertrophy')).toEqual([expect.objectContaining({exerciseId:'curl',sampleCount:3,meanSecondsPerSet:80})]);
+        expect(await repository.exerciseTimingProfiles('strength')).toEqual([]);
     });
 
     it('refuses to rewrite an exercise after its first set has been logged', async () => {
