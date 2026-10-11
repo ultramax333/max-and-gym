@@ -106,6 +106,14 @@ test('focused active alternatives reject stale upper-body choices and retain equ
     await dialog.getByRole('button',{name:'Use this exercise'}).click();
     await expect(page.getByRole('status').filter({hasText:'was replaced with Thigh Abductor'})).toBeVisible();
     await expect(page.getByText('0/6 sets completed')).toBeVisible();
+    await page.getByRole('button', {name: 'Remove one set'}).click();
+    await page.getByRole('button', {name: 'Adjust plan'}).click();
+    await expect(page.getByRole('status').filter({hasText:'unstarted set removed'})).toBeVisible();
+    await expect(page.getByText('0/5 sets completed')).toBeVisible();
+    await expect(page.getByLabel('Session time estimate')).toContainText('Projected total');
+    await page.reload();
+    await expect(page.getByText('0/5 sets completed')).toBeVisible();
+    await assertNoHorizontalOverflow(page);
 });
 
 test('library primary muscle filter excludes incidental glute involvement by default', async ({page}, testInfo) => {

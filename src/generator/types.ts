@@ -1,6 +1,6 @@
 import {ExercisePrescriptionRecord, ProgramDurationMinutes, ProgramFrequency} from '../programs/types';
 
-export const GENERATOR_VERSION = 'deterministic-v14';
+export const GENERATOR_VERSION = 'deterministic-v15';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 
 export type GoalBlend = 'strength' | 'balanced' | 'hypertrophy' | 'endurance';
@@ -56,6 +56,7 @@ export interface GeneratorInput {
     neverSuggestExerciseIds: string[];
     recentExerciseIds?: string[];
     contextualExerciseRatings?: Array<{exerciseId: string; rating: number}>;
+    exerciseTimingProfiles?: import('../workout/timing').ExerciseTimingProfile[];
     stableExercises: StableExerciseInput[];
     coreMinutes: 10 | 15;
     lowBackComfortWarmup: boolean;

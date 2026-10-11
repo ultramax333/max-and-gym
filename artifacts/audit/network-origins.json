@@ -1,9 +1,13 @@
 {
-  "generatedAt": "2026-08-06T23:13:49.978Z",
+  "generatedAt": "2026-10-11T14:46:15.712Z",
   "allowedRuntimeOrigins": [
-    "self"
+    "self",
+    "https://api.github.com (manual Android release check only)",
+    "https://github.com (user-confirmed Android release download only)",
+    "https://www.youtube.com (explicit user-initiated external navigation only)"
   ],
   "discoveredLiteralOrigins": [
+    "https://api.github.com",
     "https://client.repquest.app",
     "https://docs.google.com",
     "https://fsf.org",

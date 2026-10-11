@@ -102,6 +102,8 @@ export interface PerformedSetRecord {
     completionOperationId?: string;
     undoOperationId?: string;
     completedAt?: string;
+    /** Active session seconds, excluding workout pauses; optional for older history. */
+    activeElapsedAtCompletionSeconds?: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -116,6 +118,9 @@ export interface RestTimerRecord {
     remainingWhenPausedSeconds?: number;
     status: RestTimerStatus;
     signalDeliveredAt?: string;
+    durationSeconds?: number;
+    activeElapsedAtStartSeconds?: number;
+    activeElapsedAtStopSeconds?: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -164,11 +169,12 @@ export interface AdjustWorkingSetsInput {
     sessionId: string;
     currentSessionExerciseId: string;
     operationId: string;
+    delta?: 1 | -1;
 }
 
 export interface WorkoutSetAdjustmentResult {
     snapshot: ActiveWorkoutSnapshot;
-    addedExerciseName: string;
+    addedExerciseName?: string;
     reducedExerciseName: string;
 }
 

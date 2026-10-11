@@ -3,7 +3,7 @@ import {EquipmentEditorDialog} from '../../exerciseCatalog/EquipmentEditorDialog
 import {DisplayExerciseMedia} from '../../exerciseCatalog/displayMedia';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, Box, Button, Chip, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, LinearProgress, MenuItem, Paper, Stack, TextField, Typography} from '@mui/material';
-import {AddCircleOutline, Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SkipNext, Star, StarBorder, SwapHoriz, Undo, Visibility} from '@mui/icons-material';
+import {AddCircleOutline, RemoveCircleOutline, Close, ExpandMore, FitnessCenter, Flag, InfoOutlined, NotificationsActive, PlayArrow, Save, SkipNext, Star, StarBorder, SwapHoriz, Undo, Visibility} from '@mui/icons-material';
 import {useNavigate} from 'react-router-dom';
 import Layout from '../../components/layout';
 import {PrimaryButton, ScreenContainer, SecondaryButton, StatePanel} from '../../components/ui/UiPrimitives';
@@ -18,6 +18,7 @@ import {resolveWorkoutExerciseMedia} from './workoutExerciseMedia';
 import {getRestNotificationPermission, prepareRestTimerAudio, requestRestNotificationPermission, REST_TIMER_COMPLETE_EVENT, RestNotificationPermission} from '../../pwa/restTimerNotifications';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 import {elapsedSeconds, formatElapsedDuration} from '../../workout/elapsed';
+import {ExerciseTimingProfile, remainingPlanSeconds} from '../../workout/timing';
 import {parseNonNegativeDecimal, shouldInitializeNumericDraft} from './numericInput';
 import {remainingRestSeconds} from './restTimerDisplay';
 import {CompleteSetAction, ExerciseRail, MetricStepper, RestAction, WorkoutActionBar, WorkoutProgressHeader} from './ActiveWorkoutUi';
@@ -92,6 +93,8 @@ export function ActiveWorkoutPage() {
     const [previewDetails, setPreviewDetails] = useState<LibraryExercise>();
     const [previewMedia, setPreviewMedia] = useState<DisplayExerciseMedia[]>([]);
     const [setAdjustmentOpen, setSetAdjustmentOpen] = useState(false);
+    const [setAdjustmentDelta, setSetAdjustmentDelta] = useState<1 | -1>(1);
+    const [timingProfiles, setTimingProfiles] = useState<ExerciseTimingProfile[]>([]);
     const previousExerciseId = useRef<string>();
     const pendingExerciseChangeNotice = useRef<string>();
     const initializedSetId = useRef<string>();
@@ -99,6 +102,18 @@ export function ActiveWorkoutPage() {
     const [nativeCapabilities, setNativeCapabilities] = useState<RestAlarmCapabilities>();
     const workoutElapsedSeconds = useWorkoutElapsedSeconds(snapshot);
     const restSeconds = useRestSeconds(snapshot);
+    const timingSessionId = snapshot?.session.id;
+    const timingGoal = snapshot?.session.trainingContext?.goal;
+
+    useEffect(() => {
+        let active = true;
+        if (service && timingSessionId) void service.exerciseTimingProfiles(timingGoal).then(profiles => {
+            if (active) setTimingProfiles(profiles);
+        }).catch(() => {
+            recordDiagnostic({level:'warning',subsystem:'WORKOUT',code:'WORKOUT_TIMING_HISTORY_UNAVAILABLE',safeMessage:'Exercise timing history is unavailable; using standard estimates.'});
+        });
+        return () => {active = false;};
+    }, [service, timingSessionId, timingGoal]);
 
     const refreshNativeCapabilities = useCallback(async () => {
         if (restAlarmGateway.isNativeAndroid()) setNativeCapabilities(await restAlarmGateway.getCapabilities());
@@ -249,6 +264,12 @@ export function ActiveWorkoutPage() {
     const currentExerciseSets = currentExercise ? snapshot.sets.filter((entry) => entry.sessionExerciseId === currentExercise.id) : [];
     const canReplaceCurrent = currentExerciseSets.every((entry) => entry.status !== 'completed' && !entry.completionOperationId && entry.actualLoadKg === undefined && entry.actualReps === undefined);
     const canTradeSet = Boolean(currentExercise && snapshot.exercises.some((exercise) => exercise.id !== currentExercise.id && exercise.status === 'pending' && snapshot.sets.filter((set) => set.sessionExerciseId === exercise.id && (set.setKind ?? 'working') === 'working').length > 2));
+    const workingSets = currentExerciseSets.filter(set => (set.setKind ?? 'working') === 'working');
+    const canRemoveSet = !currentExercise?.groupIdSnapshot && workingSets.length > 1 && workingSets.some(set => set.status === 'planned' && !set.completionOperationId && !set.undoOperationId && set.actualReps === undefined && set.actualLoadKg === undefined);
+    const remainingSeconds = remainingPlanSeconds(snapshot, timingProfiles, restSeconds, workoutElapsedSeconds);
+    const projectedSeconds = workoutElapsedSeconds + remainingSeconds;
+    const overTargetSeconds = snapshot.session.plannedDurationSeconds ? Math.max(0, projectedSeconds - snapshot.session.plannedDurationSeconds) : 0;
+    const currentTiming = timingProfiles.find(profile => profile.exerciseId === currentExercise?.exerciseId);
 
     const switchToExercise = (exercise: SessionExerciseRecord) => {
         if (service) void perform(() => service.switchExercise(snapshot.session.id, exercise.id));
@@ -356,9 +377,13 @@ export function ActiveWorkoutPage() {
         if (!service || !currentExercise) return;
         setBusy(true);
         try {
-            const result = await service.adjustWorkingSets(snapshot.session.id, currentExercise.id);
+            const result = setAdjustmentDelta === 1
+                ? await service.adjustWorkingSets(snapshot.session.id, currentExercise.id)
+                : await service.removeWorkingSet(snapshot.session.id, currentExercise.id);
             setSnapshot(result.snapshot);
-            setExerciseChangeNotice(`One set added to ${result.addedExerciseName}; one untouched future set removed from ${result.reducedExerciseName}. The session time target is unchanged.`);
+            setExerciseChangeNotice(setAdjustmentDelta === 1
+                ? `One set added to ${result.addedExerciseName}; one untouched future set removed from ${result.reducedExerciseName}. Duration recalculated below.`
+                : `One unstarted set removed from ${result.reducedExerciseName}.${result.addedExerciseName ? ` Time reassigned as one set for ${result.addedExerciseName}.` : ' No extra work added.'} Duration recalculated below.`);
             setSetAdjustmentOpen(false);
         } catch (reason) {
             setError(reason instanceof Error ? reason.message : 'The set plan could not be adjusted.');
@@ -384,6 +409,11 @@ export function ActiveWorkoutPage() {
                 {error && <Alert severity="error" action={<Button onClick={() => navigate('/diagnostics')}>Diagnostics</Button>}>{error}</Alert>}
                 {exerciseChangeNotice && <Alert severity="info" icon={<SwapHoriz/>} onClose={() => setExerciseChangeNotice('')} role="status">{exerciseChangeNotice}</Alert>}
                 {defaultValueNotice && <Alert severity="success" onClose={() => setDefaultValueNotice('')} role="status">{defaultValueNotice}</Alert>}
+                <Paper sx={{p:1.5}} aria-label="Session time estimate">
+                    <Stack direction="row" gap={1} flexWrap="wrap"><Chip size="small" label={`Remaining about ${Math.ceil(remainingSeconds/60)} min`}/><Chip size="small" color={overTargetSeconds > 60 ? 'warning' : 'default'} label={`Projected total ${Math.ceil(projectedSeconds/60)} min`}/>{snapshot.session.plannedDurationSeconds && <Chip size="small" variant="outlined" label={`Target ${Math.round(snapshot.session.plannedDurationSeconds/60)} min`}/>}</Stack>
+                    <Typography variant="caption" color="text.secondary" sx={{display:'block',mt:1}}>{currentTiming ? `Your observed pace: about ${currentTiming.meanSecondsPerSet} sec per set, excluding recovery (${currentTiming.sampleCount} observations).` : 'Standard pace for this exercise; estimates learn from completed sessions.'} Recovery is included in the total.</Typography>
+                    {overTargetSeconds > 60 && <Typography variant="body2" color="warning.main" sx={{mt:1}}>About {Math.ceil(overTargetSeconds/60)} min over your target. You can remove an unstarted set; your recovery stays the same.</Typography>}
+                </Paper>
                 {restAlarmGateway.isNativeAndroid() && nativeCapabilities && (nativeCapabilities.notificationPermission !== 'granted' || !nativeCapabilities.exactAlarmAllowed) && <Alert severity="warning" action={<Stack direction={{xs: 'column', sm: 'row'}} gap={1}>{nativeCapabilities.notificationPermission !== 'granted' && <Button startIcon={<NotificationsActive/>} onClick={() => void restAlarmGateway.requestNotificationPermission().then(setNativeCapabilities)}>Allow notifications</Button>}{!nativeCapabilities.exactAlarmAllowed && <Button onClick={() => void restAlarmGateway.requestExactAlarmPermission().then(() => refreshNativeCapabilities())}>Allow exact alarms</Button>}</Stack>}>Allow Android notifications and exact alarms so rest alerts fire reliably while the app is in the background.</Alert>}
                 {!restAlarmGateway.isNativeAndroid() && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && <Alert severity={notificationPermission === 'denied' ? 'warning' : 'info'} action={notificationPermission === 'default' ? <Button startIcon={<NotificationsActive/>} onClick={() => void requestRestNotificationPermission().then(setNotificationPermission)}>Enable</Button> : undefined}>{notificationPermission === 'denied' ? 'Rest notifications are blocked in Chrome site settings. The in-app alarm remains enabled.' : 'Enable rest notifications to be alerted while another app screen is open or Chrome is in the background.'}</Alert>}
 
@@ -451,7 +481,8 @@ export function ActiveWorkoutPage() {
                             <Button variant="outlined" startIcon={<SkipNext/>} disabled={busy || !canSwitchExercise} onClick={() => void deferCurrentExercise()}>Do later</Button>
                             <Button variant="outlined" disabled={!exerciseDetails} onClick={() => setEquipmentEdit(exerciseDetails)}>Correct equipment</Button>
                             <Button variant="outlined" startIcon={<SwapHoriz/>} disabled={busy || !canReplaceCurrent || !exerciseDetails} onClick={() => void openAlternatives()}>Choose alternative</Button>
-                            <Button variant="outlined" startIcon={<AddCircleOutline/>} disabled={busy || !canTradeSet} onClick={() => setSetAdjustmentOpen(true)}>Add one set</Button>
+                            <Button variant="outlined" startIcon={<AddCircleOutline/>} disabled={busy || !canTradeSet} onClick={() => {setSetAdjustmentDelta(1);setSetAdjustmentOpen(true);}}>Add one set</Button>
+                            <Button variant="outlined" startIcon={<RemoveCircleOutline/>} disabled={busy || !canRemoveSet} onClick={() => {setSetAdjustmentDelta(-1);setSetAdjustmentOpen(true);}}>Remove one set</Button>
                         </Stack>
                         {!canReplaceCurrent && <Typography variant="caption" color="text.secondary" sx={{display: 'block', mt: 1}}>An exercise with logged sets cannot be rewritten. Use Do later instead.</Typography>}
                     </Paper>
@@ -515,7 +546,7 @@ export function ActiveWorkoutPage() {
         />}</WorkoutActionBar>}
 
         <Dialog open={finishOpen} onClose={() => setFinishOpen(false)}><DialogTitle>Finish workout?</DialogTitle><DialogContent><Typography>Remaining sets will stay incomplete in this summary.</Typography></DialogContent><DialogActions><Button onClick={() => setFinishOpen(false)}>Continue</Button><Button variant="contained" color="error" startIcon={<Flag/>} onClick={() => void perform(async () => { const result = await service!.finish(snapshot.session.id); navigate(`/workout/summary/${snapshot.session.id}`); return result; })}>Finish</Button></DialogActions></Dialog>
-        <Dialog open={setAdjustmentOpen} onClose={() => !busy && setSetAdjustmentOpen(false)}><DialogTitle>Add one set?</DialogTitle><DialogContent><Typography>The app will add one working set to {currentExercise?.exerciseNameSnapshot} and remove one untouched set from the closest future exercise. Completed work is never changed and the session time target stays the same.</Typography></DialogContent><DialogActions><Button disabled={busy} onClick={() => setSetAdjustmentOpen(false)}>Cancel</Button><Button variant="contained" disabled={busy || !canTradeSet} onClick={() => void addCurrentSet()}>Adjust plan</Button></DialogActions></Dialog>
+        <Dialog open={setAdjustmentOpen} onClose={() => !busy && setSetAdjustmentOpen(false)}><DialogTitle>{setAdjustmentDelta === 1 ? 'Add one set?' : 'Remove one set?'}</DialogTitle><DialogContent><Typography>{setAdjustmentDelta === 1 ? `Add one working set to ${currentExercise?.exerciseNameSnapshot} and remove one untouched future set with the closest estimated duration.` : `Remove one unstarted working set from ${currentExercise?.exerciseNameSnapshot}. If there is room within your time target, the app assigns a set to an untouched exercise. If you are already over time, it adds no work.`} The remaining duration is recalculated. Logged sets and recovery are preserved.</Typography></DialogContent><DialogActions><Button disabled={busy} onClick={() => setSetAdjustmentOpen(false)}>Cancel</Button><Button variant="contained" disabled={busy || (setAdjustmentDelta === 1 ? !canTradeSet : !canRemoveSet)} onClick={() => void addCurrentSet()}>Adjust plan</Button></DialogActions></Dialog>
         {equipmentNotice && <Dialog open onClose={() => setEquipmentNotice('')}><DialogTitle>Equipment saved</DialogTitle><DialogContent><Typography>{equipmentNotice}</Typography></DialogContent><DialogActions><Button onClick={() => setEquipmentNotice('')}>OK</Button></DialogActions></Dialog>}
         {equipmentEdit && <EquipmentEditorDialog exercise={equipmentEdit} open onClose={() => setEquipmentEdit(undefined)} onSaved={async () => {
             const updated = await catalog?.get(equipmentEdit.id);

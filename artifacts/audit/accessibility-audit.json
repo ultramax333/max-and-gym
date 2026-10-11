@@ -1,16 +1,21 @@
 {
-  "generatedAt": "2026-08-06T23:13:50.640Z",
+  "generatedAt": "2026-10-11T14:50:14.000Z",
   "standard": "WCAG 2.2 AA",
   "checks": [
     {
       "check": "primary text contrast",
       "status": "pass",
-      "detail": "17.94:1"
+      "detail": "16.41:1"
     },
     {
       "check": "secondary text contrast",
       "status": "pass",
-      "detail": "9.36:1"
+      "detail": "8.56:1"
+    },
+    {
+      "check": "primary action contrast",
+      "status": "pass",
+      "detail": "13.28:1"
     },
     {
       "check": "visible keyboard focus",

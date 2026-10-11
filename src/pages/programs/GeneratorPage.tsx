@@ -13,7 +13,7 @@ import {GENERATOR_VERSION as BUILD_GENERATOR_VERSION, EXERCISE_SEED_VERSION, PRO
 import {generateCoreSession} from '../../generator/coreWarmup';
 import {generateProgram, regenerateAccessories, stableHash} from '../../generator/deterministicGenerator';
 import {GeneratedCoreSession, GeneratedProgram, GeneratorCandidate, GeneratorInput, GoalBlend} from '../../generator/types';
-import {generateQuickSession, matchesQuickSessionZone, quickSessionReplacementCandidates, QUICK_SESSION_DURATIONS, QUICK_SESSION_ZONES, QuickSessionZone, LOWER_BACK_MAX_DURATION_MINUTES, MIXED_LOWER_BACK_MAX_DURATION_MINUTES} from '../../generator/quickSession';
+import {generateQuickSession, quickSessionDuration, matchesQuickSessionZone, quickSessionReplacementCandidates, QUICK_SESSION_DURATIONS, QUICK_SESSION_ZONES, QuickSessionZone, LOWER_BACK_MAX_DURATION_MINUTES, MIXED_LOWER_BACK_MAX_DURATION_MINUTES} from '../../generator/quickSession';
 import {ProgramRepository} from '../../programs/ProgramRepository';
 import {generatedSessionWorkoutInput} from '../../programs/workoutSnapshot';
 import {DexieWorkoutRepository} from '../../workout/DexieWorkoutRepository';
@@ -152,6 +152,7 @@ function QuickSessionBuilder() {
             const candidates = catalogExercises as GeneratorCandidate[];
             const generationState = await quickSessionState.get(zone);
             const ratings = await contextRatings.list({zone, goal});
+            const exerciseTimingProfiles = await workout.exerciseTimingProfiles(goal);
             const variation = generationState.nextVariation;
             const recentExerciseIds = [...new Set(generationState.recentGenerations.flat())];
             const input: GeneratorInput = {
@@ -167,6 +168,7 @@ function QuickSessionBuilder() {
                 neverSuggestExerciseIds: [],
                 recentExerciseIds,
                 contextualExerciseRatings: ratings.map((entry) => ({exerciseId: entry.exerciseId, rating: entry.rating})),
+                exerciseTimingProfiles,
                 stableExercises: [],
                 coreMinutes: 10,
                 lowBackComfortWarmup: true,
@@ -260,7 +262,8 @@ function QuickSessionBuilder() {
         const nextSelectedIds = new Set(currentDay.exercises.filter((_, entryIndex) => entryIndex !== index).map((entry) => entry.exerciseId));
         nextSelectedIds.add(replacement.id);
         const nextExercise = {...replacementBase, alternativeExerciseIds: quickSessionReplacementCandidates(libraryExercises, zone, equipment, nextSelectedIds, replacementBase).slice(0, 3).map((entry) => entry.id)};
-        const nextDay = {...currentDay, exercises: currentDay.exercises.map((entry, entryIndex) => entryIndex === index ? nextExercise : entry)};
+        const nextExercises = currentDay.exercises.map((entry, entryIndex) => entryIndex === index ? nextExercise : entry);
+        const nextDay = {...currentDay, exercises: nextExercises, duration: quickSessionDuration(nextExercises, currentDay.targetDurationMinutes, preview.explanation.normalizedInput.exerciseTimingProfiles)};
         const nextSelections = preview.explanation.selections.map((selection) => selection.exerciseId === current.exerciseId ? {...selection, exerciseId: replacement.id, reasons: nextExercise.reasons} : selection);
         const nextProgram = {...preview, days: [nextDay], explanation: {...preview.explanation, selections: nextSelections}, identityHash: ''};
         nextProgram.identityHash = stableHash(JSON.stringify(nextProgram));
@@ -341,7 +344,7 @@ function QuickSessionBuilder() {
             </Paper>
             <Paper component="section" aria-labelledby="session-time-plan" sx={{p: 2, borderRadius: '20px'}}>
                 <Typography id="session-time-plan" component="h3" variant="h6">Session time plan</Typography>
-                <Typography variant="body2" color="text.secondary">The estimate uses the working sets and recovery selected above. Reordering does not change the total.</Typography>
+                <Typography variant="body2" color="text.secondary">The estimate includes your selected recovery. Exercise pace learns gradually from at least three timed sets for the same training goal; unpaused waits between sets are included. New exercises use a standard estimate.</Typography>
                 <Stack direction="row" gap={0.75} flexWrap="wrap" sx={{mt: 1.5}}>
                     <Chip size="small" label={`Work ${Math.round(preview.days[0].duration.execution / 60)} min`}/>
                     <Chip size="small" label={`Rest ${Math.round(preview.days[0].duration.rest / 60)} min`}/>
@@ -378,7 +381,7 @@ function WeeklyProgramBuilder() {
     const generate = async () => {
         setError('');
         const candidates = await catalog.list({status: 'eligible'}) as GeneratorCandidate[];
-        const generatorInput = makeInput();
+        const generatorInput = {...makeInput(), exerciseTimingProfiles:await workout.exerciseTimingProfiles(goal)};
         const result = generateProgram(generatorInput, candidates);
         if (!result.ok) { setPreview(undefined); setError(`${result.message} ${result.exclusions.length} explained exclusion(s).`); return; }
         setPreview(result.program);

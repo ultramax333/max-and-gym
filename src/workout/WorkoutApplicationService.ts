@@ -113,6 +113,14 @@ export class WorkoutApplicationService {
         return this.runCritical('workout-adjust-sets', operationId, 'WORKOUT_SET_PLAN_ADJUST_FAILED', () => this.repository.adjustWorkingSets({sessionId, currentSessionExerciseId, operationId}));
     }
 
+    removeWorkingSet(sessionId: string, currentSessionExerciseId: string, operationId = createOperationId()): Promise<WorkoutSetAdjustmentResult> {
+        return this.runCritical('workout-adjust-sets', operationId, 'WORKOUT_SET_PLAN_ADJUST_FAILED', () => this.repository.adjustWorkingSets({sessionId, currentSessionExerciseId, operationId, delta:-1}));
+    }
+
+    exerciseTimingProfiles(goal?: string) {
+        return this.repository.exerciseTimingProfiles(goal);
+    }
+
     saveDefaultLoad(sessionId: string, sessionExerciseId: string, loadKg: number): Promise<ActiveWorkoutSnapshot> {
         return this.repository.saveDefaultLoad(sessionId, sessionExerciseId, loadKg);
     }

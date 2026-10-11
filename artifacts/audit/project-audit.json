@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T23:13:49.855Z",
+  "generatedAt": "2026-10-11T14:53:00.479Z",
   "checks": [
     {
       "check": "project identity",
       "status": "pass",
-      "detail": "max-and-gym@1.0.0"
+      "detail": "max-and-gym@1.13.0"
     },
     {
       "check": "single lockfile",
@@ -19,22 +19,22 @@
     {
       "check": "GitHub Pages base",
       "status": "pass",
-      "detail": "/max-and-gym/"
+      "detail": "/max-and-gym/ (web) and ./ (Android)"
     },
     {
-      "check": "prompted PWA update",
+      "check": "deferred PWA update",
       "status": "pass",
-      "detail": "prompt"
+      "detail": "activation after tabs close; no forced reload"
     },
     {
       "check": "error code uniqueness",
       "status": "pass",
-      "detail": "56 registered"
+      "detail": "73 registered"
     },
     {
       "check": "legacy direct database access",
       "status": "warning",
-      "detail": "30 files; replacement staged in later domain tasks"
+      "detail": "41 files; replacement staged in later domain tasks"
     }
   ],
   "findings": [],

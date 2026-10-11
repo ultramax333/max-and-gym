@@ -2,8 +2,9 @@
 
 | Check | Status | Detail |
 | --- | --- | --- |
-| primary text contrast | pass | 17.94:1 |
-| secondary text contrast | pass | 9.36:1 |
+| primary text contrast | pass | 16.41:1 |
+| secondary text contrast | pass | 8.56:1 |
+| primary action contrast | pass | 13.28:1 |
 | visible keyboard focus | pass | 3px outline |
 | reduced motion | pass | nonessential motion reduced |
 | button target | pass | 48 CSS px |
