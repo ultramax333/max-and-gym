@@ -60,9 +60,18 @@ Do not waive the security gate; rerun it and native compilation on the new head.
   passed. Existing legacy direct-table-access warning remains (41 files).
 - Initial JS 658,027 bytes; lazy reviewed data and asset budgets pass. Vite's
   generic >500 kB chunk warning remains; enforced repository budgets pass.
-- A global test attempt was interrupted after slow imports and one home-control
-  assertion failure. The unchanged home tests passed in isolation (2/2).
-  The complete suite is being rerun alone; final result recorded below.
+- Local global attempts were interrupted after extremely slow imports; an
+  unchanged home-control test passed in isolation (2/2). Do not treat a run
+  interrupted or overlapped by source edits as release evidence.
+- Authoritative complete CI suite on security-patched commit 31f18e6:
+  63 files / 298 tests passed, plus 7 migration tests; `npm run quality` and
+  the high/critical security gate passed in run 38149783345.
+- Final recovery-forecast regression: 6/6 timing tests passed locally. It
+  preserves work estimates while a recovery timer is running and excludes a
+  final recovery from the remaining work when all sets are complete.
+- Delivery PR: https://github.com/ultramax333/max-and-gym/pull/32. The latest
+  head's Quality, Chromium and Android APK checks remain mandatory; their final
+  results are recorded in the PR verification summary without changing source.
 
 ## Limits and rollback
 
