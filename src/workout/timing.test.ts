@@ -50,4 +50,9 @@ describe('personal exercise timing', () => {
         expect(remainingPlanSeconds(snapshot,[],0,20)).toBe(320);
         expect(remainingPlanSeconds(snapshot,[],0,500)).toBe(300);
     });
+    it('does not credit work during recovery, or forecast recovery after all work is complete', () => {
+        const snapshot=history(); snapshot.sets.forEach(set=>{set.status='planned';});
+        expect(remainingPlanSeconds(snapshot,[],30,500)).toBe(370);
+        expect(remainingPlanSeconds(history(),[],30,700)).toBe(0);
+    });
 });

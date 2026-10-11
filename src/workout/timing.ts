@@ -72,6 +72,7 @@ export function learnExerciseTiming(history: Array<ActiveWorkoutSnapshot & {time
 
 export function remainingPlanSeconds(snapshot: ActiveWorkoutSnapshot, profiles: ExerciseTimingProfile[] = [], currentRestSeconds = 0, activeElapsedSeconds?: number): number {
     const exercises = snapshot.exercises.filter(exercise => snapshot.sets.some(set => set.sessionExerciseId === exercise.id && set.status !== 'completed'));
+    if (!exercises.length) return 0;
     let total = currentRestSeconds;
     for (const exercise of exercises) {
         const pending = snapshot.sets.filter(set => set.sessionExerciseId === exercise.id && set.status !== 'completed');
@@ -79,7 +80,7 @@ export function remainingPlanSeconds(snapshot: ActiveWorkoutSnapshot, profiles: 
         total += pending.slice(0, -1).reduce((sum, set) => sum + (set.restSeconds === 0 ? 0 : snapshot.session.restOverrideSeconds ?? set.restSeconds), 0);
         if (exercise.id !== snapshot.session.currentSessionExerciseId) total += 90;
     }
-    if (activeElapsedSeconds !== undefined) {
+    if (activeElapsedSeconds !== undefined && currentRestSeconds === 0) {
         const current = snapshot.sets.find(set => set.id === snapshot.session.currentSetId && set.status !== 'completed');
         const exercise = snapshot.exercises.find(entry => entry.id === current?.sessionExerciseId);
         const latest = snapshot.sets.filter(set => set.status === 'completed').sort((a,b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))[0];
