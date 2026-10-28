@@ -29,6 +29,7 @@ import {recordDiagnostic} from '../../diagnostics/service';
 import {EquipmentBadges} from '../../components/ui/EquipmentBadge';
 import {isReviewedSecondaryLowerBack, isSelectionEligible} from '../../exerciseCatalog/selection';
 import {GymPreferenceRepository} from '../../gym/GymPreferenceRepository';
+import {GENERATOR_EQUIPMENT, GeneratorEquipmentPreferenceRepository} from '../../generator/GeneratorEquipmentPreferenceRepository';
 import {CrowdMode, GYM_LOCATIONS, GymLocationId, occupancyLabel, occupancyLevel} from '../../gym/occupancy';
 
 const catalog = new ExerciseCatalogRepository(db);
@@ -37,7 +38,8 @@ const workout = new WorkoutApplicationService(new DexieWorkoutRepository(db));
 const quickSessionState = new QuickSessionGenerationStateRepository(db);
 const contextRatings = new ExerciseContextRatingRepository(db);
 const gymPreferences = new GymPreferenceRepository(db);
-const allEquipment = ['barbell', 'dumbbell', 'cable', 'machine', 'body only', 'bands', 'kettlebells', 'other'];
+const equipmentPreferences = new GeneratorEquipmentPreferenceRepository(db);
+const allEquipment = GENERATOR_EQUIPMENT;
 type SelectableGoal = Exclude<GoalBlend, 'balanced'>;
 const goalRecovery: Record<SelectableGoal, number> = {strength: 180, hypertrophy: 90, endurance: 60};
 
@@ -59,6 +61,37 @@ async function loadAdviceForProgram(program: GeneratedProgram): Promise<Record<s
         })] as const;
     }));
     return Object.fromEntries(entries);
+}
+
+// Checked equipment is remembered on this device and shared by both generators.
+function useEquipmentPreference(onError: (message: string) => void) {
+    const [equipment, setEquipment] = useState(allEquipment);
+    const changedRef = useRef(false);
+    useEffect(() => {
+        let active = true;
+        void equipmentPreferences.get().then((saved) => {
+            // A choice made before the load finished wins over the stored one.
+            if (active && !changedRef.current) setEquipment(saved);
+        }).catch(() => {
+            if (active) onError('Could not load your equipment choice. All equipment is shown as available.');
+            recordDiagnostic({level: 'error', subsystem: 'UI', code: 'GENERATOR_EQUIPMENT_PREFERENCE_FAILED', safeMessage: 'Generator equipment preference load failed.'});
+        });
+        return () => { active = false; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const changeEquipment = (next: string[]) => {
+        changedRef.current = true;
+        setEquipment(next);
+        void equipmentPreferences.save(next).catch(() => {
+            onError('Could not save your equipment choice on this device.');
+            recordDiagnostic({level: 'error', subsystem: 'UI', code: 'GENERATOR_EQUIPMENT_PREFERENCE_FAILED', safeMessage: 'Generator equipment preference save failed.'});
+        });
+    };
+    return [equipment, changeEquipment] as const;
+}
+
+function EquipmentPreferenceHint({onSelectAll}: {onSelectAll: () => void}) {
+    return <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}><Typography variant="caption" color="text.secondary">Your choice is remembered on this device.</Typography><Button size="small" onClick={onSelectAll}>Select all</Button></Stack>;
 }
 
 export function ProgramsWithGeneratorPage() {
@@ -90,7 +123,6 @@ function QuickSessionBuilder() {
     const [duration, setDuration] = useState<ProgramDurationMinutes>(45);
     const [goal, setGoal] = useState<SelectableGoal>('hypertrophy');
     const [sessionRestSeconds, setSessionRestSeconds] = useState(90);
-    const [equipment, setEquipment] = useState(allEquipment);
     const [seed, setSeed] = useState('maxgym-session-01');
     const [variationNumber, setVariationNumber] = useState(1);
     const [preview, setPreview] = useState<GeneratedProgram>();
@@ -99,6 +131,7 @@ function QuickSessionBuilder() {
     const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
     const [replacementSearch, setReplacementSearch] = useState('');
     const [error, setError] = useState('');
+    const [equipment, changeEquipment] = useEquipmentPreference(setError);
     const [busy, setBusy] = useState(false);
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const [gymId, setGymId] = useState<GymLocationId>('tunnel');
@@ -332,7 +365,7 @@ function QuickSessionBuilder() {
             <Divider/>
             <Box sx={{px: {xs: 2, sm: 3}, py: 1}}>
                 <Button fullWidth color="inherit" startIcon={<Tune/>} endIcon={<ExpandMore sx={{transform: advancedOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms'}}/>} onClick={() => setAdvancedOpen((open) => !open)} sx={{justifyContent: 'space-between'}}>Equipment and variation</Button>
-                <Collapse in={advancedOpen}><Stack spacing={1.5} sx={{py: 1.5}}><TextField label="Variation seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/><Typography variant="subtitle2">Equipment available</Typography><Stack direction="row" gap={0.25} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => { setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item)); setPreview(undefined); }}/>} label={item}/>)}</Stack></Stack></Collapse>
+                <Collapse in={advancedOpen}><Stack spacing={1.5} sx={{py: 1.5}}><TextField label="Variation seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Next generation: variation ${variationNumber}. Every click creates another reproducible variation.`}/><Typography variant="subtitle2">Equipment available</Typography><EquipmentPreferenceHint onSelectAll={() => { changeEquipment(allEquipment); setPreview(undefined); }}/><Stack direction="row" gap={0.25} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => { changeEquipment(event.target.checked ? [...equipment, item] : equipment.filter((value) => value !== item)); setPreview(undefined); }}/>} label={item}/>)}</Stack></Stack></Collapse>
             </Box>
             <Box sx={{px: {xs: 2, sm: 3}, pb: 2}}><Stack spacing={1.5}><Typography variant="subtitle2">Gym access</Typography><Stack direction={{xs: 'column', sm: 'row'}} gap={1.5}><FormControl fullWidth><InputLabel id="quick-gym">Gym</InputLabel><Select labelId="quick-gym" label="Gym" value={gymId} disabled={gymSaving || busy} onChange={(event) => void saveGym(event.target.value as GymLocationId)}>{GYM_LOCATIONS.map((gym) => <MenuItem key={gym.id} value={gym.id}>{gym.label}</MenuItem>)}</Select></FormControl><FormControl fullWidth><InputLabel id="quick-crowd-mode">Crowd level</InputLabel><Select labelId="quick-crowd-mode" label="Crowd level" value={crowdMode} onChange={(event) => { const next = event.target.value as CrowdMode; setCrowdMode(next); setPreview(undefined); }}><MenuItem value="auto">Automatic · local estimate</MenuItem><MenuItem value="force-quiet">Quiet · this visit</MenuItem><MenuItem value="force-busy">Busy · this visit</MenuItem></Select></FormControl></Stack><Alert severity={currentOccupancy === 'busy' ? 'warning' : 'info'}>{occupancyLabel(currentOccupancy)}. Hard-to-access and two-station exercises are {currentOccupancy === 'busy' ? 'strongly deprioritized' : currentOccupancy === 'moderate' ? 'slightly deprioritized' : 'ranked normally'}.</Alert><Typography variant="caption" color="text.secondary">Local estimate, not live occupancy. Manual crowd choices reset when you leave this generator.</Typography></Stack></Box>
             <Box sx={{p: {xs: 2, sm: 3}, pt: 1}}><PrimaryButton fullWidth size="large" startIcon={<AutoAwesome/>} disabled={busy || gymSaving || equipment.length === 0} onClick={() => void generate()}>{busy ? 'Working…' : preview ? 'Generate another variation' : 'Generate session'}</PrimaryButton></Box>
@@ -372,11 +405,11 @@ function WeeklyProgramBuilder() {
     const [goal, setGoal] = useState<SelectableGoal>(RELEASE_DEFAULTS.goal);
     const [coreMinutes, setCoreMinutes] = useState<10 | 15>(RELEASE_DEFAULTS.coreMinutes);
     const [lowBackComfort, setLowBackComfort] = useState(true);
-    const [equipment, setEquipment] = useState(allEquipment);
     const [seed, setSeed] = useState('maxgym-01');
     const [preview, setPreview] = useState<GeneratedProgram>();
     const [core, setCore] = useState<GeneratedCoreSession>();
     const [error, setError] = useState('');
+    const [equipment, changeEquipment] = useEquipmentPreference(setError);
     const makeInput = (): GeneratorInput => ({frequency, durationMinutes: duration, goal, equipment, priorityMuscles: [], variation: 'moderate', blockedExerciseIds: [], blockedTags: [], favouriteExerciseIds: [], neverSuggestExerciseIds: [], stableExercises: [], coreMinutes, lowBackComfortWarmup: lowBackComfort, seed, generatorVersion: BUILD_GENERATOR_VERSION, exerciseSeedVersion: EXERCISE_SEED_VERSION, programSeedVersion: PROGRAM_SEED_VERSION});
     const generate = async () => {
         setError('');
@@ -388,7 +421,7 @@ function WeeklyProgramBuilder() {
         setCore(generateCoreSession(generatorInput, candidates));
     };
     const save = async () => { if (!preview) return; const created = await programs.createGenerated(preview); navigate(`/programs/${created.id}`); };
-    return <Stack spacing={2}><Card><CardContent><Stack spacing={2}><Stack direction={{xs: 'column', sm: 'row'}} gap={2}><FormControl fullWidth><InputLabel id="generator-frequency">Frequency</InputLabel><Select labelId="generator-frequency" label="Frequency" value={frequency} onChange={(event) => setFrequency(Number(event.target.value) as 2 | 3)}><MenuItem value={2}>2 days</MenuItem><MenuItem value={3}>3 days</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="generator-duration">Duration</InputLabel><Select labelId="generator-duration" label="Duration" value={duration} onChange={(event) => setDuration(Number(event.target.value) as 40 | 60)}><MenuItem value={40}>40 minutes</MenuItem><MenuItem value={60}>60 minutes</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="generator-goal">Goal</InputLabel><Select labelId="generator-goal" label="Goal" value={goal} onChange={(event) => setGoal(event.target.value as SelectableGoal)}><MenuItem value="strength">Strength</MenuItem><MenuItem value="hypertrophy">Hypertrophy</MenuItem><MenuItem value="endurance">Endurance</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="generator-core">Core</InputLabel><Select labelId="generator-core" label="Core" value={coreMinutes} onChange={(event) => setCoreMinutes(Number(event.target.value) as 10 | 15)}><MenuItem value={10}>10 minutes</MenuItem><MenuItem value={15}>15 minutes</MenuItem></Select></FormControl></Stack><TextField label="Reproducible seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Version ${BUILD_GENERATOR_VERSION} · seed and inputs preserved`}/><Stack direction="row" gap={1} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => setEquipment((current) => event.target.checked ? [...current, item] : current.filter((value) => value !== item))}/>} label={item}/>)}</Stack><FormControlLabel control={<Checkbox checked={lowBackComfort} onChange={(event) => setLowBackComfort(event.target.checked)}/>} label="Include the lower-back comfort sequence"/><PrimaryButton startIcon={<AutoAwesome/>} onClick={() => void generate()}>Generate</PrimaryButton></Stack></CardContent></Card>{error && <Alert severity="error">{error}</Alert>}{preview && <><Stack direction="row" justifyContent="space-between" alignItems="center"><Typography variant="h5">Preview · {preview.identityHash}</Typography><PrimaryButton startIcon={<Save/>} onClick={() => void save()}>Save as draft</PrimaryButton></Stack>{preview.days.map((day) => <Card key={day.name}><CardContent><Stack spacing={1}><Typography variant="h5" component="h2">{day.name}</Typography><Typography color="text.secondary">{day.emphasis} · {Math.round(day.duration.total / 60)} min</Typography><Stack direction="row" gap={1} flexWrap="wrap"><Chip label={`Warm-up ${Math.round(day.duration.warmup / 60)} min`}/><Chip label={`Ramp sets ${Math.round(day.duration.ramp / 60)} min`}/><Chip label={`Rest ${Math.round(day.duration.rest / 60)} min`}/><Chip label={`Conditioning ${Math.round(day.duration.conditioning / 60)} min`}/></Stack>{day.exercises.map((exercise) => <Stack key={exercise.exerciseId} direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" gap={1} sx={{py: 1, borderTop: 1, borderColor: 'divider'}}><div><Typography fontWeight={700}>{exercise.exerciseName}</Typography><Typography variant="body2" color="text.secondary">{exercise.role} · {exercise.prescription.workingSets} × {exercise.prescription.repsMin}–{exercise.prescription.repsMax} · rest {exercise.prescription.restSeconds} s</Typography></div><Typography variant="body2" sx={{maxWidth: 430}}>{exercise.reasons.join(' ')}</Typography></Stack>)}</Stack></CardContent></Card>)}{core && <Card><CardContent><Typography variant="h5" component="h2">Core {core.targetMinutes}</Typography><Typography color="text.secondary">{core.rounds} rounds · grouped positions : {core.positionCluster} · {Math.round(core.estimatedSeconds / 60)} min</Typography><Stack direction="row" gap={1} flexWrap="wrap" sx={{mt: 1}}>{core.exercises.map((exercise) => <Chip key={exercise.exerciseId} label={exercise.name}/>)}</Stack></CardContent></Card>}<Alert severity="info">Normalized inputs, {preview.explanation.selections.length} selections and {preview.explanation.exclusions.length} explainable exclusions. No progression is applied automatically.</Alert></>}</Stack>;
+    return <Stack spacing={2}><Card><CardContent><Stack spacing={2}><Stack direction={{xs: 'column', sm: 'row'}} gap={2}><FormControl fullWidth><InputLabel id="generator-frequency">Frequency</InputLabel><Select labelId="generator-frequency" label="Frequency" value={frequency} onChange={(event) => setFrequency(Number(event.target.value) as 2 | 3)}><MenuItem value={2}>2 days</MenuItem><MenuItem value={3}>3 days</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="generator-duration">Duration</InputLabel><Select labelId="generator-duration" label="Duration" value={duration} onChange={(event) => setDuration(Number(event.target.value) as 40 | 60)}><MenuItem value={40}>40 minutes</MenuItem><MenuItem value={60}>60 minutes</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="generator-goal">Goal</InputLabel><Select labelId="generator-goal" label="Goal" value={goal} onChange={(event) => setGoal(event.target.value as SelectableGoal)}><MenuItem value="strength">Strength</MenuItem><MenuItem value="hypertrophy">Hypertrophy</MenuItem><MenuItem value="endurance">Endurance</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="generator-core">Core</InputLabel><Select labelId="generator-core" label="Core" value={coreMinutes} onChange={(event) => setCoreMinutes(Number(event.target.value) as 10 | 15)}><MenuItem value={10}>10 minutes</MenuItem><MenuItem value={15}>15 minutes</MenuItem></Select></FormControl></Stack><TextField label="Reproducible seed" value={seed} onChange={(event) => setSeed(event.target.value)} helperText={`Version ${BUILD_GENERATOR_VERSION} · seed and inputs preserved`}/><Typography variant="subtitle2">Equipment available</Typography><EquipmentPreferenceHint onSelectAll={() => changeEquipment(allEquipment)}/><Stack direction="row" gap={1} flexWrap="wrap">{allEquipment.map((item) => <FormControlLabel key={item} control={<Checkbox checked={equipment.includes(item)} onChange={(event) => changeEquipment(event.target.checked ? [...equipment, item] : equipment.filter((value) => value !== item))}/>} label={item}/>)}</Stack><FormControlLabel control={<Checkbox checked={lowBackComfort} onChange={(event) => setLowBackComfort(event.target.checked)}/>} label="Include the lower-back comfort sequence"/><PrimaryButton startIcon={<AutoAwesome/>} onClick={() => void generate()}>Generate</PrimaryButton></Stack></CardContent></Card>{error && <Alert severity="error">{error}</Alert>}{preview && <><Stack direction="row" justifyContent="space-between" alignItems="center"><Typography variant="h5">Preview · {preview.identityHash}</Typography><PrimaryButton startIcon={<Save/>} onClick={() => void save()}>Save as draft</PrimaryButton></Stack>{preview.days.map((day) => <Card key={day.name}><CardContent><Stack spacing={1}><Typography variant="h5" component="h2">{day.name}</Typography><Typography color="text.secondary">{day.emphasis} · {Math.round(day.duration.total / 60)} min</Typography><Stack direction="row" gap={1} flexWrap="wrap"><Chip label={`Warm-up ${Math.round(day.duration.warmup / 60)} min`}/><Chip label={`Ramp sets ${Math.round(day.duration.ramp / 60)} min`}/><Chip label={`Rest ${Math.round(day.duration.rest / 60)} min`}/><Chip label={`Conditioning ${Math.round(day.duration.conditioning / 60)} min`}/></Stack>{day.exercises.map((exercise) => <Stack key={exercise.exerciseId} direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" gap={1} sx={{py: 1, borderTop: 1, borderColor: 'divider'}}><div><Typography fontWeight={700}>{exercise.exerciseName}</Typography><Typography variant="body2" color="text.secondary">{exercise.role} · {exercise.prescription.workingSets} × {exercise.prescription.repsMin}–{exercise.prescription.repsMax} · rest {exercise.prescription.restSeconds} s</Typography></div><Typography variant="body2" sx={{maxWidth: 430}}>{exercise.reasons.join(' ')}</Typography></Stack>)}</Stack></CardContent></Card>)}{core && <Card><CardContent><Typography variant="h5" component="h2">Core {core.targetMinutes}</Typography><Typography color="text.secondary">{core.rounds} rounds · grouped positions : {core.positionCluster} · {Math.round(core.estimatedSeconds / 60)} min</Typography><Stack direction="row" gap={1} flexWrap="wrap" sx={{mt: 1}}>{core.exercises.map((exercise) => <Chip key={exercise.exerciseId} label={exercise.name}/>)}</Stack></CardContent></Card>}<Alert severity="info">Normalized inputs, {preview.explanation.selections.length} selections and {preview.explanation.exclusions.length} explainable exclusions. No progression is applied automatically.</Alert></>}</Stack>;
 }
 
 export function GeneratorPage() {
