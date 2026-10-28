@@ -14,21 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with RepQuest.  If not, see <https://www.gnu.org/licenses/>.
  */
-import React, {ReactNode, useContext, useState} from "react";
+import React, {ReactNode, useContext} from "react";
 import Layout from "../../components/layout";
 import {useTranslation} from "react-i18next";
 import {Avatar, List, ListItemAvatar, ListItemButton, ListItemText, Paper, Stack, Typography} from "@mui/material";
-import TranslateIcon from '@mui/icons-material/Translate';
 import pjson from "../../../package.json";
-import i18n from "i18next";
-import Selector from "../../components/selector";
-import {Build, Cake, Campaign, ChevronRight, FormatPaint, Info, MonitorHeart, NotificationsActive, Person} from "@mui/icons-material";
+import {Build, Cake, ChevronRight, FormatPaint, Info, MonitorHeart, NotificationsActive, Person} from "@mui/icons-material";
 import {useNavigate} from "react-router-dom";
 import BackupIcon from "@mui/icons-material/Backup";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
-import {SettingsContext} from "../../context/settingsContext";
 import {UserContext} from "../../context/userContext";
-import languages from "../../i18n/languages";
 import {ScreenContainer, SectionHeader} from '../../components/ui/UiPrimitives';
 
 function SettingsGroup({title, children}: {title: string; children: ReactNode}) {
@@ -41,14 +36,11 @@ function SettingsEntry({icon, primary, secondary, onClick, href, target}: {icon:
 
 export const SettingsPage = () => {
     const {t} = useTranslation();
-    const {lang, saveLang} = useContext(SettingsContext);
     const navigate = useNavigate();
-    const [openLanguage, setOpenLanguage] = useState(false);
     const {userName} = useContext(UserContext);
     return <Layout showAccountMenu title={t("settings")}><ScreenContainer><SectionHeader eyebrow="APP CONTROL" title={t("settings")}/><Stack spacing={2.5}>
         <SettingsGroup title="PROFILE & APPEARANCE">
             <SettingsEntry icon={<Person/>} primary={userName || t("account.title")} secondary={userName ? t("account.title") : undefined} onClick={() => navigate('/account')}/>
-            <SettingsEntry icon={<TranslateIcon/>} primary={t('language')} secondary={languages.find((entry) => entry.key === lang)?.value ?? lang} onClick={() => setOpenLanguage(true)}/>
             <SettingsEntry icon={<FormatPaint/>} primary={t('appearanceSettings')} secondary={t('appearanceSettingsDescription')} onClick={() => navigate('/settings/appearance')}/>
         </SettingsGroup>
         <SettingsGroup title="TRAINING & FEEDBACK">
@@ -62,20 +54,8 @@ export const SettingsPage = () => {
         </SettingsGroup>
         <SettingsGroup title="ABOUT">
             <SettingsEntry icon={<Info/>} primary="About and updates" secondary={`Version ${pjson.version} · manual Android update check`} onClick={() => navigate('/settings/about')}/>
-            <SettingsEntry icon={<Campaign/>} primary={t('feedback')} secondary={t('feedbackDescription')} href="https://docs.google.com/forms/d/e/1FAIpQLSdrG44hZZ8MoGzFx2DjIVKSnFylDDbCHtaQL3vhEGM4yuOb8g/viewform?usp=sf_link" target="_blank"/>
             <SettingsEntry icon={<Cake/>} primary={t('whatsNew')} secondary={`${t('version')} ${pjson.version}`} onClick={() => navigate('/whats-new')}/>
         </SettingsGroup>
     </Stack></ScreenContainer>
-        <Selector
-            defaultValue={i18n.language}
-            open={openLanguage}
-            onClose={(val: string) => {
-                if (saveLang) saveLang(val);
-                i18n.changeLanguage(val).then();
-                setOpenLanguage(false);
-            }}
-            title={t("language")}
-            entries={languages}
-        />
     </Layout>;
 }

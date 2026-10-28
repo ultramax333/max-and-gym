@@ -28,7 +28,7 @@ export function WorkoutProgressHeader({
         <Stack direction="row" alignItems="center" justifyContent="space-between">
             <IconButton aria-label="Back to training" onClick={onBack}><ArrowBack/></IconButton>
             <Box sx={{textAlign: 'center', minWidth: 0, px: 1}}>
-                <Typography sx={{fontSize: 13, lineHeight: 1.25, fontWeight: 850, color: 'primary.main', textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{sessionName}</Typography>
+                <Typography sx={{fontSize: 13, lineHeight: 1.25, fontWeight: 850, color: 'primary.main', textTransform: 'uppercase', overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflowWrap: 'anywhere'}}>{sessionName}</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{fontVariantNumeric: 'tabular-nums'}}>{elapsed} elapsed</Typography>
             </Box>
             <IconButton aria-label={paused ? 'Resume workout' : 'Pause workout'} disabled={busy} onClick={onTogglePause}>{paused ? <PlayArrow/> : <Pause/>}</IconButton>

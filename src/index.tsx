@@ -21,8 +21,6 @@ import App from './App';
 import i18n from "i18next";
 import {initReactI18next} from "react-i18next";
 import enJson from "./i18n/en.json";
-import caJson from "./i18n/ca.json";
-import esJson from "./i18n/es.json";
 import {installGlobalDiagnosticCapture} from './diagnostics/globalCapture';
 import {installProductionConsoleGuard} from './diagnostics/consoleGuard';
 import {RELEASE_DEFAULTS} from './config/releaseDefaults';
@@ -33,16 +31,10 @@ installGlobalDiagnosticCapture();
 i18n
     .use(initReactI18next) // passes i18n down to react-i18next
     .init({
-        lng: localStorage.getItem('lang') || RELEASE_DEFAULTS.language,
+        lng: RELEASE_DEFAULTS.language, // English only: a stored ca/es preference from an older version is ignored
         resources: {
             en: {
                 translation: enJson
-            },
-            ca: {
-                translation: caJson
-            },
-            es: {
-                translation: esJson
             }
         },
         fallbackLng: "en",

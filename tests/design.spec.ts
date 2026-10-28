@@ -54,3 +54,26 @@ test('modern interface keeps navigation, exercise controls and complete backup a
     await expect(page.getByRole('heading', {name: 'Choose your workout'})).toBeVisible();
     await page.screenshot({path: testInfo.outputPath('design-desktop.png')});
 });
+
+test('library card photo stays inside its frame and never covers the exercise name or equipment @visual', async ({page}) => {
+    await page.goto('./');
+    await expect(page).toHaveURL(/#\/onboarding/);
+    await page.evaluate(() => {
+        localStorage.setItem('userName', 'Default User');
+        localStorage.setItem('onboardingCompleted', 'true');
+        localStorage.setItem('lang', 'en');
+    });
+    await page.goto('./#/library');
+    const title = page.getByRole('heading', {level: 2}).first();
+    await expect(title).toBeVisible({timeout: 30_000});
+    const card = title.locator('xpath=ancestor::*[contains(@class, "MuiCard-root")][1]');
+    const image = card.locator('img').first();
+    await expect.poll(() => image.evaluate((element) => (element as HTMLImageElement).complete && (element as HTMLImageElement).naturalWidth > 0)).toBe(true);
+    const imageBox = await image.boundingBox();
+    const titleBox = await title.boundingBox();
+    expect(imageBox).not.toBeNull();
+    expect(titleBox).not.toBeNull();
+    // The 184 px photo frame must clip the image: its rendered bottom edge stays above the exercise name.
+    expect(imageBox!.y + imageBox!.height).toBeLessThanOrEqual(titleBox!.y + 0.5);
+    expect(imageBox!.height).toBeLessThanOrEqual(184);
+});

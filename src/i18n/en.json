@@ -9,7 +9,7 @@
   "lightTheme": "Light theme",
   "darkTheme": "Dark theme",
   "appearanceSettings": "Appearance",
-  "appearanceSettingsDescription": "Customize the look and feel of RepQuest",
+  "appearanceSettingsDescription": "Customize the look and feel of max&gym",
   "simpleMode": "Feature level: Simple mode",
   "simpleModeDescription": "Only basic parameters are shown and the UI components are larger. Recommended for newcomers.",
   "advancedMode": "Feature level: Advanced mode",
@@ -20,7 +20,7 @@
   "system": "System and Support",
   "systemDescription": "Install app, diagnostics, reset and support.",
   "install": "Install",
-  "installDescription": "Install RepQuest as a phone app",
+  "installDescription": "Install max&gym as a phone app",
   "daysOfWeek": "Days of the week",
   "date": "Date",
   "set": "Set",
@@ -38,7 +38,6 @@
   "laps": "Laps",
   "amount": "Qty",
   "units": "Units",
-  "language": "Language",
   "version": "Version",
   "mondays": "Mondays",
   "tuesdays": "Tuesdays",
@@ -159,9 +158,9 @@
     },
     "backingUp": "Backing up...",
     "importing": "Importing. Please do not leave the page",
-    "importSuccess": "Import has been completed. RepQuest will restart now.",
+    "importSuccess": "Import has been completed. max&gym will restart now.",
     "nothing": "Don't import anything",
-    "startWeightlog": "Continue starting RepQuest"
+    "startWeightlog": "Continue starting max&gym"
   },
   "exercises": "Exercises",
   "addExercise": "Add exercise",
@@ -223,7 +222,7 @@
   "enterNewPlanName": "Enter the name for the new plan:",
   "enterPlanNewName": "Enter a new name for this plan:",
   "workoutPlan": "Workout plan",
-  "welcomeToRepQuest": "Welcome to RepQuest! Be aware this app is in testing and may present errors. We await your feedback!",
+  "welcomeToRepQuest": "Welcome to max&gym! Be aware this app is in testing and may present errors. We await your feedback!",
   "startAddingAWorkout": "Create a workout to begin.",
   "thisIsTheWorkoutList": "This is the workout list. It contains all the workouts you have created for this workout plan. From here you can also start a workout and manage your training plans.",
   "startAddingAnExercise": "Create an exercise to begin.",
@@ -247,11 +246,11 @@
   "selectWorkout": "Select workout",
   "swapExercise": "Swap exercise",
   "loadMore": "Load more...",
-  "weightlogWillRestart": "If you change this preference, RepQuest will restart",
+  "weightlogWillRestart": "If you change this preference, max&gym will restart",
   "contact": "Contact us",
   "developedBy": "Developed by RepQuest Team (repquest.app)",
-  "reloadTitle": "Reload RepQuest",
-  "reloadDescription": "Sometimes RepQuest might get stuck, reloading the page could fix the issues.",
+  "reloadTitle": "Reload max&gym",
+  "reloadDescription": "Sometimes max&gym might get stuck, reloading the page could fix the issues.",
   "resetStorageTitle": "Clear cache",
   "resetStorageDescription": "If reloading the page doesn't work, clearing cache might fix some issues. This will stop any ongoing workout.",
   "autoStop": "Automatic stop",
@@ -333,8 +332,6 @@
   "reactionEmojis": "Notes emotes",
   "reactionEmojisDescription": "Choose the default emotes to show in the notes section",
   "defaults": "Defaults",
-  "feedback": "Bug report / Comments",
-  "feedbackDescription": "Send us a bug report or comments to improve our app",
   "average": "Average (Could be less precise)",
   "appsMenu": {
     "title": "Tools",
@@ -351,19 +348,16 @@
   "next": "Next",
   "finish": "Finish",
   "onboarding": {
-    "title": "Welcome to RepQuest",
+    "title": "Welcome to max&gym",
     "menu": "Welcome Asistant",
-    "menuDescription": "Configure RepQuest again with the Welcome Assistant",
-    "language": {
-      "title": "Language"
-    },
+    "menuDescription": "Configure max&gym again with the Welcome Assistant",
     "welcome": {
       "title": "Welcome",
-      "subtitle": "Welcome to RepQuest!",
+      "subtitle": "Welcome to max&gym!",
       "message": "This app will be your training companion, with which you will be able to log your workouts, track your progress and much more!",
       "disclaimer1": "Unlike other similar apps in the market, this app does not provide any own content. This means that you will have to provide your own workouts.",
-      "disclaimer2": "RepQuest does not provide fitness advice. If you need advice using this app, refer to a qualified professional. The physical activities that your perform with this app are under your own risk and responsiblity.",
-      "disclaimer3": "This app does not have any kind of warranty. Remember that RepQuest is still under active development and may present errors. Please report to us if you identify any problem using this app."
+      "disclaimer2": "max&gym does not provide fitness advice. If you need advice using this app, refer to a qualified professional. The physical activities that your perform with this app are under your own risk and responsiblity.",
+      "disclaimer3": "This app does not have any kind of warranty. Remember that max&gym is still under active development and may present errors. Please report to us if you identify any problem using this app."
     },
     "license": {
       "title": "License",
@@ -381,7 +375,7 @@
     },
     "importData": {
       "title": "Import data",
-      "message": "RepQuest does not provide any workouts by default. Do you have any data file or backup that you want to restore, or are you starting from scratch?",
+      "message": "max&gym does not provide any workouts by default. Do you have any data file or backup that you want to restore, or are you starting from scratch?",
       "importFile": "I want to import a data file",
       "willRedirect": "You will be redirected to the Backups & Import page when finishing this assistant.",
       "noThanks": "No, I will create a workout from scratch",
@@ -389,13 +383,13 @@
     },
     "backups": {
       "title": "Backups",
-      "message1": "RepQuest saves the workout logs in your browser. This means you may lose all your data if you clear your browser cookies.",
-      "message2": "When you finish your workout, RepQuest will provide you with an option to save a backup file, that will be downloaded as a file to your device, and that you can restore later from the settings menu.",
-      "message3": "We recommend that you perform backups periodically. In a future we will offer automatic cloud backups with Google Drive and our WeightCloud service."
+      "message1": "max&gym saves the workout logs in your browser. This means you may lose all your data if you clear your browser cookies.",
+      "message2": "When you finish your workout, max&gym will provide you with an option to save a backup file, that will be downloaded as a file to your device, and that you can restore later from the settings menu.",
+      "message3": "Your data stays on this device only and is never uploaded. We recommend exporting a backup file regularly and keeping a copy somewhere safe."
     },
     "completed": {
       "title": "All ready!",
-      "message": "That's it for now. Click on Finish to start using RepQuest."
+      "message": "That's it for now. Click on Finish to start using max&gym."
     }
   },
   "bulkEditor": {
@@ -426,7 +420,7 @@
     "noData": "No data",
     "sets": "sets",
     "workouts": "sessions",
-    "thanks": "Thank you for training with RepQuest this %Y!"
+    "thanks": "Thank you for training with max&gym this %Y!"
   },
   "eol": {
     "title": "RepQuest is now RepQuest!",

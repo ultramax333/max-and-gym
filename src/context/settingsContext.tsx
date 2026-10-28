@@ -19,7 +19,6 @@ import {OneRm} from "../utils/oneRm";
 import {TimerContext} from "./timerContext";
 import {UserContext} from "./userContext";
 import {DBContext} from "./dbContext";
-import i18n from "i18next";
 import {RELEASE_DEFAULTS} from '../config/releaseDefaults';
 
 export type FeatureLevel = "easy" | "advanced";
@@ -89,12 +88,6 @@ export const SettingsContextProvider = (props: { children: ReactElement, theme: 
             return !prev;
         });
     };
-
-    useEffect(() => {
-        if (["ca", "es", "en"].includes(lang || "")) {
-            i18n.changeLanguage(lang || "en");
-        }
-    }, [lang]);
 
     useEffect(() => {
         if (user?.autostop !== undefined) setAutostop(user.autostop);

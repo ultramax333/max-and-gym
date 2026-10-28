@@ -8,7 +8,6 @@ import WelcomeStep from "./steps/welcome";
 import LicenseStep from "./steps/license";
 import PreferencesStep from "./steps/preferences";
 import CompletedStep from "./steps/completed";
-import LanguageStep from "./steps/language";
 import BackupsStep from "./steps/backups";
 import defer from "../../utils/defer";
 import {SettingsContext} from "../../context/settingsContext";
@@ -28,13 +27,13 @@ type ImportedExercise = {name: string; equipment: string | null; category: strin
 
 const Onboarding = () => {
     const {t} = useTranslation();
-    const steps = [t("onboarding.language.title"), t("onboarding.welcome.title"), t("onboarding.license.title"),
+    const steps = [t("onboarding.welcome.title"), t("onboarding.license.title"),
         t("onboarding.preferences.title"), t("onboarding.importData.title"),
         t("onboarding.backups.title"), t("onboarding.completed.title")];
     const [activeStep, setActiveStep] = useState(0);
     const [completable, setCompletable] = useState(false);
     const [importData, setImportData ] = useState<ImportMode>(ImportMode.NO_IMPORT);
-    const stepContent: ReactElement[] = [<LanguageStep setCompletable={setCompletable} />, <WelcomeStep setCompletable={setCompletable}/>,
+    const stepContent: ReactElement[] = [<WelcomeStep setCompletable={setCompletable}/>,
         <LicenseStep setCompletable={setCompletable}/>,
         <PreferencesStep setCompletable={setCompletable}/>,
         <ImportStep importData={importData} setImportData={setImportData} setCompletable={setCompletable}/>, <BackupsStep setCompletable={setCompletable}/>, <CompletedStep setCompletable={setCompletable}/>];
@@ -110,7 +109,7 @@ const Onboarding = () => {
     }
 
     return <Layout hideBack hideNav title={t("onboarding.title")} sx={{display: 'flex', flexDirection: 'column', height: '100%', width: '100%'}}>
-        <Box id="stepperBox" sx={{width: '100%', maxWidth: 760, mx: 'auto', px: 2, pt: 2.5, height: 'calc(100% - 88px)', pb: 3, overflowY: 'auto'}}><Stack spacing={2.5}><Box><Typography variant="overline" color="primary.main">MAX & GYM · PRIVATE BY DESIGN</Typography><Typography component="h1" variant="h4">Set up your training space</Typography><Typography color="text.secondary" sx={{mt: 0.75}}>Seven short steps. Everything stays editable after setup.</Typography></Box><Paper sx={{p: {xs: 1.5, sm: 2.5}, borderRadius: '24px', background: 'radial-gradient(circle at 100% 0%, rgba(200,243,107,.1), transparent 35%), #15181B'}}><Stepper activeStep={activeStep} orientation="vertical">
+        <Box id="stepperBox" sx={{width: '100%', maxWidth: 760, mx: 'auto', px: 2, pt: 2.5, height: 'calc(100% - 88px)', pb: 3, overflowY: 'auto'}}><Stack spacing={2.5}><Box><Typography variant="overline" color="primary.main">MAX & GYM · PRIVATE BY DESIGN</Typography><Typography component="h1" variant="h4">Set up your training space</Typography><Typography color="text.secondary" sx={{mt: 0.75}}>Six short steps. Everything stays editable after setup.</Typography></Box><Paper sx={{p: {xs: 1.5, sm: 2.5}, borderRadius: '24px', background: 'radial-gradient(circle at 100% 0%, rgba(200,243,107,.1), transparent 35%), #15181B'}}><Stepper activeStep={activeStep} orientation="vertical">
             {steps.map((label, index) => {
                 return (
                     <Step id={`step-${index.toString()}`} key={label}>
