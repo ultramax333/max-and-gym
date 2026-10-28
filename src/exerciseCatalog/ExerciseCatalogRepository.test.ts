@@ -64,9 +64,10 @@ describe('reviewed local exercise catalogue', () => {
 
     it('returns only the curated active pool when generation requests eligible exercises', async () => {
         const eligible = await repository.list({status: 'eligible'});
-        expect(eligible).toHaveLength(277);
+        expect(eligible).toHaveLength(283);
         expect(eligible.map((entry) => entry.id)).toEqual(expect.arrayContaining(['fedb:Lying_T-Bar_Row', 'fedb:Seated_One-arm_Cable_Pulley_Rows', 'fedb:Shotgun_Row']));
         expect(eligible.map((entry) => entry.id)).toEqual(expect.arrayContaining(['fedb:Barbell_Hip_Thrust', 'fedb:Step-up_with_Knee_Raise']));
+        expect(eligible.map((entry) => entry.id)).toEqual(expect.arrayContaining(['fedb:Oblique_Crunches_-_On_The_Floor', 'fedb:Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists', 'fedb:One-Arm_High-Pulley_Cable_Side_Bends', 'fedb:Standing_Cable_Lift', 'fedb:Suspended_Fallout', 'fedb:Smith_Machine_Hip_Raise']));
         expect(eligible.some((entry) => entry.id === 'fedb:Plank')).toBe(false);
         expect((await repository.list()).some((entry) => entry.id === 'fedb:Plank')).toBe(true);
     });

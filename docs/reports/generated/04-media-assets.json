@@ -1,7 +1,7 @@
 {
   "revision": "b0eed061e1c8",
-  "assetCount": 614,
-  "totalBytes": 41012226,
+  "assetCount": 626,
+  "totalBytes": 42005015,
   "assets": [
     {
       "path": "media/exercises/90-90-hamstring-0.jpg",
@@ -2500,6 +2500,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-0.jpg",
+      "byteSize": 64932,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-1.jpg",
+      "byteSize": 66985,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/kneeling-cable-triceps-extension-0.jpg",
       "byteSize": 68615,
       "height": 567,
@@ -2800,6 +2812,18 @@
       "width": 750
     },
     {
+      "path": "media/exercises/oblique-crunches-on-the-floor-0.jpg",
+      "byteSize": 62849,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/oblique-crunches-on-the-floor-1.jpg",
+      "byteSize": 69275,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/one-arm-dumbbell-bench-press-0.jpg",
       "byteSize": 66261,
       "height": 567,
@@ -2845,6 +2869,18 @@
       "path": "media/exercises/one-arm-dumbbell-row-1.jpg",
       "byteSize": 71407,
       "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/one-arm-high-pulley-cable-side-bends-0.jpg",
+      "byteSize": 116297,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/one-arm-high-pulley-cable-side-bends-1.jpg",
+      "byteSize": 119886,
+      "height": 1275,
       "width": 850
     },
     {
@@ -3328,6 +3364,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/smith-machine-hip-raise-0.jpg",
+      "byteSize": 65057,
+      "height": 850,
+      "width": 567
+    },
+    {
+      "path": "media/exercises/smith-machine-hip-raise-1.jpg",
+      "byteSize": 64057,
+      "height": 850,
+      "width": 567
+    },
+    {
       "path": "media/exercises/smith-machine-incline-bench-press-0.jpg",
       "byteSize": 80605,
       "height": 567,
@@ -3373,6 +3421,18 @@
       "path": "media/exercises/standing-cable-chest-press-1.jpg",
       "byteSize": 70867,
       "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/standing-cable-lift-0.jpg",
+      "byteSize": 121609,
+      "height": 1275,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/standing-cable-lift-1.jpg",
+      "byteSize": 122929,
+      "height": 1275,
       "width": 850
     },
     {
@@ -3482,6 +3542,18 @@
       "byteSize": 62125,
       "height": 567,
       "width": 850
+    },
+    {
+      "path": "media/exercises/suspended-fallout-0.jpg",
+      "byteSize": 57221,
+      "height": 720,
+      "width": 1280
+    },
+    {
+      "path": "media/exercises/suspended-fallout-1.jpg",
+      "byteSize": 61692,
+      "height": 720,
+      "width": 1280
     },
     {
       "path": "media/exercises/suspended-row-0.jpg",
