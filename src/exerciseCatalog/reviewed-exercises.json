@@ -15912,6 +15912,81 @@
     ]
   },
   {
+    "id": "fedb:Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists",
+    "source": "free-exercise-db",
+    "sourceId": "Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Kneeling Cable Crunch With Alternating Oblique Twists",
+    "aliases": [
+      "Kneeling Cable Crunch With Alternating Oblique Twists"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "cable"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Connect a rope attachment to a high pulley cable and position a mat on the floor in front of it.",
+    "executionSteps": [
+      "Grab the rope with both hands and kneel approximately two feet back from the tower.",
+      "Position the rope behind your head with your hands by your ears.",
+      "Keep your hands in the same place, contract your abs and pull downward on the rope in a crunching movement until your elbows reach your knees.",
+      "Pause briefly at the bottom and rise up in a slow and controlled manner until you reach the starting position."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-0.jpg",
+        "altText": "Kneeling Cable Crunch With Alternating Oblique Twists starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-1.jpg",
+        "altText": "Kneeling Cable Crunch With Alternating Oblique Twists finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-0.jpg",
+        "altText": "Kneeling Cable Crunch With Alternating Oblique Twists thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Kneeling_Cable_Triceps_Extension",
     "source": "free-exercise-db",
     "sourceId": "Kneeling_Cable_Triceps_Extension",
@@ -17817,6 +17892,81 @@
     ]
   },
   {
+    "id": "fedb:Oblique_Crunches_-_On_The_Floor",
+    "source": "free-exercise-db",
+    "sourceId": "Oblique_Crunches_-_On_The_Floor",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Oblique Crunches - On The Floor",
+    "aliases": [
+      "Oblique Crunches - On The Floor"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "body only"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "body only"
+    ],
+    "metricType": "bodyweight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Start out by lying on your right side with your legs lying on top of each other. Make sure your knees are bent a little bit.",
+    "executionSteps": [
+      "Place your left hand behind your head.",
+      "Once you are in this set position, begin by moving your left elbow up as you would perform a normal crunch except this time the main emphasis is on your obliques.",
+      "Crunch as high as you can, hold the contraction for a second and then slowly drop back down into the starting position.",
+      "Remember to breathe in during the eccentric (lowering) part of the exercise and to breathe out during the concentric (elevation) part of the exercise."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Oblique_Crunches_-_On_The_Floor.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/oblique-crunches-on-the-floor-0.jpg",
+        "altText": "Oblique Crunches - On The Floor starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/oblique-crunches-on-the-floor-1.jpg",
+        "altText": "Oblique Crunches - On The Floor finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/oblique-crunches-on-the-floor-0.jpg",
+        "altText": "Oblique Crunches - On The Floor thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:One_Arm_Dumbbell_Bench_Press",
     "source": "free-exercise-db",
     "sourceId": "One_Arm_Dumbbell_Bench_Press",
@@ -18122,6 +18272,81 @@
         "kind": "thumbnail",
         "path": "media/exercises/one-arm-dumbbell-row-0.jpg",
         "altText": "One-Arm Dumbbell Row thumbnail"
+      }
+    ]
+  },
+  {
+    "id": "fedb:One-Arm_High-Pulley_Cable_Side_Bends",
+    "source": "free-exercise-db",
+    "sourceId": "One-Arm_High-Pulley_Cable_Side_Bends",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "One-Arm High-Pulley Cable Side Bends",
+    "aliases": [
+      "One-Arm High-Pulley Cable Side Bends"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "cable"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Connect a standard handle to a tower. Move cable to highest pulley position.",
+    "executionSteps": [
+      "Stand with side to cable. With one hand, reach up and grab handle with underhand grip.",
+      "Pull down cable until elbow touches your side and the handle is by your shoulder.",
+      "Position feet hip-width apart. Place free hand on hip to help gauge pivot point.",
+      "Keep arm in static position. Contract oblique to bring the weight down in a side crunch."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/One-Arm_High-Pulley_Cable_Side_Bends.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/one-arm-high-pulley-cable-side-bends-0.jpg",
+        "altText": "One-Arm High-Pulley Cable Side Bends starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/one-arm-high-pulley-cable-side-bends-1.jpg",
+        "altText": "One-Arm High-Pulley Cable Side Bends finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/one-arm-high-pulley-cable-side-bends-0.jpg",
+        "altText": "One-Arm High-Pulley Cable Side Bends thumbnail"
       }
     ]
   },
@@ -21162,6 +21387,80 @@
     ]
   },
   {
+    "id": "fedb:Smith_Machine_Hip_Raise",
+    "source": "free-exercise-db",
+    "sourceId": "Smith_Machine_Hip_Raise",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Smith Machine Hip Raise",
+    "aliases": [
+      "Smith Machine Hip Raise"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "machine"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "machine"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Position a bench in the rack and load the bar to an appropriate weight. Lie down on the bench, placing the bottom of your feet against the bar. Unlock the bar and extend your legs. You may need to use your hands to assist you. For added stability grasp the sides of the Smith Machine. This will be your starting position.",
+    "executionSteps": [
+      "Initiate the movement by rotating your pelvis, flexing your spine to raise your hips off of the bench. Maintain a slight bend in the knees throughout the motion.",
+      "After a brief pause, return the hips to the bench.",
+      "Repeat for the desired number of repetitions."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Smith_Machine_Hip_Raise.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/smith-machine-hip-raise-0.jpg",
+        "altText": "Smith Machine Hip Raise starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/smith-machine-hip-raise-1.jpg",
+        "altText": "Smith Machine Hip Raise finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/smith-machine-hip-raise-0.jpg",
+        "altText": "Smith Machine Hip Raise thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Smith_Machine_Incline_Bench_Press",
     "source": "free-exercise-db",
     "sourceId": "Smith_Machine_Incline_Bench_Press",
@@ -21473,6 +21772,83 @@
         "kind": "thumbnail",
         "path": "media/exercises/standing-cable-chest-press-0.jpg",
         "altText": "Standing Cable Chest Press thumbnail"
+      }
+    ]
+  },
+  {
+    "id": "fedb:Standing_Cable_Lift",
+    "source": "free-exercise-db",
+    "sourceId": "Standing_Cable_Lift",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Standing Cable Lift",
+    "aliases": [
+      "Standing Cable Lift"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "cable"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "movementPattern": "core",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "cable"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Connect a standard handle on a tower, and move the cable to the lowest pulley position.",
+    "executionSteps": [
+      "With your side to the cable, grab the handle with one hand and step away from the tower. You should be approximately arm's length away from the pulley, with the tension of the weight on the cable. Your outstretched arm should be aligned with the cable.",
+      "With your feet positioned shoulder width apart, squat down and grab the handle with both hands. Your arms should still be fully extended.",
+      "In one motion, pull the handle up and across your body until your arms are in a fully-extended position above your head.",
+      "Keep your back straight and your arms close to your body as you pivot your back foot and straighten your legs to get a full range of motion."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Standing_Cable_Lift.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/standing-cable-lift-0.jpg",
+        "altText": "Standing Cable Lift starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/standing-cable-lift-1.jpg",
+        "altText": "Standing Cable Lift finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/standing-cable-lift-0.jpg",
+        "altText": "Standing Cable Lift thumbnail"
       }
     ]
   },
@@ -22157,6 +22533,85 @@
         "kind": "thumbnail",
         "path": "media/exercises/superman-0.jpg",
         "altText": "Superman thumbnail"
+      }
+    ]
+  },
+  {
+    "id": "fedb:Suspended_Fallout",
+    "source": "free-exercise-db",
+    "sourceId": "Suspended_Fallout",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Suspended Fallout",
+    "aliases": [
+      "Suspended Fallout"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "other"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [
+      "chest",
+      "lower back",
+      "shoulders"
+    ],
+    "movementPattern": "core",
+    "positionTags": [
+      "standing-or-supported"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "other"
+    ],
+    "metricType": "weight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Adjust the straps so the handles are at an appropriate height, below waist level.",
+    "executionSteps": [
+      "Begin standing and grasping the handles. Lean into the straps, moving to an incline push-up position. This will be your starting position.",
+      "Keeping your arms straight, lean further into the suspension straps, bringing your body closer to the ground, allowing your shoulders to extend, raising your arms up and over your head.",
+      "Maintain a neutral spine and keep the rest of your body straight, your shoulders being the only joints allowed to move.",
+      "Pause during the peak contraction, and then return to the starting position."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Suspended_Fallout.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/suspended-fallout-0.jpg",
+        "altText": "Suspended Fallout starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/suspended-fallout-1.jpg",
+        "altText": "Suspended Fallout finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/suspended-fallout-0.jpg",
+        "altText": "Suspended Fallout thumbnail"
       }
     ]
   },

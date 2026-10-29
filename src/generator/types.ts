@@ -1,6 +1,6 @@
 import {ExercisePrescriptionRecord, ProgramDurationMinutes, ProgramFrequency} from '../programs/types';
 
-export const GENERATOR_VERSION = 'deterministic-v15';
+export const GENERATOR_VERSION = 'deterministic-v16';
 export const PROGRAM_SEED_VERSION = 'maxgym-seed-programs-v1';
 
 export type GoalBlend = 'strength' | 'balanced' | 'hypertrophy' | 'endurance';

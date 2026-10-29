@@ -152,7 +152,7 @@ const PostWorkout = () => {
                 />}
                 <Box sx={{display: "flex", flexDirection: "column", alignSelf: "center"}}>
                     {user?.name !== "Default User" && <Typography sx={{fontWeight: 600, width: "100%", textAlign: "left", textOverflow: "ellipsis"}}>{user?.name}</Typography>}
-                    <Typography sx={{fontSize: "10px",width: "100%", textAlign: "left"}}>Powered by RepQuest - www.repquest.app</Typography>
+                    <Typography sx={{fontSize: "10px",width: "100%", textAlign: "left"}}>Powered by max&gym</Typography>
                 </Box>
             </Box>
         </Card>}</Box>

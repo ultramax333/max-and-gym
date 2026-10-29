@@ -48,6 +48,11 @@ const curatedExpansionNames = new Set([
     'Ab Roller', 'Air Bike', 'Alternate Heel Touchers', 'Barbell Ab Rollout - On Knees', 'Dead Bug', 'Dumbbell Side Bend',
     'Hanging Pike', 'Knee/Hip Raise On Parallel Bars', "Landmine 180's", 'Leg Pull-In', 'Pallof Press',
     'Pallof Press With Rotation', 'Plank', 'Reverse Crunch', 'Russian Twist', 'Side Bridge', 'Standing Cable Wood Chop',
+    // Core expansion: side-lying oblique work, a rotational cable crunch, loaded lateral flexion, a low-to-high cable
+    // pattern, a suspension anti-extension fallout and a loaded reverse crunch. Sit-ups and near-duplicate crunch,
+    // leg-tuck and barbell side-bend variants are intentionally not imported.
+    'Oblique Crunches - On The Floor', 'Kneeling Cable Crunch With Alternating Oblique Twists', 'One-Arm High-Pulley Cable Side Bends',
+    'Standing Cable Lift', 'Suspended Fallout', 'Smith Machine Hip Raise',
 ]);
 
 // These records remain browsable and keep their stable IDs for saved workouts,
@@ -181,7 +186,7 @@ for (const [id, override] of Object.entries(overrides)) {
     if (!reviewed.some(entry => entry.sourceId === id) || !override.reason || override.equipmentTags?.some(tag => !supportedEquipment.has(tag))) throw new Error(`Invalid reviewed classification override: ${id}`);
 }
 const duplicateNames = reviewed.filter((entry, index) => reviewed.findIndex((other) => other.name.toLowerCase() === entry.name.toLowerCase()) !== index);
-if (reviewed.length !== 307 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
+if (reviewed.length !== 313 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
 await mkdir(path.dirname(outputFile), {recursive: true});
 await mkdir(path.dirname(reportFile), {recursive: true});
 await writeFile(outputFile, JSON.stringify(reviewed, null, 2) + '\n');

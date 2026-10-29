@@ -52,6 +52,10 @@ describe('equipment stations', () => {
         expect(equipmentStation(corrected)).toBe('bench');
         expect(orderByEquipment([corrected], ['bench', 'barbell'])[0].equipmentStation).toBe('bench');
     });
+    it('shows the auxiliary setups of the reviewed core additions', () => {
+        expect(requiredStations({exerciseId: 'fedb:Suspended_Fallout', equipmentTags: ['other']})).toEqual(['suspension']);
+        expect(requiredStations({exerciseId: 'fedb:Smith_Machine_Hip_Raise', equipmentTags: ['machine']})).toEqual(['machine', 'bench']);
+    });
     it('keeps every named badge readable on the dark card background', () => {
         for (const station of Object.values(EQUIPMENT_STATIONS)) expect(getContrastRatio(station.color, '#101720')).toBeGreaterThanOrEqual(4.5);
     });

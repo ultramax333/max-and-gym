@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import reviewed from '../exerciseCatalog/reviewed-exercises.json';
+import {CORE_FUNCTION_LABELS, coreFunctionFor} from '../exerciseCatalog/coreFunctions';
 import {generateQuickSession, matchesQuickSessionZone, primaryEquipment, quickSessionReplacementCandidates} from './quickSession';
 import {GENERATOR_VERSION, GeneratorCandidate, GeneratorInput, PROGRAM_SEED_VERSION} from './types';
 
@@ -322,5 +323,67 @@ describe('quick session generator', () => {
         const blocked = excluded.find((entry) => entry.id === 'fedb:Plank')!;
         const options = quickSessionReplacementCandidates(candidates, 'core', input(30).equipment, new Set(), {exerciseId: 'current', movementPattern: 'core', primaryMuscles: ['abdominals'], alternativeExerciseIds: [blocked.id]});
         expect(options.map((entry) => entry.id)).not.toContain(blocked.id);
+    });
+});
+
+describe('core session abdominal functions', () => {
+    const abdominalPool = candidates.filter((entry) => entry.generatorEligible && !entry.archived && entry.primaryMuscles.includes('abdominals'));
+    const allEquipment = input(30).equipment;
+    const functionsOf = (result: ReturnType<typeof generateQuickSession>) => {
+        expect(result.ok, JSON.stringify(result)).toBe(true);
+        return result.ok ? result.program.explanation.selections.map((entry) => coreFunctionFor(entry.exerciseId)) : [];
+    };
+
+    it('assigns an abdominal function to every eligible abdominal exercise', () => {
+        expect(abdominalPool.length).toBeGreaterThanOrEqual(38);
+        expect(abdominalPool.filter((entry) => !coreFunctionFor(entry.id)).map((entry) => entry.id)).toEqual([]);
+        expect(new Set(abdominalPool.map((entry) => coreFunctionFor(entry.id))).size).toBe(5);
+    });
+
+    it.each([
+        ['all equipment', allEquipment],
+        ['body only', ['body only']],
+    ])('covers at least three distinct functions in 20 and 30 minute Core sessions with %s', (_label, equipment) => {
+        const availableFunctions = new Set(abdominalPool.filter((entry) => entry.equipmentTags.every((tag) => equipment.includes(tag))).map((entry) => coreFunctionFor(entry.id))).size;
+        for (const duration of [20, 30] as const) {
+            for (let variation = 0; variation < 12; variation += 1) {
+                const result = generateQuickSession({...input(duration), equipment, seed: `core-functions:${duration}:${variation}`}, candidates, 'core');
+                const functions = functionsOf(result);
+                expect(new Set(functions).size, `${duration}/${variation}: ${functions.join(', ')}`).toBeGreaterThanOrEqual(3);
+                // A function is repeated only after every available function has appeared.
+                const firstRound = functions.slice(0, availableFunctions);
+                expect(new Set(firstRound).size, `repeated too early: ${functions.join(', ')}`).toBe(firstRound.length);
+            }
+        }
+    });
+
+    it('explains which function each core exercise covers, on the Core zone only', () => {
+        const core = generateQuickSession(input(30), candidates, 'core');
+        expect(core.ok).toBe(true);
+        if (core.ok) for (const exercise of core.program.days[0].exercises) expect(exercise.reasons.some((reason) => /^(Covers|Adds more) /.test(reason)), exercise.exerciseName).toBe(true);
+        if (core.ok) expect(core.program.days[0].exercises[0].reasons).toContain(`Covers ${CORE_FUNCTION_LABELS[coreFunctionFor(core.program.days[0].exercises[0].exerciseId)!]}.`);
+        const arms = generateQuickSession(input(30), candidates, 'arms');
+        expect(arms.ok).toBe(true);
+        if (arms.ok) expect(arms.program.days[0].exercises.flatMap((exercise) => exercise.reasons).some((reason) => reason.startsWith('Covers'))).toBe(false);
+    });
+
+    it('is deterministic and still respects equipment, exclusions and the time budget', () => {
+        const base = {...input(30), equipment: ['body only'], seed: 'core-determinism'};
+        const first = generateQuickSession(base, candidates, 'core');
+        expect(generateQuickSession(base, candidates, 'core')).toEqual(first);
+        expect(first.ok).toBe(true);
+        if (!first.ok) return;
+        expect(first.program.days[0].exercises.every((exercise) => exercise.equipmentTags.every((tag) => tag === 'body only'))).toBe(true);
+        expect(first.program.days[0].duration.total).toBeGreaterThanOrEqual(30 * 60 * 0.9);
+        expect(first.program.days[0].duration.total).toBeLessThanOrEqual(30 * 60 * 1.1);
+
+        const blockedIds = abdominalPool.filter((entry) => ['flexion', 'rotation'].includes(coreFunctionFor(entry.id) ?? '')).map((entry) => entry.id);
+        const restricted = generateQuickSession({...base, blockedExerciseIds: blockedIds}, candidates, 'core');
+        expect(restricted.ok).toBe(true);
+        if (restricted.ok) {
+            const chosen = restricted.program.days[0].exercises.map((exercise) => exercise.exerciseId);
+            expect(chosen.some((id) => blockedIds.includes(id))).toBe(false);
+            expect(new Set(chosen.map((id) => coreFunctionFor(id))).size).toBeGreaterThanOrEqual(2);
+        }
     });
 });

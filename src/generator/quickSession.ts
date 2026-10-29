@@ -5,6 +5,7 @@ import {CandidateExclusion, CandidateSelection, GeneratedExercise, GeneratedProg
 import {ProgramDurationMinutes} from '../programs/types';
 import {estimatedSetSeconds, ExerciseTimingProfile} from '../workout/timing';
 import {isReviewedSecondaryLowerBack, matchesQuickSessionZone, QUICK_SESSION_ZONES, QuickSessionZone, selectExerciseAlternatives} from '../exerciseCatalog/selection';
+import {CORE_FUNCTION_LABELS, coreFunctionFor, orderByCoreFunction} from '../exerciseCatalog/coreFunctions';
 export {matchesQuickSessionZone, QUICK_SESSION_ZONES, type QuickSessionZone} from '../exerciseCatalog/selection';
 
 export const QUICK_SESSION_DURATIONS: ProgramDurationMinutes[] = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
@@ -139,7 +140,9 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
     const diverseIds = new Set(diverse.map((entry) => entry.candidate.id));
     const secondaryAnchor = zone === 'lower-back-mixed' ? candidates.find(entry => isReviewedSecondaryLowerBack(entry.candidate)) : undefined;
     const anchorIds = new Set([...coverageIds, ...(secondaryAnchor ? [secondaryAnchor.candidate.id] : [])]);
-    const ordered = [...(fullBackBenchExtension ? [fullBackBenchExtension] : []), ...muscleCoverage.filter((entry) => entry.candidate.id !== fullBackBenchExtension?.candidate.id), ...(secondaryAnchor ? [secondaryAnchor] : []), ...diverse.filter((entry) => !anchorIds.has(entry.candidate.id)), ...candidates.filter((entry) => !anchorIds.has(entry.candidate.id) && !diverseIds.has(entry.candidate.id))];
+    // Every abdominal exercise shares the `core` pattern, so the pattern step above cannot diversify
+    // a Core session. Cover distinct abdominal functions before repeating any of them.
+    const ordered = zone === 'core' ? orderByCoreFunction(candidates, entry => entry.candidate.id) : [...(fullBackBenchExtension ? [fullBackBenchExtension] : []), ...muscleCoverage.filter((entry) => entry.candidate.id !== fullBackBenchExtension?.candidate.id), ...(secondaryAnchor ? [secondaryAnchor] : []), ...diverse.filter((entry) => !anchorIds.has(entry.candidate.id)), ...candidates.filter((entry) => !anchorIds.has(entry.candidate.id) && !diverseIds.has(entry.candidate.id))];
     const lowerBound = input.durationMinutes * 60 * 0.9;
     const upperBound = input.durationMinutes * 60 * 1.1;
     const minimumExercises = input.durationMinutes <= 20 ? 2 : 3;
@@ -151,9 +154,13 @@ export function generateQuickSession(rawInput: GeneratorInput, rawCandidates: Ge
         const index = exercises.length;
         const prescription = exercisePrescription(input.durationMinutes, entry.role, input.goal, index, input.sessionRestSeconds, entry.contextualRating);
         const primaryZoneMatch = entry.candidate.primaryMuscles.some((muscle) => zoneDefinition.muscles.includes(muscle));
+        const coreFunction = zone === 'core' ? coreFunctionFor(entry.candidate.id) : undefined;
+        const coreFunctionReasons = coreFunction === undefined ? [] : [exercises.some(exercise => coreFunctionFor(exercise.exerciseId) === coreFunction)
+            ? `Adds more ${CORE_FUNCTION_LABELS[coreFunction]} work after the other core functions available were covered.`
+            : `Covers ${CORE_FUNCTION_LABELS[coreFunction]}.`];
         const reasons = [primaryZoneMatch || zoneDefinition.muscles.length === 0
             ? zone === 'lower-back-mixed' ? 'Directly targets lower back.' : `Targets ${zoneDefinition.label.toLowerCase()}.`
-            : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, ...(zone === 'back' && entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID ? ['Back-extension bench coverage keeps lower back represented in a Full back session.'] : []), 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : []), ...(entry.accessPenalty ? ['Kept despite limited equipment access because it remains a coherent fit.'] : [])];
+            : `Lower back works secondarily; source primary muscle: ${entry.candidate.primaryMuscles.join(', ')}.`, ...coreFunctionReasons, ...(zone === 'back' && entry.candidate.id === FULL_BACK_BENCH_EXTENSION_ID ?['Back-extension bench coverage keeps lower back represented in a Full back session.'] : []), 'Fits the selected time budget, including rest, and available equipment.', ...(entry.contextualRating === undefined ? [] : [`Rated ${entry.contextualRating}/5 for this ${zoneDefinition.label.toLowerCase()} ${input.goal} context.`]), ...(input.recentExerciseIds?.includes(entry.candidate.id) ? ['Repeated only because it remained one of the best coherent fits.'] : []), ...(entry.accessPenalty ? ['Kept despite limited equipment access because it remains a coherent fit.'] : [])];
         const exercise = {exerciseId: entry.candidate.id, exerciseName: entry.candidate.name, movementPattern: entry.candidate.movementPattern, primaryMuscles: [...entry.candidate.primaryMuscles], equipmentTags: effectiveEquipmentTags(entry.candidate), requiredEquipmentStations: entry.candidate.requiredEquipmentStations ? [...entry.candidate.requiredEquipmentStations] : undefined, primaryEquipmentStation: entry.candidate.primaryEquipmentStation, accessDifficulty: entry.candidate.accessDifficulty, requiredStationCount: entry.candidate.requiredStationCount, role: entry.role, prescription, locked: false, alternativeExerciseIds: candidates.filter((other) => other.candidate.id !== entry.candidate.id && (!primaryZoneMatch || other.candidate.primaryMuscles.includes('lower back') || zone !== 'lower-back-mixed')).slice(0, 3).map((other) => other.candidate.id), score: entry.score, reasons};
         const proposedDuration = durationFor([...exercises, exercise], input.durationMinutes).total;
         if (exercises.length >= minimumExercises && proposedDuration > upperBound) continue;
