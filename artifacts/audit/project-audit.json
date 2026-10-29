@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-11T14:53:00.479Z",
+  "generatedAt": "2026-10-29T20:03:52.102Z",
   "checks": [
     {
       "check": "project identity",
       "status": "pass",
-      "detail": "max-and-gym@1.13.0"
+      "detail": "max-and-gym@1.14.0"
     },
     {
       "check": "single lockfile",
@@ -29,12 +29,12 @@
     {
       "check": "error code uniqueness",
       "status": "pass",
-      "detail": "73 registered"
+      "detail": "74 registered"
     },
     {
       "check": "legacy direct database access",
       "status": "warning",
-      "detail": "41 files; replacement staged in later domain tasks"
+      "detail": "43 files; replacement staged in later domain tasks"
     }
   ],
   "findings": [],
