@@ -165,7 +165,9 @@ export function TrainShellPage() {
         <ShellCard title="Essential workout" text="Start or resume a reliable local workout." icon={<FitnessCenter/>} onClick={() => navigate('/workout/active')}/>
         <ShellCard title="Previous workouts" text="Open the editor and your existing RepQuest workouts." icon={<FitnessCenter/>} onClick={() => navigate('/workouts')}/>
         {!active && <ShellCard title="Create a planned workout" text="Activate a program with two or three days." icon={<CalendarMonth/>} onClick={() => navigate('/programs')}/>}
-        <ShellCard title="Core video classes" text="Choose a professional 10 to 30-minute class or add your own video." icon={<Bolt/>} onClick={() => navigate('/train/core-videos')}/>
+        <ShellCard title="Personal videos" text="Import videos in bulk, sort by body area and rate difficulty. Watch offline." icon={<Bolt/>} onClick={() => navigate('/train/local-videos')}/>
+        <ShellCard title="Abs videos" text="Your own abs and core videos, with your difficulty ratings." icon={<Bolt/>} onClick={() => navigate('/train/local-videos?area=abs')}/>
+        <ShellCard title="Core video classes" text="Choose a professional 10 to 30-minute YouTube class or add a link." icon={<Bolt/>} onClick={() => navigate('/train/core-videos')}/>
     </Stack></ScreenContainer><Dialog open={Boolean(workoutToReplace)} onClose={() => !replacing && setWorkoutToReplace(undefined)}><DialogTitle>Start {ARM_WORKOUT_45.name}?</DialogTitle><DialogContent><Typography>Your workout “{workoutToReplace?.name}” is still active. Replace it with the complete 5-exercise arm workout? Completed sets stay saved on this device.</Typography></DialogContent><DialogActions><Button onClick={() => setWorkoutToReplace(undefined)} disabled={replacing}>Keep current workout</Button><Button variant="contained" onClick={() => void replaceWithArmWorkout()} disabled={replacing}>Start arm workout</Button></DialogActions></Dialog></Layout>;
 }
 

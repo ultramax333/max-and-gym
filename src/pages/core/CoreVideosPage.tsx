@@ -7,6 +7,7 @@ import {PrimaryButton, ScreenContainer, SectionHeader, StatePanel} from '../../c
 import {db} from '../../db/db';
 import {CORE_VIDEOS, CoreVideo, CoreVideoDuration} from './coreVideos';
 import {CoreVideoRepository, CustomCoreVideo, CustomCoreVideoInput} from './CoreVideoRepository';
+import {Link as RouterLink} from 'react-router-dom';
 
 const repository = new CoreVideoRepository(db);
 const durations: CoreVideoDuration[] = [10, 15, 20, 25, 30];
@@ -70,6 +71,7 @@ export default function CoreVideosPage() {
     const openEditor = (video?: CustomCoreVideo) => { setEditing(video); setEditorOpen(true); };
     return <Layout title="Core videos"><ScreenContainer><Stack spacing={2}>
         <SectionHeader eyebrow="CORE" title="Professional video classes" action={<PrimaryButton startIcon={<Add/>} onClick={() => openEditor()}>Add video</PrimaryButton>}/>
+        <Button component={RouterLink} to="/train/local-videos?area=abs">My offline abs videos</Button>
         {deleteError && <Alert severity="error" onClose={() => setDeleteError('')}>{deleteError}</Alert>}
         <Alert severity="info">The library and your notes work offline. Playing a class opens YouTube and requires Internet. Videos remain the property of their creators.</Alert>
         <Stack direction={{xs: 'column', sm: 'row'}} gap={2}><FormControl fullWidth><InputLabel id="core-video-duration">Duration</InputLabel><Select labelId="core-video-duration" label="Duration" value={duration} onChange={(event) => setDuration(event.target.value === 'all' ? 'all' : Number(event.target.value) as CoreVideoDuration)}><MenuItem value="all">All durations</MenuItem>{durations.map((item) => <MenuItem key={item} value={item}>{item} minutes</MenuItem>)}</Select></FormControl><FormControl fullWidth><InputLabel id="core-video-level">Level</InputLabel><Select labelId="core-video-level" label="Level" value={level} onChange={(event) => setLevel(event.target.value)}><MenuItem value="all">All levels</MenuItem><MenuItem value="Beginner">Beginner</MenuItem><MenuItem value="All levels">All-level classes</MenuItem><MenuItem value="Intermediate">Intermediate</MenuItem><MenuItem value="Advanced">Advanced</MenuItem></Select></FormControl><FormControl fullWidth><InputLabel id="core-video-equipment">Equipment</InputLabel><Select labelId="core-video-equipment" label="Equipment" value={equipment} onChange={(event) => setEquipment(event.target.value as typeof equipment)}><MenuItem value="all">All equipment</MenuItem><MenuItem value="none">No equipment</MenuItem><MenuItem value="uses">Uses equipment</MenuItem></Select></FormControl></Stack>

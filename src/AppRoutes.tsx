@@ -52,6 +52,9 @@ const MeasurementsPage = React.lazy(() => import('./pages/progress/ProgressPages
 const PhotosPage = React.lazy(() => import('./pages/progress/ProgressPages').then((module) => ({default: module.PhotosPage})));
 const BackupPage = React.lazy(() => import('./pages/backup/BackupPage'));
 const CoreVideosPage = React.lazy(() => import('./pages/core/CoreVideosPage'));
+const LocalVideosPage = React.lazy(() => import('./pages/local-videos/LocalVideosPage'));
+const LocalVideoDetailPage = React.lazy(() => import('./pages/local-videos/LocalVideosPage').then(module => ({default: module.LocalVideoDetailPage})));
+const LocalVideoEditorPage = React.lazy(() => import('./pages/local-videos/LocalVideosPage').then(module => ({default: module.LocalVideoEditorPage})));
 const WorkoutSetupPage = React.lazy(() => import('./pages/workout-active/WorkoutSetupPage').then((module) => ({default: module.WorkoutSetupPage})));
 
 const AppRoutes = () => {
@@ -61,6 +64,9 @@ const AppRoutes = () => {
         <Route path="/" element={<HomeShellPage/>}/>
         <Route path="/train" element={<TrainShellPage/>}/>
         <Route path="/train/core-videos" element={<CoreVideosPage/>}/>
+        <Route path="/train/local-videos" element={<LocalVideosPage/>}/>
+        <Route path="/train/local-videos/:videoId" element={<LocalVideoDetailPage/>}/>
+        <Route path="/train/local-videos/:videoId/edit" element={<LocalVideoEditorPage/>}/>
         <Route path="/programs" element={<ProgramsWithGeneratorPage/>}/>
         <Route path="/programs/generate" element={<GeneratorPage/>}/>
         <Route path="/programs/:programId" element={<ProgramDetailWithGeneratorActions/>}/>

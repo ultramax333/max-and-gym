@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-11T14:47:23.221Z",
-  "totalBytes": 48127691,
+  "generatedAt": "2026-11-03T10:35:47.396Z",
+  "totalBytes": 49123575,
   "files": [
     {
       "path": "media/exercises/cable-judo-flip-1.jpg",
@@ -15,12 +15,12 @@
       "bytes": 866252
     },
     {
-      "path": "assets/reviewed-exercises-CDR1YwZo.js",
-      "bytes": 663400
+      "path": "assets/reviewed-exercises-CQaEBb7K.js",
+      "bytes": 675907
     },
     {
-      "path": "assets/index-CxUlp07L.js",
-      "bytes": 658027
+      "path": "assets/index-uNzfIfqb.js",
+      "bytes": 620300
     },
     {
       "path": "assets/emoji-picker-react.esm-DWHR4bnk.js",
@@ -43,7 +43,7 @@
       "bytes": 136429
     },
     {
-      "path": "assets/LineChart-BLFsHHiX.js",
+      "path": "assets/LineChart-C91gIjA0.js",
       "bytes": 130202
     },
     {
@@ -71,6 +71,22 @@
       "bytes": 124304
     },
     {
+      "path": "media/exercises/standing-cable-lift-1.jpg",
+      "bytes": 122929
+    },
+    {
+      "path": "media/exercises/standing-cable-lift-0.jpg",
+      "bytes": 121609
+    },
+    {
+      "path": "media/exercises/one-arm-high-pulley-cable-side-bends-1.jpg",
+      "bytes": 119886
+    },
+    {
+      "path": "media/exercises/one-arm-high-pulley-cable-side-bends-0.jpg",
+      "bytes": 116297
+    },
+    {
       "path": "media/exercises/bosu-ball-cable-crunch-with-side-bends-0.jpg",
       "bytes": 115450
     },
@@ -91,7 +107,7 @@
       "bytes": 111196
     },
     {
-      "path": "assets/workout-CLND63XC.js",
+      "path": "assets/workout-D9cJRbwJ.js",
       "bytes": 111156
     },
     {
@@ -491,6 +507,10 @@
       "bytes": 80956
     },
     {
+      "path": "assets/GeneratorPage-b6KrfoLt.js",
+      "bytes": 80902
+    },
+    {
       "path": "media/exercises/smith-machine-incline-bench-press-0.jpg",
       "bytes": 80605
     },
@@ -549,10 +569,6 @@
     {
       "path": "media/exercises/lying-leg-curls-0.jpg",
       "bytes": 77402
-    },
-    {
-      "path": "assets/GeneratorPage-ClHAWuOs.js",
-      "bytes": 77370
     },
     {
       "path": "media/exercises/reverse-machine-flyes-0.jpg",
@@ -691,7 +707,7 @@
       "bytes": 73206
     },
     {
-      "path": "assets/layout-CzPnohd5.js",
+      "path": "assets/layout-DkOenMVi.js",
       "bytes": 72930
     },
     {
@@ -983,6 +999,10 @@
       "bytes": 69289
     },
     {
+      "path": "media/exercises/oblique-crunches-on-the-floor-1.jpg",
+      "bytes": 69275
+    },
+    {
       "path": "media/exercises/cable-seated-crunch-0.jpg",
       "bytes": 69234
     },
@@ -1093,6 +1113,10 @@
     {
       "path": "media/exercises/band-pull-apart-1.jpg",
       "bytes": 67007
+    },
+    {
+      "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-1.jpg",
+      "bytes": 66985
     },
     {
       "path": "media/exercises/v-bar-pulldown-1.jpg",
@@ -1251,6 +1275,14 @@
       "bytes": 65140
     },
     {
+      "path": "media/exercises/smith-machine-hip-raise-0.jpg",
+      "bytes": 65057
+    },
+    {
+      "path": "media/exercises/kneeling-cable-crunch-with-alternating-oblique-twists-0.jpg",
+      "bytes": 64932
+    },
+    {
       "path": "media/exercises/front-raise-and-pullover-0.jpg",
       "bytes": 64787
     },
@@ -1297,6 +1329,10 @@
     {
       "path": "media/exercises/dumbbell-bench-press-1.jpg",
       "bytes": 64120
+    },
+    {
+      "path": "media/exercises/smith-machine-hip-raise-1.jpg",
+      "bytes": 64057
     },
     {
       "path": "media/exercises/air-bike-1.jpg",
@@ -1377,6 +1413,10 @@
     {
       "path": "media/exercises/cable-incline-pushdown-0.jpg",
       "bytes": 62891
+    },
+    {
+      "path": "media/exercises/oblique-crunches-on-the-floor-0.jpg",
+      "bytes": 62849
     },
     {
       "path": "media/exercises/decline-crunch-0.jpg",
@@ -1461,6 +1501,10 @@
     {
       "path": "media/exercises/bent-arm-dumbbell-pullover-1.jpg",
       "bytes": 61708
+    },
+    {
+      "path": "media/exercises/suspended-fallout-1.jpg",
+      "bytes": 61692
     },
     {
       "path": "media/exercises/alternate-heel-touchers-0.jpg",
@@ -1787,6 +1831,10 @@
       "bytes": 57223
     },
     {
+      "path": "media/exercises/suspended-fallout-0.jpg",
+      "bytes": 57221
+    },
+    {
       "path": "media/exercises/seated-dumbbell-curl-1.jpg",
       "bytes": 57214
     },
@@ -2107,7 +2155,7 @@
       "bytes": 53073
     },
     {
-      "path": "assets/DateCalendar-B3uQ1hMN.js",
+      "path": "assets/DateCalendar-L6IoFBQZ.js",
       "bytes": 52974
     },
     {
@@ -2431,8 +2479,8 @@
       "bytes": 41022
     },
     {
-      "path": "assets/ActiveWorkoutPage-D5sR0tXc.js",
-      "bytes": 40736
+      "path": "assets/ActiveWorkoutPage-BG5wO9-k.js",
+      "bytes": 40783
     },
     {
       "path": "media/exercises/low-cable-crossover-1.jpg",
@@ -2463,7 +2511,7 @@
       "bytes": 39551
     },
     {
-      "path": "assets/whatsNew-CP4Pz4hE.js",
+      "path": "assets/whatsNew-DTikBqT6.js",
       "bytes": 39485
     },
     {
@@ -2535,7 +2583,7 @@
       "bytes": 35879
     },
     {
-      "path": "assets/license-D-uraUBE.js",
+      "path": "assets/license-BXUlKkIe.js",
       "bytes": 35822
     },
     {
@@ -2655,10 +2703,6 @@
       "bytes": 28819
     },
     {
-      "path": "assets/onboarding-CrBDdGqf.js",
-      "bytes": 28046
-    },
-    {
       "path": "splashscreens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_landscape.png",
       "bytes": 27510
     },
@@ -2667,11 +2711,15 @@
       "bytes": 27405
     },
     {
-      "path": "assets/bulkEditor-320uxpEq.js",
+      "path": "assets/bulkEditor-B2U8pe88.js",
       "bytes": 27343
     },
     {
-      "path": "assets/ProgressPages-BSXwXaWO.js",
+      "path": "assets/onboarding-B_OLHyxY.js",
+      "bytes": 27010
+    },
+    {
+      "path": "assets/ProgressPages-Cpnoe-R8.js",
       "bytes": 24912
     },
     {
@@ -2683,8 +2731,8 @@
       "bytes": 24308
     },
     {
-      "path": "assets/DiagnosticsPage-C-sGA5JV.js",
-      "bytes": 24069
+      "path": "assets/DiagnosticsPage-CipJprL2.js",
+      "bytes": 24022
     },
     {
       "path": "splashscreens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png",
@@ -2695,11 +2743,15 @@
       "bytes": 21997
     },
     {
+      "path": "assets/LocalVideosPage-B1hDtGWQ.js",
+      "bytes": 21348
+    },
+    {
       "path": "splashscreens/4__iPhone_SE__iPod_touch_5th_generation_and_later_landscape.png",
       "bytes": 20671
     },
     {
-      "path": "assets/addExercisePicker-5UC_46KU.js",
+      "path": "assets/addExercisePicker-CJxXuq4B.js",
       "bytes": 19328
     },
     {
@@ -2715,7 +2767,7 @@
       "bytes": 15406
     },
     {
-      "path": "assets/workoutSnapshot-BCEkHLBm.js",
+      "path": "assets/workoutSnapshot-V7RFBfE6.js",
       "bytes": 15203
     },
     {
@@ -2723,35 +2775,35 @@
       "bytes": 14813
     },
     {
-      "path": "assets/LibraryPages-BYaLE21R.js",
+      "path": "assets/LibraryPages-BQEwwCNi.js",
       "bytes": 14740
     },
     {
-      "path": "assets/ProgressionProposalsPage-CHXoxC83.js",
+      "path": "assets/ProgressionProposalsPage-BkWnqfhD.js",
       "bytes": 14180
     },
     {
-      "path": "assets/AboutPage-BALbYUjp.js",
-      "bytes": 13746
+      "path": "sw.js",
+      "bytes": 13779
     },
     {
-      "path": "sw.js",
-      "bytes": 13558
+      "path": "assets/AboutPage-BZW2dUlc.js",
+      "bytes": 13746
     },
     {
       "path": "logomaskable.png",
       "bytes": 13092
     },
     {
-      "path": "assets/PersonalBackupService-EmaEqKwG.js",
-      "bytes": 12721
+      "path": "assets/PersonalBackupService-DdRhIRnC.js",
+      "bytes": 12876
     },
     {
-      "path": "assets/ShellPages-CPdCeji_.js",
-      "bytes": 12432
+      "path": "assets/ShellPages-DcKuUHNh.js",
+      "bytes": 12765
     },
     {
-      "path": "assets/history-Cmc3FBzu.js",
+      "path": "assets/history-Br4NS2O0.js",
       "bytes": 12376
     },
     {
@@ -2759,23 +2811,23 @@
       "bytes": 12303
     },
     {
-      "path": "assets/metrics-B1ogHQDk.js",
+      "path": "assets/metrics-CW6ItVGw.js",
       "bytes": 12230
     },
     {
-      "path": "assets/workout_list-B4BMLYV4.js",
+      "path": "assets/workout_list-Z8VAl9jd.js",
       "bytes": 11745
     },
     {
-      "path": "assets/CoreVideosPage-BMPU7Aza.js",
-      "bytes": 11436
+      "path": "assets/CoreVideosPage-DMaiJ6ut.js",
+      "bytes": 11536
     },
     {
-      "path": "assets/deterministicGenerator-B0SCs3IP.js",
+      "path": "assets/deterministicGenerator-C0iMP65A.js",
       "bytes": 10984
     },
     {
-      "path": "assets/workoutExercise_editor-CGywRvFz.js",
+      "path": "assets/workoutExercise_editor-CEKg6eCh.js",
       "bytes": 10912
     },
     {
@@ -2783,15 +2835,15 @@
       "bytes": 10026
     },
     {
+      "path": "assets/selection-C2Yb7Jxo.js",
+      "bytes": 9871
+    },
+    {
       "path": "logofadelight.png",
       "bytes": 9870
     },
     {
-      "path": "assets/selection-BVfMd3uL.js",
-      "bytes": 9804
-    },
-    {
-      "path": "assets/Chip-BgOHkPWY.js",
+      "path": "assets/Chip-CMSGYE6i.js",
       "bytes": 9453
     },
     {
@@ -2799,63 +2851,59 @@
       "bytes": 9404
     },
     {
-      "path": "assets/backup-B4JSqT00.js",
+      "path": "assets/backup-C6CX3HlV.js",
       "bytes": 7780
     },
     {
-      "path": "assets/RestAlarmSettingsPage-VKQ_JThs.js",
+      "path": "assets/RestAlarmSettingsPage-CgZu0mdh.js",
       "bytes": 7530
     },
     {
-      "path": "assets/TableRow-BbcrSQpG.js",
+      "path": "assets/TableRow-CnJB8VE2.js",
       "bytes": 7047
     },
     {
-      "path": "assets/workout_editor-BbL-s-9h.js",
+      "path": "assets/workout_editor-Cvj4KWKh.js",
       "bytes": 6370
     },
     {
-      "path": "assets/ToggleButtonGroup-xAxY8Tfq.js",
+      "path": "assets/BackupPage-CgDPcpiD.js",
+      "bytes": 6334
+    },
+    {
+      "path": "assets/ToggleButtonGroup-C58tOtLE.js",
       "bytes": 6244
     },
     {
-      "path": "assets/BackupPage-CmxnUiwq.js",
-      "bytes": 6052
-    },
-    {
-      "path": "assets/stats-BWIyk4ph.js",
+      "path": "assets/stats-dxWvITYP.js",
       "bytes": 5874
     },
     {
-      "path": "assets/WorkoutSummaryPage-B9n5qya3.js",
+      "path": "assets/WorkoutSummaryPage-BybXXst-.js",
       "bytes": 5782
     },
     {
-      "path": "assets/EquipmentBadge-CKGeRcFX.js",
+      "path": "assets/EquipmentBadge-BP-TUD7R.js",
       "bytes": 5760
     },
     {
-      "path": "assets/settings-BECzyQyI.js",
-      "bytes": 5581
-    },
-    {
-      "path": "assets/postWorkout-CnVaUmyY.js",
-      "bytes": 5342
-    },
-    {
-      "path": "assets/LinearProgress-DLiVv6iw.js",
+      "path": "assets/LinearProgress-P1Kd6584.js",
       "bytes": 5334
     },
     {
-      "path": "assets/WorkoutSetupPage-BkInSzW2.js",
+      "path": "assets/WorkoutSetupPage-BdeK8QrH.js",
       "bytes": 5329
     },
     {
-      "path": "assets/backup-B8kCZgZ9.js",
+      "path": "assets/postWorkout-B1LpVur6.js",
+      "bytes": 5322
+    },
+    {
+      "path": "assets/backup-BhEmt6eS.js",
       "bytes": 5143
     },
     {
-      "path": "assets/Grid-BExOYymh.js",
+      "path": "assets/Grid-DZceDCZJ.js",
       "bytes": 5110
     },
     {
@@ -2863,47 +2911,51 @@
       "bytes": 5050
     },
     {
-      "path": "assets/system-CQhBV-qC.js",
+      "path": "assets/system-EAcZS2M8.js",
       "bytes": 4908
     },
     {
-      "path": "assets/wrapped-DNrQfDtv.js",
+      "path": "assets/wrapped-C5CUhlX8.js",
       "bytes": 4817
     },
     {
-      "path": "assets/parameter-Cq3nf0ZR.js",
+      "path": "assets/parameter-BSALi_W9.js",
       "bytes": 4717
     },
     {
-      "path": "assets/timer-Df7nR7Xz.js",
+      "path": "assets/timer-ClipiQew.js",
       "bytes": 4357
     },
     {
-      "path": "assets/EquipmentEditorDialog-eO0mvgie.js",
+      "path": "assets/EquipmentEditorDialog-BhKRhvwa.js",
       "bytes": 4261
     },
     {
-      "path": "assets/appearanceSettings-DXtJ5Lqj.js",
+      "path": "assets/settings-BNkandjA.js",
+      "bytes": 4060
+    },
+    {
+      "path": "assets/appearanceSettings-BwWenAo3.js",
       "bytes": 3894
     },
     {
-      "path": "assets/Collapse-C7l1XlwC.js",
+      "path": "assets/Collapse-DgpkraHF.js",
       "bytes": 3823
     },
     {
-      "path": "assets/MenuItem-Biy_wl5Q.js",
+      "path": "assets/MenuItem-DknPo21H.js",
       "bytes": 3780
     },
     {
-      "path": "assets/Divider-BQfFaAKO.js",
+      "path": "assets/Divider-3tkYtCHQ.js",
       "bytes": 3681
     },
     {
-      "path": "assets/Fab-BTxbVROH.js",
+      "path": "assets/Fab-CWLIaZb8.js",
       "bytes": 3127
     },
     {
-      "path": "assets/appsMenu-db4i9RJ9.js",
+      "path": "assets/appsMenu-BkOS136T.js",
       "bytes": 3083
     },
     {
@@ -2911,67 +2963,75 @@
       "bytes": 3032
     },
     {
-      "path": "assets/workoutDetails_editor-V3DzOmr5.js",
+      "path": "assets/workoutDetails_editor-Bs3U7T6q.js",
       "bytes": 2832
     },
     {
-      "path": "assets/FormControlLabel-BkGQqcbF.js",
+      "path": "assets/FormControlLabel-Btn5IU19.js",
       "bytes": 2674
     },
     {
-      "path": "assets/Checkbox-1uOTx5xS.js",
+      "path": "assets/Checkbox-BiFuqoi0.js",
       "bytes": 2551
     },
     {
-      "path": "assets/workoutSettings-BK_XnXfu.js",
+      "path": "assets/ExercisePhotos-CX8KXW5c.js",
+      "bytes": 2518
+    },
+    {
+      "path": "assets/workoutSettings-Bc8zFVoi.js",
       "bytes": 2516
     },
     {
-      "path": "assets/ExercisePhotos-BfJSZIdF.js",
-      "bytes": 2365
-    },
-    {
-      "path": "assets/eol-B2Ryv33H.js",
+      "path": "assets/eol-CpmrIbBb.js",
       "bytes": 2337
     },
     {
-      "path": "assets/SwitchBase-BC_2R33m.js",
+      "path": "assets/model-BVultkoI.js",
+      "bytes": 2336
+    },
+    {
+      "path": "assets/SwitchBase-CsxfvyAb.js",
       "bytes": 2149
     },
     {
-      "path": "assets/restInProgress-CRWJywZy.js",
+      "path": "assets/restInProgress-Dsf2hOxs.js",
       "bytes": 2046
     },
     {
-      "path": "assets/onermcalc-gNkgzbCX.js",
+      "path": "assets/onermcalc-FDAclD1P.js",
       "bytes": 2042
     },
     {
-      "path": "assets/UiPrimitives-CvC4rBHm.js",
+      "path": "assets/UiPrimitives-mqTv4bkT.js",
       "bytes": 1975
     },
     {
-      "path": "assets/login-pXPRInnU.js",
+      "path": "assets/login-Df7EfqA2.js",
       "bytes": 1687
     },
     {
-      "path": "assets/youtubePlayer-C596UbTy.js",
+      "path": "assets/youtubePlayer-BXoPDPFn.js",
       "bytes": 1684
     },
     {
-      "path": "assets/ListSubheader-CUUqRJqR.js",
+      "path": "assets/ListSubheader-BElCyr5g.js",
       "bytes": 1675
     },
     {
-      "path": "assets/MoreVert-DNSN_AD5.js",
+      "path": "assets/MoreVert-CC48WZLj.js",
       "bytes": 1635
     },
     {
-      "path": "assets/CardActionArea-Dk9-DfTV.js",
+      "path": "assets/CardActionArea-Dn5ap8Ux.js",
       "bytes": 1484
     },
     {
-      "path": "assets/getValidReactChildren-udY1B_d7.js",
+      "path": "assets/LocalVideoRepository-BW09Hv6t.js",
+      "bytes": 1426
+    },
+    {
+      "path": "assets/getValidReactChildren-B2rkc9eJ.js",
       "bytes": 1405
     },
     {
@@ -2983,23 +3043,27 @@
       "bytes": 1111
     },
     {
-      "path": "assets/LightMode-C3rdhJQI.js",
+      "path": "assets/LightMode-D5d-dmMm.js",
       "bytes": 1060
     },
     {
-      "path": "assets/useMediaQuery-DjfJymyV.js",
+      "path": "assets/useMediaQuery-CwhOPgwv.js",
       "bytes": 1030
     },
     {
-      "path": "assets/FavoriteBorder-C661Yydh.js",
+      "path": "assets/FavoriteBorder-BPwR-wFC.js",
       "bytes": 926
     },
     {
-      "path": "assets/CardActions-Dgbg7TBW.js",
+      "path": "assets/CardActions-BvHuk8Tl.js",
       "bytes": 862
     },
     {
-      "path": "assets/pictureViewer-Biull5UL.js",
+      "path": "assets/FormGroup-S9F93f72.js",
+      "bytes": 855
+    },
+    {
+      "path": "assets/pictureViewer-48Eb3lwH.js",
       "bytes": 733
     },
     {
@@ -3007,7 +3071,7 @@
       "bytes": 727
     },
     {
-      "path": "assets/CardContent-CrdvVBzn.js",
+      "path": "assets/CardContent-dDguXhUg.js",
       "bytes": 665
     },
     {
@@ -3015,7 +3079,7 @@
       "bytes": 646
     },
     {
-      "path": "assets/FitnessCenter-BqHhfqoA.js",
+      "path": "assets/FitnessCenter-CP7OuIzP.js",
       "bytes": 640
     },
     {
@@ -3027,15 +3091,15 @@
       "bytes": 627
     },
     {
-      "path": "assets/Card-DWOGSzen.js",
+      "path": "assets/Card-DaK5vTY1.js",
       "bytes": 612
     },
     {
-      "path": "assets/Backup-BWp5V665.js",
+      "path": "assets/Backup-KjUsFkkO.js",
       "bytes": 554
     },
     {
-      "path": "assets/UploadFile-B2C030gw.js",
+      "path": "assets/UploadFile-E8nE-Edx.js",
       "bytes": 537
     },
     {
@@ -3043,7 +3107,7 @@
       "bytes": 537
     },
     {
-      "path": "assets/NotificationsActive-DdJytzv5.js",
+      "path": "assets/NotificationsActive-H-zrrkZh.js",
       "bytes": 487
     },
     {
@@ -3051,43 +3115,43 @@
       "bytes": 432
     },
     {
-      "path": "assets/notImplemented-ShpHsv9L.js",
+      "path": "assets/notImplemented-B_6I5siO.js",
       "bytes": 415
     },
     {
-      "path": "assets/MonitorHeart-D5R1cArD.js",
+      "path": "assets/MonitorHeart-0K9Evbui.js",
       "bytes": 403
     },
     {
-      "path": "assets/Calculate-CspxZu2m.js",
+      "path": "assets/Calculate-BU6S9zX9.js",
       "bytes": 394
     },
     {
-      "path": "assets/Stop-pbje4X6O.js",
+      "path": "assets/Stop-Bz-y_iIx.js",
       "bytes": 389
     },
     {
-      "path": "assets/Search-CWOK3oZQ.js",
+      "path": "assets/Search-Cj_9L8eM.js",
       "bytes": 329
     },
     {
-      "path": "assets/History-B0Ejz_J8.js",
+      "path": "assets/History-DHw6kIZN.js",
       "bytes": 325
     },
     {
-      "path": "assets/MonitorWeight-Bg_EXHxx.js",
+      "path": "assets/MonitorWeight-CIG7n-I5.js",
       "bytes": 317
     },
     {
-      "path": "assets/ArrowForwardRounded-CdCiCo7E.js",
+      "path": "assets/ArrowForwardRounded-CL90Eifo.js",
       "bytes": 313
     },
     {
-      "path": "assets/dividerClasses-D3Zc6Ib8.js",
+      "path": "assets/dividerClasses-lgOQMKR_.js",
       "bytes": 311
     },
     {
-      "path": "assets/exercise_picker-B8nV1F42.js",
+      "path": "assets/exercise_picker-Dvhx6xo6.js",
       "bytes": 309
     },
     {
@@ -3095,43 +3159,43 @@
       "bytes": 307
     },
     {
-      "path": "assets/VolumeUp-Dbnq5QNU.js",
+      "path": "assets/VolumeUp-BMpLs9nc.js",
       "bytes": 289
     },
     {
-      "path": "assets/Timer-CuMlTvDb.js",
+      "path": "assets/Timer-DR9yvj-t.js",
       "bytes": 277
     },
     {
-      "path": "assets/Backup-3X08Tepv.js",
+      "path": "assets/Backup-RFGN1vKp.js",
       "bytes": 275
     },
     {
-      "path": "assets/ArrowUpward-izQZgncA.js",
+      "path": "assets/ArrowUpward-MBGf9Adk.js",
       "bytes": 270
     },
     {
-      "path": "assets/KeyboardArrowUp-D9aleQiC.js",
+      "path": "assets/KeyboardArrowUp-CYQLGrpk.js",
       "bytes": 257
     },
     {
-      "path": "assets/FilterAlt-C3VDiMBf.js",
+      "path": "assets/FilterAlt-Ce8JNUAk.js",
       "bytes": 248
     },
     {
-      "path": "assets/Edit-DKrDtqQ-.js",
+      "path": "assets/Edit-BDGd3yXf.js",
       "bytes": 232
     },
     {
-      "path": "assets/OpenInNew-DzBUyhEC.js",
+      "path": "assets/OpenInNew-CjmfJ7yw.js",
       "bytes": 232
     },
     {
-      "path": "assets/Save-B5DYuAlS.js",
+      "path": "assets/Save-DXQuMXh7.js",
       "bytes": 231
     },
     {
-      "path": "assets/Straighten-DNJNQfa_.js",
+      "path": "assets/Straighten-CIaC3k3d.js",
       "bytes": 226
     },
     {
@@ -3139,52 +3203,52 @@
       "bytes": 222
     },
     {
-      "path": "assets/Tune-Cenu_aLl.js",
+      "path": "assets/Tune-B75Ma5if.js",
       "bytes": 208
     },
     {
-      "path": "assets/Star-BOedn5EJ.js",
+      "path": "assets/DeleteOutline-CNTH0z8f.js",
+      "bytes": 192
+    },
+    {
+      "path": "assets/Star-BT_L4-VV.js",
       "bytes": 190
     },
     {
-      "path": "assets/Delete-Ce34MXAH.js",
+      "path": "assets/Delete-Cq8zkSKv.js",
       "bytes": 176
     },
     {
-      "path": "assets/ArrowForward-Dem8eV3Q.js",
+      "path": "assets/ArrowForward-B5Upp6MD.js",
       "bytes": 166
     },
     {
-      "path": "assets/ArrowBack-BTmysaQP.js",
+      "path": "assets/ArrowBack-B8EFYFtF.js",
       "bytes": 164
     },
     {
-      "path": "assets/ChevronRight-DBNgo2wt.js",
+      "path": "assets/ChevronRight-C0-ZhJx3.js",
       "bytes": 156
     },
     {
-      "path": "assets/Check-DbAT543X.js",
+      "path": "assets/Check-B9TSuEi4.js",
       "bytes": 152
     },
     {
-      "path": "assets/ExpandMore-Bqn-JeDh.js",
+      "path": "assets/ExpandMore-Cq8ST1OU.js",
       "bytes": 152
     },
     {
-      "path": "assets/Download-DAjL04cF.js",
+      "path": "assets/Download-Ccdhlky7.js",
       "bytes": 141
     },
     {
-      "path": "assets/Add-C83Xs2O5.js",
+      "path": "assets/Add-D11WZB9F.js",
       "bytes": 134
     },
     {
-      "path": "assets/Pause-Dt-EaFVp.js",
+      "path": "assets/Pause-D5dQT4Oa.js",
       "bytes": 128
-    },
-    {
-      "path": "assets/languages-CDXwqtYd.js",
-      "bytes": 108
     },
     {
       "path": "robots.txt",

@@ -572,3 +572,19 @@ The selected gym and occupancy mode are stored in the existing `appMeta` backup 
 - Seed updates are separate from user-schema migrations.
 - Major transitions prompt for backup when the app can still open safely.
 - Prior production fixtures are maintained until the corresponding migration is deliberately retired.
+
+## 33. Personal video library (v1.15)
+
+Personal video metadata uses appMeta key localWorkoutVideos:v1: UUID identity,
+separate UUID media identity, title, original basename, MIME type, byte size,
+optional duration in seconds, zero or more body areas, optional subjective
+difficulty 1–5, and UTC createdAt/updatedAt. No areas means To sort; no difficulty
+means Not rated yet. A video may belong to more than one area.
+
+For large personal videos only, ADR 0012 permits OPFS copies rather than small
+IndexedDB photo Blobs. Copies use bounded asynchronous writes in a dedicated
+private directory. They are never bundled, uploaded or service-worker cached.
+The existing .maxgym includes classification metadata, not these large files.
+Backup and import preview disclose this; missing copies can be reattached.
+Schema/export/cache versions do not change. No exercise or workout history is
+rewritten, and user-selected videos are not auto-inserted into generated sessions.

@@ -1,3 +1,3 @@
 # Asset audit
 
-Assets: 669. Oversized: 0.
+Assets: 681. Oversized: 0.
