@@ -1,7 +1,7 @@
 {
   "revision": "b0eed061e1c8",
-  "assetCount": 626,
-  "totalBytes": 42005015,
+  "assetCount": 634,
+  "totalBytes": 42542183,
   "assets": [
     {
       "path": "media/exercises/90-90-hamstring-0.jpg",
@@ -2452,6 +2452,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/jackknife-sit-up-0.jpg",
+      "byteSize": 66767,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/jackknife-sit-up-1.jpg",
+      "byteSize": 65916,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/jm-press-0.jpg",
       "byteSize": 70924,
       "height": 567,
@@ -3172,6 +3184,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/scissor-kick-0.jpg",
+      "byteSize": 66744,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/scissor-kick-1.jpg",
+      "byteSize": 67226,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/seated-band-hamstring-curl-0.jpg",
       "byteSize": 88999,
       "height": 567,
@@ -3304,6 +3328,18 @@
       "width": 850
     },
     {
+      "path": "media/exercises/side-jackknife-0.jpg",
+      "byteSize": 67158,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/side-jackknife-1.jpg",
+      "byteSize": 69223,
+      "height": 567,
+      "width": 850
+    },
+    {
       "path": "media/exercises/side-lateral-raise-0.jpg",
       "byteSize": 57101,
       "height": 567,
@@ -3336,6 +3372,18 @@
     {
       "path": "media/exercises/single-leg-leg-extension-1.jpg",
       "byteSize": 88854,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/sit-up-0.jpg",
+      "byteSize": 66968,
+      "height": 567,
+      "width": 850
+    },
+    {
+      "path": "media/exercises/sit-up-1.jpg",
+      "byteSize": 67166,
       "height": 567,
       "width": 850
     },
