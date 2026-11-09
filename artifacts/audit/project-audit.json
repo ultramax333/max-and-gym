@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-10-29T20:03:52.102Z",
+  "generatedAt": "2026-11-09T17:41:02.328Z",
   "checks": [
     {
       "check": "project identity",
       "status": "pass",
-      "detail": "max-and-gym@1.14.0"
+      "detail": "max-and-gym@1.14.1"
     },
     {
       "check": "single lockfile",
