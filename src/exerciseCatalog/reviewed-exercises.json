@@ -15605,6 +15605,80 @@
     ]
   },
   {
+    "id": "fedb:Jackknife_Sit-Up",
+    "source": "free-exercise-db",
+    "sourceId": "Jackknife_Sit-Up",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Jackknife Sit-Up",
+    "aliases": [
+      "Jackknife Sit-Up"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "body only"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "body only"
+    ],
+    "metricType": "bodyweight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Lie flat on the floor (or exercise mat) on your back with your arms extended straight back behind your head and your legs extended also. This will be your starting position.",
+    "executionSteps": [
+      "As you exhale, bend at the waist while simultaneously raising your legs and arms to meet in a jackknife position. Tip: The legs should be extended and lifted at approximately a 35-45 degree angle from the floor and the arms should be extended and parallel to your legs. The upper torso should be off the floor.",
+      "While inhaling, lower your arms and legs back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Jackknife_Sit-Up.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/jackknife-sit-up-0.jpg",
+        "altText": "Jackknife Sit-Up starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/jackknife-sit-up-1.jpg",
+        "altText": "Jackknife Sit-Up finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/jackknife-sit-up-0.jpg",
+        "altText": "Jackknife Sit-Up thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:JM_Press",
     "source": "free-exercise-db",
     "sourceId": "JM_Press",
@@ -20176,6 +20250,81 @@
     ]
   },
   {
+    "id": "fedb:Scissor_Kick",
+    "source": "free-exercise-db",
+    "sourceId": "Scissor_Kick",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Scissor Kick",
+    "aliases": [
+      "Scissor Kick"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "body only"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "body only"
+    ],
+    "metricType": "bodyweight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "To begin, lie down with your back pressed against the floor or on an exercise mat (optional). Your arms should be fully extended to the sides with your palms facing down. Note: The arms should be stationary the entire time.",
+    "executionSteps": [
+      "With a slight bend at the knees, lift your legs up so that your heels are about 6 inches off the ground. This is the starting position.",
+      "Now lift your left leg up to about a 45 degree angle while your right leg is lowered until the heel is about 2-3 inches from the ground.",
+      "Switch movements by raising your right leg up and lowering your left leg. Remember to breathe while performing this exercise.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Scissor_Kick.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/scissor-kick-0.jpg",
+        "altText": "Scissor Kick starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/scissor-kick-1.jpg",
+        "altText": "Scissor Kick finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/scissor-kick-0.jpg",
+        "altText": "Scissor Kick thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Seated_Band_Hamstring_Curl",
     "source": "free-exercise-db",
     "sourceId": "Seated_Band_Hamstring_Curl",
@@ -21007,6 +21156,80 @@
     ]
   },
   {
+    "id": "fedb:Side_Jackknife",
+    "source": "free-exercise-db",
+    "sourceId": "Side_Jackknife",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Side Jackknife",
+    "aliases": [
+      "Side Jackknife"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "compound",
+    "equipmentTags": [
+      "body only"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "body only"
+    ],
+    "metricType": "bodyweight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Lie on your right side on a mat with your legs extended and stacked, your right arm on the floor in front of you for support and your left hand resting lightly behind your head.",
+    "executionSteps": [
+      "Exhale as you lift your left elbow and your left leg towards each other, crunching your left side while keeping your hips stacked.",
+      "Pause for a second at the top, feeling your obliques contract.",
+      "Inhale as you slowly lower your elbow and leg back to the starting position, then repeat and switch sides."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Side_Jackknife.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/side-jackknife-0.jpg",
+        "altText": "Side Jackknife starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/side-jackknife-1.jpg",
+        "altText": "Side Jackknife finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/side-jackknife-0.jpg",
+        "altText": "Side Jackknife thumbnail"
+      }
+    ]
+  },
+  {
     "id": "fedb:Side_Lateral_Raise",
     "source": "free-exercise-db",
     "sourceId": "Side_Lateral_Raise",
@@ -21227,6 +21450,81 @@
         "kind": "thumbnail",
         "path": "media/exercises/single-leg-leg-extension-0.jpg",
         "altText": "Single-Leg Leg Extension thumbnail"
+      }
+    ]
+  },
+  {
+    "id": "fedb:Sit-Up",
+    "source": "free-exercise-db",
+    "sourceId": "Sit-Up",
+    "sourceRevision": "b0eed061e1c8",
+    "name": "Sit-Up",
+    "aliases": [
+      "Sit-Up"
+    ],
+    "category": "strength",
+    "force": "pull",
+    "mechanic": "isolation",
+    "equipmentTags": [
+      "body only"
+    ],
+    "primaryMuscles": [
+      "abdominals"
+    ],
+    "secondaryMuscles": [],
+    "movementPattern": "core",
+    "positionTags": [
+      "floor"
+    ],
+    "transitionTags": [],
+    "impactTags": [],
+    "setupTags": [
+      "body only"
+    ],
+    "metricType": "bodyweight-reps",
+    "defaultRestSeconds": 75,
+    "defaultRepRange": {
+      "min": 8,
+      "max": 12
+    },
+    "defaultRirRange": {
+      "min": 1,
+      "max": 3
+    },
+    "contentStatus": "reviewed",
+    "generatorEligible": true,
+    "neverSuggest": false,
+    "archived": false,
+    "setupInstructions": "Lie down on the floor placing your feet either under something that will not move or by having a partner hold them. Your legs should be bent at the knees.",
+    "executionSteps": [
+      "Place your hands behind your head and lock them together by clasping your fingers. This is the starting position.",
+      "Elevate your upper body so that it creates an imaginary V-shape with your thighs. Breathe out when performing this part of the exercise.",
+      "Once you feel the contraction for a second, lower your upper body back down to the starting position while inhaling.",
+      "Repeat for the recommended amount of repetitions."
+    ],
+    "breathingCue": "Breathe steadily; exhale through the effort.",
+    "commonMistakes": [
+      "Rushing repetitions",
+      "Losing a stable trunk position"
+    ],
+    "sourceName": "Free Exercise DB",
+    "sourceUrl": "https://github.com/yuhonas/free-exercise-db/blob/b0eed061e1c8/exercises/Sit-Up.json",
+    "license": "Unlicense",
+    "media": [
+      {
+        "kind": "start-image",
+        "path": "media/exercises/sit-up-0.jpg",
+        "altText": "Sit-Up starting position"
+      },
+      {
+        "kind": "end-image",
+        "path": "media/exercises/sit-up-1.jpg",
+        "altText": "Sit-Up finishing position"
+      },
+      {
+        "kind": "thumbnail",
+        "path": "media/exercises/sit-up-0.jpg",
+        "altText": "Sit-Up thumbnail"
       }
     ]
   },
