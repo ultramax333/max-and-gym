@@ -15,22 +15,23 @@ const CORE_FUNCTION_BY_SOURCE_ID: Record<string, CoreFunction> = {
     // Spinal flexion: crunch variants, loaded or machine-guided.
     Ab_Crunch_Machine: 'flexion', Cable_Crunch: 'flexion', Cable_Seated_Crunch: 'flexion', 'Crunch_-_Hands_Overhead': 'flexion',
     'Crunch_-_Legs_On_Exercise_Ball': 'flexion', Crunches: 'flexion', Decline_Crunch: 'flexion', Gorilla_Chin_Crunch: 'flexion',
+    'Sit-Up': 'flexion',
     // Leg raise and lower abdomen: hip flexion with a posterior pelvic tilt.
     'Bent-Knee_Hip_Raise': 'leg-raise', Cable_Reverse_Crunch: 'leg-raise', Decline_Reverse_Crunch: 'leg-raise',
     'Flat_Bench_Leg_Pull-In': 'leg-raise', Flat_Bench_Lying_Leg_Raise: 'leg-raise', Hanging_Leg_Raise: 'leg-raise',
     Hanging_Pike: 'leg-raise', Knee_Hip_Raise_On_Parallel_Bars: 'leg-raise', 'Leg_Pull-In': 'leg-raise',
-    Reverse_Crunch: 'leg-raise', Smith_Machine_Hip_Raise: 'leg-raise',
+    Reverse_Crunch: 'leg-raise', Smith_Machine_Hip_Raise: 'leg-raise', 'Jackknife_Sit-Up': 'leg-raise',
     // Rotation and obliques: twists, chops, side bends and diagonal crunches.
     Air_Bike: 'rotation', Alternate_Heel_Touchers: 'rotation', Bosu_Ball_Cable_Crunch_With_Side_Bends: 'rotation',
     Cable_Judo_Flip: 'rotation', Cable_Russian_Twists: 'rotation', 'Cross-Body_Crunch': 'rotation', Decline_Oblique_Crunch: 'rotation',
     Dumbbell_Side_Bend: 'rotation', Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists: 'rotation', Landmine_180s: 'rotation',
     'Oblique_Crunches_-_On_The_Floor': 'rotation', 'One-Arm_High-Pulley_Cable_Side_Bends': 'rotation', Russian_Twist: 'rotation',
-    Standing_Cable_Lift: 'rotation', Standing_Cable_Wood_Chop: 'rotation',
+    Standing_Cable_Lift: 'rotation', Standing_Cable_Wood_Chop: 'rotation', Side_Jackknife: 'rotation',
     // Anti-rotation: resisting a twist.
     Pallof_Press: 'anti-rotation', Pallof_Press_With_Rotation: 'anti-rotation',
     // Anti-extension and bracing: resisting the lower back arching.
     Ab_Roller: 'anti-extension', 'Barbell_Ab_Rollout_-_On_Knees': 'anti-extension', Dead_Bug: 'anti-extension',
-    Plank: 'anti-extension', Suspended_Fallout: 'anti-extension',
+    Plank: 'anti-extension', Suspended_Fallout: 'anti-extension', Scissor_Kick: 'anti-extension',
 };
 
 export function coreFunctionFor(exerciseId: string): CoreFunction | undefined {

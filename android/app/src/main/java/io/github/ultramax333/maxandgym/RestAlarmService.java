@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.media.RingtoneManager;
@@ -32,6 +33,9 @@ public class RestAlarmService extends Service {
     private ToneGenerator toneGenerator;
     private Vibrator vibrator;
     private PowerManager.WakeLock wakeLock;
+    private AudioManager audioManager;
+    private AudioFocusRequest audioFocusRequest;
+    private final AudioManager.OnAudioFocusChangeListener legacyFocusListener = focusChange -> { };
     private long stopAt;
     private String activeTimerId;
     private String activeGeneration;
@@ -84,6 +88,7 @@ public class RestAlarmService extends Service {
         String tone = RestAlarmPreferences.tone(this);
         activeTone = "urgent".equals(tone) ? ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD : ToneGenerator.TONE_PROP_BEEP2;
         toneGenerator = "silent".equals(tone) ? null : new ToneGenerator(AudioManager.STREAM_ALARM, 100);
+        if (toneGenerator != null) requestAudioFocus();
         vibrator = RestAlarmPreferences.vibrationEnabled(this) ? getVibrator() : null;
         if (vibrator != null && vibrator.hasVibrator()) {
             long[] pattern = {0L, 350L, 150L};
@@ -92,6 +97,38 @@ public class RestAlarmService extends Service {
         }
         handler.post(beep);
         handler.postDelayed(this::stopSelf, alarmDurationMs);
+    }
+
+    // Ask other apps (music, podcasts, videos) to pause while the alarm rings; abandoning the focus lets them resume.
+    @SuppressWarnings("deprecation")
+    private void requestAudioFocus() {
+        abandonAudioFocus();
+        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager == null) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                .setAudioAttributes(new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build())
+                .setOnAudioFocusChangeListener(focusChange -> { })
+                .build();
+            audioManager.requestAudioFocus(audioFocusRequest);
+        } else {
+            audioManager.requestAudioFocus(legacyFocusListener, AudioManager.STREAM_ALARM, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void abandonAudioFocus() {
+        if (audioManager == null) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (audioFocusRequest != null) audioManager.abandonAudioFocusRequest(audioFocusRequest);
+        } else {
+            audioManager.abandonAudioFocus(legacyFocusListener);
+        }
+        audioFocusRequest = null;
+        audioManager = null;
     }
 
     private Notification buildNotification(String timerId, String sessionId, long endsAtEpochMs, String generation) {
@@ -212,6 +249,7 @@ public class RestAlarmService extends Service {
             vibrator.cancel();
             vibrator = null;
         }
+        abandonAudioFocus();
         if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
         wakeLock = null;
     }

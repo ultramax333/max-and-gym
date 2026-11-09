@@ -53,6 +53,10 @@ const curatedExpansionNames = new Set([
     // leg-tuck and barbell side-bend variants are intentionally not imported.
     'Oblique Crunches - On The Floor', 'Kneeling Cable Crunch With Alternating Oblique Twists', 'One-Arm High-Pulley Cable Side Bends',
     'Standing Cable Lift', 'Suspended Fallout', 'Smith Machine Hip Raise',
+    // Core expansion 2: body-weight floor work adding full-range flexion (sit-up), a combined trunk and straight-leg
+    // fold, controlled alternating low leg lowering and a side-lying crunch with a leg lift. Tuck Crunch is not
+    // imported: it is a crunch with the thighs vertical, already covered by Crunches (feet on a bench).
+    'Sit-Up', 'Jackknife Sit-Up', 'Scissor Kick', 'Side Jackknife',
 ]);
 
 // These records remain browsable and keep their stable IDs for saved workouts,
@@ -97,7 +101,8 @@ function slug(value) {
     return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-function category(value) {
+function category(value, id) {
+    if (overrides[id]?.category) return overrides[id].category;
     if (value === 'cardio') return 'conditioning';
     if (value === 'stretching') return 'mobility';
     return 'strength';
@@ -122,7 +127,7 @@ function metricType(equipment) {
 function buildExercise(entry) {
     const asset = slug(entry.id);
     const equipmentTags = overrides[entry.id]?.equipmentTags ?? [entry.equipment ?? 'other'];
-    const instructions = (entry.instructions ?? []).map((item) => item.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    const instructions = (overrides[entry.id]?.instructions ?? entry.instructions ?? []).map((item) => item.replace(/\s+/g, ' ').trim()).filter(Boolean);
     return {
         id: `fedb:${entry.id}`,
         source: 'free-exercise-db',
@@ -130,7 +135,7 @@ function buildExercise(entry) {
         sourceRevision: revision,
         name: entry.name.trim(),
         aliases: [entry.id.replaceAll('_', ' ')],
-        category: category(entry.category),
+        category: category(entry.category, entry.id),
         force: entry.force ?? 'mixed',
         mechanic: entry.mechanic ?? 'compound',
         equipmentTags,
@@ -186,7 +191,7 @@ for (const [id, override] of Object.entries(overrides)) {
     if (!reviewed.some(entry => entry.sourceId === id) || !override.reason || override.equipmentTags?.some(tag => !supportedEquipment.has(tag))) throw new Error(`Invalid reviewed classification override: ${id}`);
 }
 const duplicateNames = reviewed.filter((entry, index) => reviewed.findIndex((other) => other.name.toLowerCase() === entry.name.toLowerCase()) !== index);
-if (reviewed.length !== 313 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
+if (reviewed.length !== 317 || duplicateNames.length > 0 || reviewed.some((entry) => !entry.sourceUrl || entry.media.length < 2)) throw new Error('Curated exercise catalogue validation failed.');
 await mkdir(path.dirname(outputFile), {recursive: true});
 await mkdir(path.dirname(reportFile), {recursive: true});
 await writeFile(outputFile, JSON.stringify(reviewed, null, 2) + '\n');
