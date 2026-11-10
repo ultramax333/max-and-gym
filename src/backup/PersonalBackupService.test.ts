@@ -7,6 +7,7 @@ import {CustomExerciseRecord} from '../exerciseCatalog/types';
 import {buildPersonalBackup, BackupError, hasPortablePersonalData, importPersonalBackup, previewPersonalBackup, recordPersonalBackupSuccess} from './PersonalBackupService';
 import {CUSTOM_CORE_VIDEOS_META_KEY} from '../pages/core/CoreVideoRepository';
 import {DexieWorkoutRepository} from '../workout/DexieWorkoutRepository';
+import {LOCAL_VIDEO_BACKUP_WARNING, LOCAL_VIDEOS_META_KEY, LocalVideo} from '../localVideos/model';
 
 describe('personal backup', () => {
     let db: DexieDB;
@@ -35,6 +36,20 @@ describe('personal backup', () => {
         await recordPersonalBackupSuccess(db, {now: new Date('2026-08-10T12:00:00Z'), id: 'delivered-backup'});
         expect(await db.appMeta.get('lastBackupAt')).toMatchObject({value: '2026-08-10T12:00:00.000Z'});
         expect(await db.operationJournal.get('delivered-backup')).toMatchObject({status: 'committed'});
+    });
+
+    it('round-trips personal video classification and explicitly excludes video files from the bounded backup', async () => {
+        const video: LocalVideo = {id: '00000000-0000-4000-8000-000000000001', assetId: '00000000-0000-4000-8000-000000000002', title: 'Synthetic abs', fileName: 'synthetic.mp4', mimeType: 'video/mp4', byteSize: 500_000_000, durationSeconds: 900, areas: ['abs'], difficulty: 4, createdAt: '2026-11-03T10:00:00Z', updatedAt: '2026-11-03T10:00:00Z'};
+        await db.appMeta.put({key: LOCAL_VIDEOS_META_KEY, value: JSON.stringify([video]), updatedAt: video.updatedAt});
+        expect(await hasPortablePersonalData(db)).toBe(true);
+        const backup = await buildPersonalBackup(db);
+        const preview = await previewPersonalBackup(db, backup);
+        expect(preview.manifest.warnings).toContain(LOCAL_VIDEO_BACKUP_WARNING);
+        expect(preview.manifest.mediaBytes).toBe(0);
+        expect(backup.size).toBeLessThan(100_000);
+        await db.appMeta.delete(LOCAL_VIDEOS_META_KEY);
+        await importPersonalBackup(db, backup, {mode: 'replace', id: 'restore-video-details'});
+        expect(JSON.parse((await db.appMeta.get(LOCAL_VIDEOS_META_KEY))!.value)).toEqual([video]);
     });
 
     it('survives export, clear and Replace restore with photo blobs', async () => {

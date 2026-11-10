@@ -1,5 +1,27 @@
 # Known failure modes and required controls
 
+## FM-40 — A personal video is missing after restore or an interrupted import
+
+Causes: large video copies live in private OPFS storage, while .maxgym preserves
+their classification metadata only; another device, cleared app data, an
+unsupported codec or interrupted copying may leave no playable local file.
+
+Controls:
+
+- disclose separate media backup in library, editor, backup page and manifest;
+- keep source files outside the app unchanged; no personal footage in Git/APK;
+- write bounded chunks and publish metadata only after the copy is committed;
+- clean up failed/cancelled copies and preserve completed batch imports;
+- validate UUID-only paths, unique media references and metadata transactionally;
+- label absent files and allow reattachment without losing areas/difficulty;
+- confirm deletion and restore metadata if media cleanup fails;
+- stop/release the player on exit, without restarting playback on rating edits;
+- cover quota, cancellation, metadata failure, restore and offline playback with
+  synthetic fixtures; actual Pixel file-picker/codecs remain a manual check.
+
+An abrupt process kill between separate file and metadata commits can leave an
+unreferenced private copy. Do not perform broad automatic filesystem deletion.
+
 ## FM-01 — Blank page on GitHub Pages
 
 Likely causes:

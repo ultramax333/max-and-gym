@@ -1,5 +1,5 @@
 {
-  "reviewedCount": 307,
+  "reviewedCount": 313,
   "overrideCount": 18,
   "invalid": [],
   "rows": [
@@ -3539,6 +3539,21 @@
       "reviewReason": "Source describes unweighted leg raises on a supported station."
     },
     {
+      "id": "fedb:Kneeling_Cable_Crunch_With_Alternating_Oblique_Twists",
+      "name": "Kneeling Cable Crunch With Alternating Oblique Twists",
+      "primary": [
+        "abdominals"
+      ],
+      "secondary": [],
+      "focus": [],
+      "equipment": [
+        "cable"
+      ],
+      "movement": "core",
+      "eligible": true,
+      "reviewReason": "Pinned source retained; no confirmed metadata correction."
+    },
+    {
       "id": "fedb:Kneeling_Cable_Triceps_Extension",
       "name": "Kneeling Cable Triceps Extension",
       "primary": [
@@ -3961,6 +3976,21 @@
       "reviewReason": "Knee flexion with anchored ankles using a lat-machine pad or preacher support, not a hip hinge or unsupported floor exercise."
     },
     {
+      "id": "fedb:Oblique_Crunches_-_On_The_Floor",
+      "name": "Oblique Crunches - On The Floor",
+      "primary": [
+        "abdominals"
+      ],
+      "secondary": [],
+      "focus": [],
+      "equipment": [
+        "body only"
+      ],
+      "movement": "core",
+      "eligible": true,
+      "reviewReason": "Pinned source retained; no confirmed metadata correction."
+    },
+    {
       "id": "fedb:One_Arm_Dumbbell_Bench_Press",
       "name": "One Arm Dumbbell Bench Press",
       "primary": [
@@ -4027,6 +4057,21 @@
         "dumbbell"
       ],
       "movement": "pull",
+      "eligible": true,
+      "reviewReason": "Pinned source retained; no confirmed metadata correction."
+    },
+    {
+      "id": "fedb:One-Arm_High-Pulley_Cable_Side_Bends",
+      "name": "One-Arm High-Pulley Cable Side Bends",
+      "primary": [
+        "abdominals"
+      ],
+      "secondary": [],
+      "focus": [],
+      "equipment": [
+        "cable"
+      ],
+      "movement": "core",
       "eligible": true,
       "reviewReason": "Pinned source retained; no confirmed metadata correction."
     },
@@ -4692,6 +4737,21 @@
       "reviewReason": "Pinned source retained; no confirmed metadata correction."
     },
     {
+      "id": "fedb:Smith_Machine_Hip_Raise",
+      "name": "Smith Machine Hip Raise",
+      "primary": [
+        "abdominals"
+      ],
+      "secondary": [],
+      "focus": [],
+      "equipment": [
+        "machine"
+      ],
+      "movement": "core",
+      "eligible": true,
+      "reviewReason": "Pinned source retained; no confirmed metadata correction."
+    },
+    {
       "id": "fedb:Smith_Machine_Incline_Bench_Press",
       "name": "Smith Machine Incline Bench Press",
       "primary": [
@@ -4764,6 +4824,23 @@
         "cable"
       ],
       "movement": "push",
+      "eligible": true,
+      "reviewReason": "Pinned source retained; no confirmed metadata correction."
+    },
+    {
+      "id": "fedb:Standing_Cable_Lift",
+      "name": "Standing Cable Lift",
+      "primary": [
+        "abdominals"
+      ],
+      "secondary": [
+        "shoulders"
+      ],
+      "focus": [],
+      "equipment": [
+        "cable"
+      ],
+      "movement": "core",
       "eligible": true,
       "reviewReason": "Pinned source retained; no confirmed metadata correction."
     },
@@ -4913,6 +4990,25 @@
       "movement": "accessory",
       "eligible": false,
       "reviewReason": "Floor-based controlled spinal extension, not a supported standing movement. Kept as browsable mobility because the pinned source categorizes it as stretching."
+    },
+    {
+      "id": "fedb:Suspended_Fallout",
+      "name": "Suspended Fallout",
+      "primary": [
+        "abdominals"
+      ],
+      "secondary": [
+        "chest",
+        "lower back",
+        "shoulders"
+      ],
+      "focus": [],
+      "equipment": [
+        "other"
+      ],
+      "movement": "core",
+      "eligible": true,
+      "reviewReason": "Pinned source retained; no confirmed metadata correction."
     },
     {
       "id": "fedb:Suspended_Row",

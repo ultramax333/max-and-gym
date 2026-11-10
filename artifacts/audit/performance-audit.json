@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-10-11T14:50:15.741Z",
+  "generatedAt": "2026-11-03T10:38:52.290Z",
   "baseline": {
     "cp7EntryBytes": 2124140
   },
   "entry": {
-    "path": "assets/index-CxUlp07L.js",
-    "bytes": 658027
+    "path": "assets/index-uNzfIfqb.js",
+    "bytes": 620300
   },
   "largestRoute": {
     "path": "assets/emoji-picker-react.esm-DWHR4bnk.js",
     "bytes": 309104
   },
-  "totalBytes": 48127691,
+  "totalBytes": 49123575,
   "checks": [
     {
       "check": "initial JavaScript",
       "status": "pass",
-      "detail": "658027 bytes"
+      "detail": "620300 bytes"
     },
     {
       "check": "CP7 entry reduction",
       "status": "pass",
-      "detail": "69.0%"
+      "detail": "70.8%"
     },
     {
       "check": "largest non-data route chunk",

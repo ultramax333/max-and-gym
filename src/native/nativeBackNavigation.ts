@@ -5,6 +5,8 @@ export function resolveNativeBackTarget(pathname: string): string | undefined {
     if (pathname === '/workout/active' || pathname === '/workout/setup') return '/train';
     if (pathname.startsWith('/workout/summary/') || pathname === '/workout/postworkout') return '/';
     if (pathname === '/train/core-videos') return '/train';
+    if (pathname === '/train/local-videos') return '/train';
+    if (pathname.startsWith('/train/local-videos/')) return '/train/local-videos';
     if (pathname === '/programs/generate' || pathname.startsWith('/programs/')) return '/programs';
     if (pathname === '/progress/proposals' || pathname.startsWith('/progress/')) return '/progress';
     if (pathname.startsWith('/library/')) return '/library';

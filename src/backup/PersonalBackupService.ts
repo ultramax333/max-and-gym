@@ -5,6 +5,7 @@ import {MediaBlobRecord} from '../progress/types';
 import {CustomExerciseRecord} from '../exerciseCatalog/types';
 import {ArchiveError, decodeZip, encodeZip, ZipEntry} from './zip';
 import {CUSTOM_CORE_VIDEOS_META_KEY} from '../pages/core/coreVideos';
+import {LOCAL_VIDEOS_META_KEY, LOCAL_VIDEO_BACKUP_WARNING} from '../localVideos/model';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -55,7 +56,7 @@ export async function hasPortablePersonalData(db: DexieDB): Promise<boolean> {
         'mediaBlob', 'progressPhoto',
     ]);
     const counts = await Promise.all(db.tables.filter((table) => personalTableNames.has(table.name)).map((table) => table.count()));
-    return counts.some((count) => count > 0) || Boolean(await db.appMeta.get(CUSTOM_CORE_VIDEOS_META_KEY));
+    return counts.some((count) => count > 0) || Boolean(await db.appMeta.get(CUSTOM_CORE_VIDEOS_META_KEY)) || Boolean(await db.appMeta.get(LOCAL_VIDEOS_META_KEY));
 }
 
 export async function backupDryRun(db: DexieDB): Promise<{tableCount: number; recordCount: number; mediaCount: number; missingMediaReferences: number}> {
@@ -122,6 +123,8 @@ async function buildEntries(data: BackupData, exportedAt: string): Promise<{mani
     files[dataEntry.path] = {sha256: await sha256(dataEntry.bytes), bytes: dataEntry.bytes.length};
     const recordCounts = Object.fromEntries(Object.entries(data.tables).map(([name, values]) => [name, values.length]));
     const manifest: BackupManifest = {product: PRODUCT, applicationVersion: buildIdentity.appVersion, exportFormatVersion: buildIdentity.exportFormatVersion, databaseSchemaVersion: buildIdentity.databaseSchemaVersion, exerciseSeedVersion: buildIdentity.exerciseSeedVersion, programSeedVersion: buildIdentity.programSeedVersion, generatorVersion: buildIdentity.generatorVersion, exportedAt, recordCounts, mediaCount: data.media.length + data.customImages.length, mediaBytes: data.media.reduce((total, entry) => total + entry.byteSize, 0) + data.customImages.reduce((total, entry) => total + entry.byteSize, 0), files, warnings: []};
+    const localVideos = (data.tables.appMeta ?? []).find(record => (record as {key?: string}).key === LOCAL_VIDEOS_META_KEY) as {value?: string} | undefined;
+    if (localVideos?.value && localVideos.value !== '[]') manifest.warnings.push(LOCAL_VIDEO_BACKUP_WARNING);
     return {manifest, entries};
 }
 

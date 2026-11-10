@@ -280,6 +280,26 @@ Editing/deleting/archive of live programs/exercises does not alter completed wor
 
 ## M. Flexible active sessions
 
+### AT-V01 — Personal video batches
+
+Import several user-selected files without upload, APK rebuild or a frozen UI.
+Successful copies appear in To sort. Per-file failures do not remove completed
+imports or existing videos; stopping a batch cleans up its incomplete copy.
+
+### AT-V02 — Personal video classification and playback
+
+Assign several body areas, filter Abs/core and set/change/unset difficulty 1–5.
+Filters, edits and availability remain correct after reload. Play an imported
+synthetic clip offline; rating edits must not reload the playing media.
+
+### AT-V03 — Video metadata backup and reattachment
+
+Export/restore titles, areas, difficulty and durations with .maxgym, with an
+explicit warning that original video files are separate. A new-device missing
+copy is not silently playable. Reattach the original without losing its tags.
+Quota/metadata failure keeps prior records and copies unchanged. Confirmed
+deletion removes only the imported copy, never the original selected file.
+
 ### AT-M01 — Equipment grouping and preview
 
 Generated exercises with the same primary equipment are contiguous. In an active workout, every plan exercise opens its local photos and technique without changing the current exercise or losing progress.

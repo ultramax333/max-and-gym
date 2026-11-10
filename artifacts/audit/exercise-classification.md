@@ -1,6 +1,6 @@
 # Exercise classification audit
 
-307 records checked; 18 reviewed overrides; 0 invariant failures.
+313 records checked; 18 reviewed overrides; 0 invariant failures.
 
 This checks metadata consistency, not individual medical suitability. Auxiliary stations are separately tested.
 
@@ -214,6 +214,7 @@ This checks metadata consistency, not individual medical suitability. Auxiliary 
 | Kettlebell Arnold Press | shoulders | kettlebells | push |
 | Kettlebell One-Legged Deadlift | hamstrings | kettlebells | hinge |
 | Knee/Hip Raise On Parallel Bars | abdominals | body only | core |
+| Kneeling Cable Crunch With Alternating Oblique Twists | abdominals | cable | core |
 | Kneeling Cable Triceps Extension | triceps | cable | accessory |
 | Kneeling High Pulley Row | lats | cable | pull |
 | Kneeling Single-Arm High Pulley Row | lats | cable | pull |
@@ -239,10 +240,12 @@ This checks metadata consistency, not individual medical suitability. Auxiliary 
 | Monster Walk | abductors | bands | carry |
 | Narrow Stance Leg Press | quadriceps | machine | squat |
 | Natural Glute Ham Raise | hamstrings | body only + other | accessory |
+| Oblique Crunches - On The Floor | abdominals | body only | core |
 | One Arm Dumbbell Bench Press | chest | dumbbell | push |
 | One Arm Dumbbell Preacher Curl | biceps | dumbbell | accessory |
 | One Arm Lat Pulldown | lats | cable | pull |
 | One-Arm Dumbbell Row | middle back | dumbbell | pull |
+| One-Arm High-Pulley Cable Side Bends | abdominals | cable | core |
 | One-Arm Kettlebell Floor Press | chest | kettlebells | push |
 | One-Legged Cable Kickback | glutes | cable | hinge |
 | Overhead Cable Curl | biceps | cable | accessory |
@@ -283,10 +286,12 @@ This checks metadata consistency, not individual medical suitability. Auxiliary 
 | Single-Leg Leg Extension | quadriceps | machine | accessory |
 | Smith Machine Bench Press | chest | machine | push |
 | Smith Machine Close-Grip Bench Press | triceps | machine | push |
+| Smith Machine Hip Raise | abdominals | machine | core |
 | Smith Machine Incline Bench Press | chest | machine | push |
 | Smith Machine Squat | quadriceps | machine | squat |
 | Split Squat with Dumbbells | quadriceps | dumbbell | squat |
 | Standing Cable Chest Press | chest | cable | push |
+| Standing Cable Lift | abdominals | cable | core |
 | Standing Cable Wood Chop | abdominals | cable | core |
 | Standing Calf Raises | calves | machine | accessory |
 | Standing Leg Curl | hamstrings | machine | accessory |
@@ -296,6 +301,7 @@ This checks metadata consistency, not individual medical suitability. Auxiliary 
 | Step-up with Knee Raise | glutes | body only | squat |
 | Straight-Arm Pulldown | lats | cable | pull |
 | Superman | lower back | body only | accessory |
+| Suspended Fallout | abdominals | other | core |
 | Suspended Row | middle back | other | pull |
 | T-Bar Row with Handle | middle back | barbell | pull |
 | Tate Press | triceps | dumbbell | accessory |
