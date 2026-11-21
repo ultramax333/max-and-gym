@@ -10,7 +10,7 @@ import {DiagnosticEvent} from '../../diagnostics/types';
 import {runSelfTest, SelfTestResult} from '../../diagnostics/selfTest';
 import {usePwa} from '../../pwa/PwaContext';
 import {buildDiagnosticExport} from '../../diagnostics/export';
-import {describeBatteryOptimization, describeNativeAlarmCapability, describeWorkoutRecovery, scheduleAndroidDiagnosticAlarm, WorkoutRecoveryDiagnostic} from '../../diagnostics/androidRuntime';
+import {describeAlarmDelay, describeBatteryOptimization, describeNativeAlarmCapability, describeWorkoutRecovery, scheduleAndroidDiagnosticAlarm, WorkoutRecoveryDiagnostic} from '../../diagnostics/androidRuntime';
 import {restAlarmGateway, RestAlarmCapabilities} from '../../native/restAlarmGateway';
 import {useWorkoutService} from '../../workout/useWorkoutService';
 import {ScreenContainer, SectionHeader} from '../../components/ui/UiPrimitives';
@@ -117,6 +117,7 @@ export default function DiagnosticsPage() {
                 <IdentityRow label="Android runtime" value={nativeCapabilities?.nativeAndroid ? 'yes' : 'no'}/>
                 <IdentityRow label="Notification permission" value={nativeCapabilities?.notificationPermission ?? 'checking'}/>
                 <IdentityRow label="Exact alarms" value={describeNativeAlarmCapability(nativeCapabilities)}/>
+                <IdentityRow label="Alarm delay" value={describeAlarmDelay(nativeCapabilities)}/>
                 <IdentityRow label="Battery optimization" value={describeBatteryOptimization(Boolean(nativeCapabilities?.nativeAndroid))}/>
                 <IdentityRow label="Persisted session" value={recovery.session}/><IdentityRow label="Persisted rest timer" value={recovery.timer}/>
                 <Alert severity="info" sx={{mt: 1}}>The test never replaces a workout timer. It is available only when no active or paused workout is persisted.</Alert>

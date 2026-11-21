@@ -12,6 +12,7 @@ public class RestAlarmReceiver extends BroadcastReceiver {
         long endsAtEpochMs = intent.getLongExtra(RestAlarmScheduler.EXTRA_ENDS_AT, 0L);
         String generation = intent.getStringExtra(RestAlarmScheduler.EXTRA_GENERATION);
         String sessionId = intent.getStringExtra(RestAlarmScheduler.EXTRA_SESSION_ID);
+        long triggerAtEpochMs = intent.getLongExtra(RestAlarmScheduler.EXTRA_TRIGGER_AT, 0L);
         if (!RestAlarmScheduler.isCurrentDelivery(context, timerId, endsAtEpochMs, generation, System.currentTimeMillis())) return;
         boolean exact = RestAlarmScheduler.isCurrentExact(context, timerId, endsAtEpochMs, generation);
         RestAlarmScheduler.markAction(context, "fired", timerId, endsAtEpochMs, generation);
@@ -24,7 +25,8 @@ public class RestAlarmReceiver extends BroadcastReceiver {
             .putExtra(RestAlarmScheduler.EXTRA_TIMER_ID, timerId)
             .putExtra(RestAlarmScheduler.EXTRA_SESSION_ID, sessionId)
             .putExtra(RestAlarmScheduler.EXTRA_ENDS_AT, endsAtEpochMs)
-            .putExtra(RestAlarmScheduler.EXTRA_GENERATION, generation);
+            .putExtra(RestAlarmScheduler.EXTRA_GENERATION, generation)
+            .putExtra(RestAlarmScheduler.EXTRA_TRIGGER_AT, triggerAtEpochMs);
         try {
             ContextCompat.startForegroundService(context, serviceIntent);
         } catch (IllegalStateException | SecurityException error) {

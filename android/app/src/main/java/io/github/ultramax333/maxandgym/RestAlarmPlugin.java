@@ -157,6 +157,9 @@ public class RestAlarmPlugin extends Plugin {
         result.put("nativeAndroid", true);
         result.put("notificationPermission", notificationPermission());
         result.put("exactAlarmAllowed", RestAlarmScheduler.canScheduleExact(getContext()));
+        long lastDelayMs = RestAlarmPreferences.lastDelayMillis(getContext());
+        if (lastDelayMs >= 0L) result.put("alarmDelayMs", lastDelayMs);
+        result.put("alarmLeadMs", RestAlarmPreferences.leadMillis(getContext()));
         return result;
     }
 

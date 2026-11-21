@@ -13,6 +13,9 @@ final class RestAlarmScheduler {
     static final String EXTRA_SESSION_ID = "sessionId";
     static final String EXTRA_ENDS_AT = "endsAtEpochMs";
     static final String EXTRA_GENERATION = "generation";
+    static final String EXTRA_TRIGGER_AT = "triggerAtEpochMs";
+    // Largest early start the self-calibrating lead may apply; deliveries earlier than this are still rejected.
+    static final long MAX_LEAD_MS = 3_000L;
     static final String ACTION_FIRE = "io.github.ultramax333.maxandgym.REST_ALARM_FIRE";
     static final String ACTION_OPEN = "io.github.ultramax333.maxandgym.REST_ALARM_OPEN";
     static final String ACTION_STOP = "io.github.ultramax333.maxandgym.REST_ALARM_STOP";
@@ -51,8 +54,9 @@ final class RestAlarmScheduler {
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager == null) return false;
-        PendingIntent operation = alarmPendingIntent(context, timerId, sessionId, endsAtEpochMs, generation, PendingIntent.FLAG_UPDATE_CURRENT);
-        long triggerAt = Math.max(System.currentTimeMillis() + 250L, endsAtEpochMs);
+        // Start the alarm slightly early by the measured native delay so the sound begins at the planned end.
+        long triggerAt = Math.max(System.currentTimeMillis() + 250L, endsAtEpochMs - RestAlarmPreferences.leadMillis(context));
+        PendingIntent operation = alarmPendingIntent(context, timerId, sessionId, endsAtEpochMs, generation, triggerAt, PendingIntent.FLAG_UPDATE_CURRENT);
         boolean exact = canScheduleExact(context);
         // Publish the new identity before replacing the PendingIntent. A broadcast
         // already dequeued from the previous generation must fail validation.
@@ -73,7 +77,7 @@ final class RestAlarmScheduler {
         String timerId = requestedTimerId != null ? requestedTimerId : storedTimerId;
         if (timerId != null) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            PendingIntent operation = alarmPendingIntent(context, timerId, preferences.getString(KEY_SESSION_ID, ""), preferences.getLong(KEY_ENDS_AT, 0L), preferences.getString(KEY_GENERATION, ""), PendingIntent.FLAG_NO_CREATE);
+            PendingIntent operation = alarmPendingIntent(context, timerId, preferences.getString(KEY_SESSION_ID, ""), preferences.getLong(KEY_ENDS_AT, 0L), preferences.getString(KEY_GENERATION, ""), 0L, PendingIntent.FLAG_NO_CREATE);
             if (alarmManager != null && operation != null) alarmManager.cancel(operation);
             if (operation != null) operation.cancel();
         }
@@ -116,7 +120,7 @@ final class RestAlarmScheduler {
             && endsAtEpochMs == storedEndsAtEpochMs
             && generation != null
             && generation.equals(storedGeneration)
-            && nowEpochMs >= storedEndsAtEpochMs;
+            && nowEpochMs >= storedEndsAtEpochMs - MAX_LEAD_MS;
     }
 
     static String generation(String timerId, long endsAtEpochMs) {
@@ -157,13 +161,14 @@ final class RestAlarmScheduler {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    private static PendingIntent alarmPendingIntent(Context context, String timerId, String sessionId, long endsAtEpochMs, String generation, int lookupFlag) {
+    private static PendingIntent alarmPendingIntent(Context context, String timerId, String sessionId, long endsAtEpochMs, String generation, long triggerAtEpochMs, int lookupFlag) {
         Intent intent = new Intent(context, RestAlarmReceiver.class)
             .setAction(ACTION_FIRE)
             .putExtra(EXTRA_TIMER_ID, timerId)
             .putExtra(EXTRA_SESSION_ID, sessionId)
             .putExtra(EXTRA_ENDS_AT, endsAtEpochMs)
-            .putExtra(EXTRA_GENERATION, generation);
+            .putExtra(EXTRA_GENERATION, generation)
+            .putExtra(EXTRA_TRIGGER_AT, triggerAtEpochMs);
         int flags = lookupFlag | PendingIntent.FLAG_IMMUTABLE;
         return PendingIntent.getBroadcast(context, timerId.hashCode(), intent, flags);
     }

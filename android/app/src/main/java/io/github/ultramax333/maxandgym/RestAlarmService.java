@@ -39,6 +39,9 @@ public class RestAlarmService extends Service {
     private long stopAt;
     private String activeTimerId;
     private String activeGeneration;
+    // AlarmManager trigger time of the alarm being rung; 0 when unknown. Used to measure the native start delay once per alarm.
+    private long triggerAtEpochMs;
+    private boolean delayRecorded;
     private int activeTone = ToneGenerator.TONE_PROP_BEEP2;
     private final Runnable beep = new Runnable() {
         @Override public void run() {
@@ -46,7 +49,10 @@ public class RestAlarmService extends Service {
                 stopSelf();
                 return;
             }
-            if (toneGenerator != null) toneGenerator.startTone(activeTone, 350);
+            if (toneGenerator != null) {
+                toneGenerator.startTone(activeTone, 350);
+                recordStartDelay();
+            }
             handler.postDelayed(this, 500L);
         }
     };
@@ -63,6 +69,8 @@ public class RestAlarmService extends Service {
         long endsAtEpochMs = intent == null ? 0L : intent.getLongExtra(RestAlarmScheduler.EXTRA_ENDS_AT, 0L);
         String generation = intent == null ? null : intent.getStringExtra(RestAlarmScheduler.EXTRA_GENERATION);
         String sessionId = intent == null ? null : intent.getStringExtra(RestAlarmScheduler.EXTRA_SESSION_ID);
+        triggerAtEpochMs = intent == null ? 0L : intent.getLongExtra(RestAlarmScheduler.EXTRA_TRIGGER_AT, 0L);
+        delayRecorded = false;
         activeTimerId = timerId;
         activeGeneration = generation;
         RestAlarmScheduler.preferences(this).edit().putString(RestAlarmScheduler.KEY_RINGING_TIMER_ID, timerId).putString(RestAlarmScheduler.KEY_RINGING_GENERATION, generation).apply();
@@ -74,6 +82,13 @@ public class RestAlarmService extends Service {
         }
         startAlarmFeedback();
         return START_NOT_STICKY;
+    }
+
+    private void recordStartDelay() {
+        if (delayRecorded) return;
+        delayRecorded = true;
+        if (triggerAtEpochMs <= 0L) return;
+        RestAlarmPreferences.recordDelaySample(this, System.currentTimeMillis() - triggerAtEpochMs);
     }
 
     private void startAlarmFeedback() {

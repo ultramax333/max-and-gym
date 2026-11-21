@@ -34,6 +34,10 @@ export interface RestAlarmCapabilities {
     nativeAndroid: boolean;
     notificationPermission: 'granted' | 'denied' | 'prompt' | 'unavailable';
     exactAlarmAllowed: boolean;
+    /** Last measured delay between the planned alarm time and the first tone, in ms. Absent until a sample exists. */
+    alarmDelayMs?: number;
+    /** How early the native alarm is currently scheduled to compensate that delay, in ms. */
+    alarmLeadMs?: number;
 }
 
 export interface RestAlarmActionResult {
