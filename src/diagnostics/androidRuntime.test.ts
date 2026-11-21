@@ -1,4 +1,4 @@
-import {describeBatteryOptimization, describeNativeAlarmCapability, describeWorkoutRecovery, scheduleAndroidDiagnosticAlarm, ANDROID_DIAGNOSTIC_ALARM_DELAY_MS, ANDROID_DIAGNOSTIC_ALARM_ID} from './androidRuntime';
+import {describeAlarmDelay, describeBatteryOptimization, describeNativeAlarmCapability, describeWorkoutRecovery, scheduleAndroidDiagnosticAlarm, ANDROID_DIAGNOSTIC_ALARM_DELAY_MS, ANDROID_DIAGNOSTIC_ALARM_ID} from './androidRuntime';
 import {describe, expect, it, vi} from 'vitest';
 
 describe('Android runtime diagnostics', () => {
@@ -56,5 +56,13 @@ describe('Android runtime diagnostics', () => {
         await expect(scheduleAndroidDiagnosticAlarm(gateway, false)).resolves.toEqual({status: 'unavailable'});
         expect(describeNativeAlarmCapability(undefined)).toBe('Not running in the Android app.');
         expect(describeBatteryOptimization(false)).toBe('Unavailable outside the Android app.');
+    });
+
+    it('describes the measured alarm delay and early start', () => {
+        const base = {nativeAndroid: true, notificationPermission: 'granted' as const, exactAlarmAllowed: true};
+        expect(describeAlarmDelay(undefined)).toBe('Not running in the Android app.');
+        expect(describeAlarmDelay(base)).toBe('No sample yet');
+        expect(describeAlarmDelay({...base, alarmDelayMs: 840, alarmLeadMs: 700})).toBe('Last 840 ms, early start 700 ms');
+        expect(describeAlarmDelay({...base, alarmDelayMs: 120})).toBe('Last 120 ms, early start 0 ms');
     });
 });

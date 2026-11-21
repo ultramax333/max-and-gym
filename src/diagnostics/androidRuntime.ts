@@ -65,6 +65,12 @@ export async function scheduleAndroidDiagnosticAlarm(
     return result.scheduled ? {status: 'scheduled', endsAt, exactAlarmAllowed: result.exactAlarmAllowed} : {status: 'unavailable'};
 }
 
+export function describeAlarmDelay(capabilities: RestAlarmCapabilities | undefined): string {
+    if (!capabilities?.nativeAndroid) return 'Not running in the Android app.';
+    if (typeof capabilities.alarmDelayMs !== 'number') return 'No sample yet';
+    return `Last ${Math.round(capabilities.alarmDelayMs)} ms, early start ${Math.round(capabilities.alarmLeadMs ?? 0)} ms`;
+}
+
 export function describeNativeAlarmCapability(capabilities: RestAlarmCapabilities | undefined): string {
     if (!capabilities?.nativeAndroid) return 'Not running in the Android app.';
     return capabilities.exactAlarmAllowed ? 'Allowed' : 'Not allowed; Android may delay the test.';

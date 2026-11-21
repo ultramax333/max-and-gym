@@ -24,7 +24,7 @@ vi.mock('../../workout/useWorkoutService', () => ({useWorkoutService: () => mock
 vi.mock('../../native/restAlarmGateway', () => ({
     restAlarmGateway: {
         isNativeAndroid: () => true,
-        getCapabilities: async () => ({nativeAndroid: true, notificationPermission: 'granted', exactAlarmAllowed: true}),
+        getCapabilities: async () => ({nativeAndroid: true, notificationPermission: 'granted', exactAlarmAllowed: true, alarmDelayMs: 840, alarmLeadMs: 700}),
         requestNotificationPermission: vi.fn(),
         requestExactAlarmPermission: vi.fn(),
         cancel: mocks.cancel,
@@ -50,6 +50,7 @@ describe('DiagnosticsPage Android controls', () => {
         expect(await screen.findByRole('heading', {name: 'Android alarm and recovery'})).toBeInTheDocument();
         expect(await screen.findByText('Not inspected. Max & Gym does not request a battery-optimization exemption.')).toBeInTheDocument();
         expect(screen.getByText('No active or paused workout is persisted.')).toBeInTheDocument();
+        expect(screen.getByText('Last 840 ms, early start 700 ms')).toBeInTheDocument();
 
         const alarmTest = screen.getByRole('button', {name: 'Run 5-second alarm test'});
         await waitFor(() => expect(alarmTest).toBeEnabled());
