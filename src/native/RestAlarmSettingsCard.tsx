@@ -65,7 +65,7 @@ export function RestAlarmSettingsCard({gateway = restAlarmGateway}: RestAlarmSet
             </FormControl>
             <FormControlLabel control={<Switch checked={preferences.vibrationEnabled} onChange={(event) => setPreferences((current) => ({...current, vibrationEnabled: event.target.checked}))}/>} label="Vibration"/>
             <Typography variant="body2" color="text.secondary">When an alarm rings, its notification includes Stop and +30 s actions. +30 s safely re-arms the same timer generation.</Typography>
-            <Button variant="contained" onClick={() => void save()} disabled={status === 'loading' || status === 'saving'}>{status === 'saving' ? 'Savingâ€¦' : 'Save alarm settings'}</Button>
+            <Button variant="contained" onClick={() => void save()} disabled={status === 'loading' || status === 'saving'}>{status === 'saving' ? 'Saving…' : 'Save alarm settings'}</Button>
         </Stack>
     </Paper>;
 }
