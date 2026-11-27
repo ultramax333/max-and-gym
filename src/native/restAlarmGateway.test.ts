@@ -13,6 +13,8 @@ describe('native rest alarm synchronization', () => {
     it('normalizes persisted alarm preferences to supported local values', () => {
         expect(normalizeRestAlarmPreferences({durationSeconds: 20, vibrationEnabled: false, tone: 'urgent'})).toEqual({durationSeconds: 20, vibrationEnabled: false, tone: 'urgent'});
         expect(normalizeRestAlarmPreferences({durationSeconds: 20, vibrationEnabled: undefined, tone: undefined})).toEqual({durationSeconds: 20, vibrationEnabled: true, tone: 'classic'});
+        expect(normalizeRestAlarmPreferences({durationSeconds: 3})).toEqual({durationSeconds: 3, vibrationEnabled: true, tone: 'classic'});
+        expect(normalizeRestAlarmPreferences({durationSeconds: 7 as never})).toMatchObject({durationSeconds: 3});
     });
 
     it('schedules only a future running timer', async () => {

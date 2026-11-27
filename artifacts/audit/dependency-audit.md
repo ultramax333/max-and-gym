@@ -3,7 +3,7 @@
 | Check | Status | Detail |
 | --- | --- | --- |
 | lockfile version | pass | 3 |
-| application version parity | pass | 1.15.1 / 1.15.1 / 1.15.1 |
+| application version parity | pass | 1.15.2 / 1.15.2 / 1.15.2 |
 | root dependencies locked | pass | 45 dependencies |
 | registry integrity hashes | pass | complete |
 | forbidden network dependencies | pass | none |

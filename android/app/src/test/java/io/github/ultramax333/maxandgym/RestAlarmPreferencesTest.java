@@ -8,6 +8,8 @@ import org.junit.Test;
 public class RestAlarmPreferencesTest {
     @Test
     public void acceptsOnlySupportedDurations() {
+        assertEquals(3, RestAlarmPreferences.DEFAULT_DURATION_SECONDS);
+        assertEquals(3, RestAlarmPreferences.sanitizeDuration(3));
         assertEquals(5, RestAlarmPreferences.sanitizeDuration(5));
         assertEquals(20, RestAlarmPreferences.sanitizeDuration(20));
         assertEquals(RestAlarmPreferences.DEFAULT_DURATION_SECONDS, RestAlarmPreferences.sanitizeDuration(0));

@@ -54,7 +54,7 @@ export function RestAlarmSettingsCard({gateway = restAlarmGateway}: RestAlarmSet
             <FormControl fullWidth disabled={status === 'loading' || status === 'saving'}>
                 <InputLabel id="rest-alarm-duration-label">Ring duration</InputLabel>
                 <Select labelId="rest-alarm-duration-label" label="Ring duration" value={preferences.durationSeconds} onChange={(event) => setPreferences((current) => ({...current, durationSeconds: Number(event.target.value) as RestAlarmPreferences['durationSeconds']}))}>
-                    <MenuItem value={5}>5 seconds</MenuItem><MenuItem value={10}>10 seconds</MenuItem><MenuItem value={20}>20 seconds</MenuItem><MenuItem value={30}>30 seconds</MenuItem>
+                    <MenuItem value={3}>3 seconds</MenuItem><MenuItem value={5}>5 seconds</MenuItem><MenuItem value={10}>10 seconds</MenuItem><MenuItem value={20}>20 seconds</MenuItem><MenuItem value={30}>30 seconds</MenuItem>
                 </Select>
             </FormControl>
             <FormControl fullWidth disabled={status === 'loading' || status === 'saving'}>
@@ -65,7 +65,7 @@ export function RestAlarmSettingsCard({gateway = restAlarmGateway}: RestAlarmSet
             </FormControl>
             <FormControlLabel control={<Switch checked={preferences.vibrationEnabled} onChange={(event) => setPreferences((current) => ({...current, vibrationEnabled: event.target.checked}))}/>} label="Vibration"/>
             <Typography variant="body2" color="text.secondary">When an alarm rings, its notification includes Stop and +30 s actions. +30 s safely re-arms the same timer generation.</Typography>
-            <Button variant="contained" onClick={() => void save()} disabled={status === 'loading' || status === 'saving'}>{status === 'saving' ? 'Saving…' : 'Save alarm settings'}</Button>
+            <Button variant="contained" onClick={() => void save()} disabled={status === 'loading' || status === 'saving'}>{status === 'saving' ? 'Savingâ€¦' : 'Save alarm settings'}</Button>
         </Stack>
     </Paper>;
 }

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 final class RestAlarmPreferences {
-    static final int DEFAULT_DURATION_SECONDS = 10;
+    static final int DEFAULT_DURATION_SECONDS = 3;
     static final boolean DEFAULT_VIBRATION_ENABLED = true;
     static final String DEFAULT_TONE = "classic";
     private static final String KEY_DURATION_SECONDS = "preferenceDurationSeconds";
@@ -100,7 +100,7 @@ final class RestAlarmPreferences {
     }
 
     static int sanitizeDuration(int value) {
-        return value == 5 || value == 10 || value == 20 || value == 30 ? value : DEFAULT_DURATION_SECONDS;
+        return value == 3 || value == 5 || value == 10 || value == 20 || value == 30 ? value : DEFAULT_DURATION_SECONDS;
     }
 
     static String sanitizeTone(String value) {
