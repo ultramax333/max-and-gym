@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-21T10:08:57.497Z",
+  "generatedAt": "2026-11-27T09:48:09.964Z",
   "checks": [
     {
       "check": "lockfile version",
@@ -9,7 +9,7 @@
     {
       "check": "application version parity",
       "status": "pass",
-      "detail": "1.15.1 / 1.15.1 / 1.15.1"
+      "detail": "1.15.2 / 1.15.2 / 1.15.2"
     },
     {
       "check": "root dependencies locked",

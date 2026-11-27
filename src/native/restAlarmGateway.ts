@@ -5,19 +5,19 @@ export type RestAlarmAction = 'fired' | 'open' | 'stop' | 'snooze';
 export type RestAlarmTone = 'classic' | 'urgent' | 'silent';
 
 export interface RestAlarmPreferences {
-    durationSeconds: 5 | 10 | 20 | 30;
+    durationSeconds: 3 | 5 | 10 | 20 | 30;
     vibrationEnabled: boolean;
     tone: RestAlarmTone;
 }
 
 export const DEFAULT_REST_ALARM_PREFERENCES: RestAlarmPreferences = {
-    durationSeconds: 10,
+    durationSeconds: 3,
     vibrationEnabled: true,
     tone: 'classic',
 };
 
 export function normalizeRestAlarmPreferences(value: Partial<RestAlarmPreferences>): RestAlarmPreferences {
-    const durationSeconds = [5, 10, 20, 30].includes(value.durationSeconds ?? 0)
+    const durationSeconds = [3, 5, 10, 20, 30].includes(value.durationSeconds ?? 0)
         ? value.durationSeconds as RestAlarmPreferences['durationSeconds']
         : DEFAULT_REST_ALARM_PREFERENCES.durationSeconds;
     const tone = value.tone === 'urgent' || value.tone === 'silent' || value.tone === 'classic'
